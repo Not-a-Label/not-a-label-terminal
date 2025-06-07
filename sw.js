@@ -1,5 +1,5 @@
 // Not a Label Service Worker - PWA Offline Support
-const CACHE_NAME = 'not-a-label-v1.2.0';
+const CACHE_NAME = 'not-a-label-v2.1.1-pattern-fix';
 const OFFLINE_URL = '/offline.html';
 
 // Core files to cache immediately
@@ -82,6 +82,16 @@ self.addEventListener('fetch', event => {
   
   // Skip chrome-extension and other protocol requests
   if (!url.protocol.startsWith('http')) {
+    return;
+  }
+  
+  // Skip CDN requests completely - don't even handle them
+  if (url.hostname.includes('unpkg.com') || 
+      url.hostname.includes('cdn.skypack.dev') ||
+      url.hostname.includes('esm.sh') ||
+      url.hostname.includes('cdn.jsdelivr.net') ||
+      url.pathname.includes('@strudel')) {
+    // Let the browser handle CDN requests directly
     return;
   }
   
