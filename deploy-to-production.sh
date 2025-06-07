@@ -5,7 +5,7 @@
 
 # Configuration
 SERVER_USER="root"  # Change this to your server username
-SERVER_IP="YOUR_SERVER_IP"  # Replace with your DigitalOcean server IP
+SERVER_IP="159.89.247.208"  # DigitalOcean server IP
 SERVER_PATH="/var/www/not-a-label-terminal"
 DOMAIN="not-a-label.art"
 

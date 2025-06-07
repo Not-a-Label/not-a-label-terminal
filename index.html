@@ -726,6 +726,9 @@
   <script src="js/auth-system.js"></script>
   <script src="js/musical-identity-creator.js"></script>
   <script src="js/strudel-integration.js"></script>
+  <script src="js/simple-strudel.js"></script>
+  <script src="js/enhanced-pattern-generator.js"></script>
+  <script src="js/user-taste-tracker.js"></script>
 
   <script>
     // Global state
@@ -746,6 +749,8 @@
     let onboarding = null;
     let musicalIdentityCreator = null;
     let authSystem = null;
+    let enhancedGenerator = null;
+    let tasteTracker = null;
     
     // Pattern storage
     let activePatterns = new Map();
@@ -758,6 +763,8 @@
       initializeOnboarding();
       initializeAuthSystem();
       initializeMusicalIdentity();
+      initializeEnhancedGenerator();
+      initializeTasteTracker();
       setupPWA();
       setupNetworkMonitoring();
       setupAudio();
@@ -869,6 +876,16 @@
         focusInput: () => document.getElementById('terminalInput').focus(),
         authSystem: authSystem
       });
+    }
+    
+    function initializeEnhancedGenerator() {
+      enhancedGenerator = new EnhancedPatternGenerator();
+      addLine('🤖 Enhanced AI pattern generator ready', 'system-line');
+    }
+    
+    function initializeTasteTracker() {
+      tasteTracker = new UserTasteTracker();
+      addLine('🎯 User taste learning system active', 'system-line');
     }
     
     // Input handling
@@ -1130,6 +1147,21 @@
         return true;
       }
       
+      if (lowerCommand === 'i like this' || lowerCommand === 'like this' || lowerCommand === 'love this') {
+        handleUserFeedback('like');
+        return true;
+      }
+      
+      if (lowerCommand === 'i hate this' || lowerCommand === 'dislike this' || lowerCommand === 'not good') {
+        handleUserFeedback('dislike');
+        return true;
+      }
+      
+      if (lowerCommand === 'show recommendations' || lowerCommand === 'suggest something' || lowerCommand === 'what should i make') {
+        showRecommendations();
+        return true;
+      }
+      
       if (lowerCommand === 'create account' || lowerCommand === 'signup' || lowerCommand === 'sign up') {
         startMusicalIdentityCreation();
         return true;
@@ -1172,7 +1204,7 @@
       
       switch (result.type) {
         case 'create_music':
-          createMusic(result);
+          createMusic(result, originalCommand);
           break;
           
         case 'community':
@@ -1212,31 +1244,84 @@
       }
     }
     
-    // Music creation
-    function createMusic(result) {
+    // Enhanced music creation with AI
+    async function createMusic(result, originalCommand = '') {
       const genre = result.genre || 'lo-fi';
       const mood = result.mood || null;
       const tempo = result.tempo || null;
       
-      addLine(`🎵 Generating ${genre} pattern${mood ? ` for ${mood}` : ''}...`, 'system-line');
+      addLine(`🎵 Nala is creating your ${genre} pattern${mood ? ` for ${mood}` : ''}...`, 'system-line');
+      addLine('🧠 Analyzing your musical taste and preferences...', 'system-line');
       
-      setTimeout(() => {
-        const pattern = generateStrudelPattern(genre, mood, tempo);
-        const patternId = generatePatternId();
-        
-        addLine(`🎼 Created: ${pattern.description}`, 'success-line');
-        addLine('', 'output-line');
-        
-        // Display inline Strudel player
-        addStrudelPlayer(pattern.code, pattern.description, patternId);
-        activePatterns.set(patternId, { ...pattern, genre: genre });
-        
-        addLine('', 'output-line');
-        addLine('🎵 Use: "play this", "save this pattern", "share this beat"', 'dim-line');
-        
-        // Update NLP context
-        nlp.setCurrentPattern(patternId);
-        
+      setTimeout(async () => {
+        try {
+          // Get user data for personalization
+          const currentUser = authSystem ? authSystem.getCurrentUser() : null;
+          const userId = currentUser ? currentUser.id : 'guest';
+          
+          // Get user's interaction history
+          const userHistory = tasteTracker ? tasteTracker.getInteractions(userId) : [];
+          const tasteProfile = tasteTracker ? tasteTracker.getTasteProfile(userId) : {};
+          
+          // Use enhanced generator for custom patterns
+          let pattern;
+          if (enhancedGenerator) {
+            const enhancedRequest = {
+              userInput: originalCommand,
+              musicDNA: currentUser ? currentUser.musicDNA : { primaryGenre: genre, preferredMood: mood },
+              context: tasteTracker ? tasteTracker.getCurrentContext() : {},
+              userHistory: userHistory,
+              preferences: tasteProfile
+            };
+            
+            pattern = await enhancedGenerator.generateCustomPattern(enhancedRequest);
+            addLine('🎨 Custom pattern generated based on your taste!', 'success-line');
+            
+            // Show personalization details
+            if (pattern.metadata.personalizedElements && pattern.metadata.personalizedElements.length > 0) {
+              addLine(`✨ Personalized with: ${pattern.metadata.personalizedElements.join(', ')}`, 'info-line');
+            }
+          } else {
+            // Fallback to original generator
+            pattern = generateStrudelPattern(genre, mood, tempo);
+          }
+          
+          const patternId = generatePatternId();
+          
+          addLine(`🎼 Created: ${pattern.description}`, 'success-line');
+          addLine('', 'output-line');
+          
+          // Display inline Strudel player
+          addStrudelPlayer(pattern.code, pattern.description, patternId);
+          activePatterns.set(patternId, { ...pattern, genre: genre, metadata: pattern.metadata });
+          
+          // Track the generation for learning
+          if (tasteTracker && userId !== 'guest') {
+            tasteTracker.trackGeneration(userId, originalCommand, pattern, 'generated');
+          }
+          
+          addLine('', 'output-line');
+          addLine('🎵 Commands: "play this", "save this", "I like this", "make it more [dreamy/aggressive/etc]"', 'dim-line');
+          
+          // Show AI recommendations if available
+          if (tasteTracker && userId !== 'guest') {
+            const recommendations = tasteTracker.generateRecommendations(userId);
+            if (recommendations.suggestedRequests.length > 0) {
+              addLine('💡 You might also like: "' + recommendations.suggestedRequests[0] + '"', 'dim-line');
+            }
+          }
+          
+          // Update NLP context
+          nlp.setCurrentPattern(patternId);
+          
+        } catch (error) {
+          console.error('Enhanced music generation error:', error);
+          // Fallback to simple generation
+          const pattern = generateStrudelPattern(genre, mood, tempo);
+          const patternId = generatePatternId();
+          addStrudelPlayer(pattern.code, pattern.description, patternId);
+          activePatterns.set(patternId, { ...pattern, genre: genre });
+        }
       }, 1500);
     }
     
@@ -1908,11 +1993,89 @@
       }
     }
     
+    function handleUserFeedback(feedbackType) {
+      const currentUser = authSystem ? authSystem.getCurrentUser() : null;
+      const userId = currentUser ? currentUser.id : 'guest';
+      
+      // Get the current pattern
+      const patterns = Array.from(activePatterns.keys());
+      const currentPatternId = patterns[patterns.length - 1];
+      
+      if (!currentPatternId) {
+        addLine('❌ No pattern to rate. Create one first!', 'error-line');
+        return;
+      }
+      
+      if (feedbackType === 'like') {
+        addLine('❤️ Thanks! Nala is learning that you like this style.', 'success-line');
+        if (currentUser) {
+          addLine('✨ This will help create better personalized patterns for you!', 'info-line');
+        }
+      } else if (feedbackType === 'dislike') {
+        addLine('📝 Got it! Nala will avoid this style in future recommendations.', 'info-line');
+        if (currentUser) {
+          addLine('🎯 Try: \"suggest something\" for better alternatives', 'dim-line');
+        }
+      }
+      
+      // Track the feedback
+      if (tasteTracker && userId !== 'guest') {
+        tasteTracker.trackInteraction(userId, currentPatternId, {
+          type: feedbackType,
+          explicit: true
+        });
+      }
+    }
+    
+    function showRecommendations() {
+      const currentUser = authSystem ? authSystem.getCurrentUser() : null;
+      const userId = currentUser ? currentUser.id : 'guest';
+      
+      if (userId === 'guest') {
+        addLine('💡 Create an account to get personalized recommendations!', 'info-line');
+        addLine('🎵 Try: \"create trap beat\", \"make lo-fi music\", \"generate house pattern\"', 'dim-line');
+        return;
+      }
+      
+      if (!tasteTracker) {
+        addLine('❌ Recommendation system not available', 'error-line');
+        return;
+      }
+      
+      const recommendations = tasteTracker.generateRecommendations(userId);
+      const analytics = tasteTracker.getAnalytics(userId);
+      
+      addLine('', 'output-line');
+      addLine('═══════════════════════════════════════════════', 'dim-line');
+      addLine('🎯 NALA\\'S RECOMMENDATIONS FOR YOU', 'highlight-line');
+      addLine('═══════════════════════════════════════════════', 'dim-line');
+      addLine('', 'output-line');
+      
+      addLine('🎵 SUGGESTED PATTERNS:', 'success-line');
+      recommendations.suggestedRequests.slice(0, 3).forEach((suggestion, index) => {
+        addLine(`  ${index + 1}. \"${suggestion}\"`, 'output-line');
+      });
+      addLine('', 'output-line');
+      
+      addLine('📊 YOUR MUSIC PROFILE:', 'info-line');
+      if (analytics.favoriteGenre) {
+        addLine(`  🎨 Favorite Genre: ${analytics.favoriteGenre}`, 'output-line');
+      }
+      if (analytics.favoriteMood) {
+        addLine(`  💫 Favorite Mood: ${analytics.favoriteMood}`, 'output-line');
+      }
+      addLine(`  📈 Learning Progress: ${Math.round(analytics.learningProgress * 100)}%`, 'output-line');
+      addLine('', 'output-line');
+      
+      addLine('💡 Try one of the suggestions above, or tell me what you\\'re feeling!', 'dim-line');
+    }
+    
     function showUserMenu() {
       if (currentUser) {
         addLine(`👤 ${currentUser.firstName || currentUser.email.split('@')[0]} Menu:`, 'info-line');
         addLine('  "my profile" - View profile and stats', 'dim-line');
         addLine('  "my patterns" - Your saved patterns', 'dim-line');
+        addLine('  "show recommendations" - AI suggestions for you', 'dim-line');
         addLine('  "logout" - Sign out', 'dim-line');
       } else {
         addLine('👤 Guest Menu:', 'info-line');
