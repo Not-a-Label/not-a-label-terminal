@@ -308,8 +308,14 @@
       min-width: fit-content;
     }
     
-    .terminal-input {
+    .input-wrapper {
       flex: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    
+    .terminal-input {
       background: transparent;
       border: none;
       color: #00ff00;
@@ -317,6 +323,8 @@
       font-size: 13px;
       outline: none;
       padding: 6px 0;
+      width: 100%;
+      caret-color: transparent; /* Hide default cursor */
     }
     
     .terminal-input::placeholder {
@@ -352,8 +360,17 @@
     }
     
     .cursor {
-      animation: blink 1s infinite;
       color: #00ff00;
+      background: #00ff00;
+      width: 2px;
+      height: 16px;
+      display: inline-block;
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      animation: blink 1s infinite;
+      pointer-events: none;
     }
     
     /* Command Suggestions */
@@ -682,11 +699,13 @@
     <!-- Terminal Input -->
     <div class="terminal-input-container">
       <span class="terminal-prompt" id="terminalPrompt">nal@music:~$</span>
-      <input type="text" class="terminal-input" id="terminalInput" 
-             placeholder="Type any command in natural language..." 
-             autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+      <div class="input-wrapper">
+        <input type="text" class="terminal-input" id="terminalInput" 
+               placeholder="Type any command in natural language..." 
+               autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        <span class="cursor" id="terminalCursor">█</span>
+      </div>
       <button class="voice-btn" id="voiceBtn" title="Voice input">🎤</button>
-      <span class="cursor">█</span>
     </div>
     
     <!-- Command Suggestions -->
@@ -752,6 +771,10 @@
       // Input event handlers
       terminalInput.addEventListener('keydown', handleKeyDown);
       terminalInput.addEventListener('input', handleInput);
+      terminalInput.addEventListener('input', updateCursorPosition);
+      terminalInput.addEventListener('keyup', updateCursorPosition);
+      terminalInput.addEventListener('focus', updateCursorPosition);
+      terminalInput.addEventListener('click', updateCursorPosition);
       terminalInput.addEventListener('blur', () => {
         // Refocus on mobile to keep keyboard open
         setTimeout(() => terminalInput.focus(), 100);
@@ -759,6 +782,9 @@
       
       // Auto-focus terminal
       terminalInput.focus();
+      
+      // Initialize cursor position
+      setTimeout(updateCursorPosition, 10);
       
       // Click anywhere to focus terminal
       document.addEventListener('click', (e) => {
@@ -777,6 +803,30 @@
       if (urlParams.get('voice') === 'true') {
         setTimeout(() => startVoiceInput(), 500);
       }
+    }
+    
+    // Update cursor position to follow text
+    function updateCursorPosition() {
+      const input = document.getElementById('terminalInput');
+      const cursor = document.getElementById('terminalCursor');
+      
+      // Create a temporary span to measure text width
+      const tempSpan = document.createElement('span');
+      tempSpan.style.font = window.getComputedStyle(input).font;
+      tempSpan.style.visibility = 'hidden';
+      tempSpan.style.position = 'absolute';
+      tempSpan.style.whiteSpace = 'pre';
+      
+      // Get text up to cursor position
+      const textBeforeCursor = input.value.substring(0, input.selectionStart);
+      tempSpan.textContent = textBeforeCursor;
+      
+      document.body.appendChild(tempSpan);
+      const textWidth = tempSpan.offsetWidth;
+      document.body.removeChild(tempSpan);
+      
+      // Position cursor after the text
+      cursor.style.left = textWidth + 'px';
     }
     
     function initializeNLP() {
