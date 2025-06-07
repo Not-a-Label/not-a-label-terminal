@@ -684,6 +684,7 @@
       <div class="terminal-line highlight-line">🎵 Welcome to Not a Label - AI Music Creation Terminal</div>
       <div class="terminal-line output-line">The intelligent music terminal that understands natural language.</div>
       <div class="terminal-line output-line">Just talk to create, explore, and share amazing music!</div>
+      <div class="terminal-line info-line">🌐 Production URL: https://not-a-label.art/</div>
       <div class="terminal-line output-line"></div>
       <div class="terminal-line info-line">💡 QUICK START:</div>
       <div class="terminal-line dim-line">  "create account"                    - Revolutionary musical signup</div>
@@ -724,6 +725,7 @@
   <script src="js/onboarding.js"></script>
   <script src="js/auth-system.js"></script>
   <script src="js/musical-identity-creator.js"></script>
+  <script src="js/strudel-integration.js"></script>
 
   <script>
     // Global state
@@ -1227,7 +1229,7 @@
         
         // Display inline Strudel player
         addStrudelPlayer(pattern.code, pattern.description, patternId);
-        activePatterns.set(patternId, pattern);
+        activePatterns.set(patternId, { ...pattern, genre: genre });
         
         addLine('', 'output-line');
         addLine('🎵 Use: "play this", "save this pattern", "share this beat"', 'dim-line');
@@ -1487,40 +1489,69 @@
       addHTML(playerHTML);
     }
     
-    function playPattern(patternId) {
-      addLine(`🔊 Playing pattern ${patternId}...`, 'success-line');
-      
-      // Update button states
-      const playBtn = document.querySelector(`#${patternId} .btn-play`);
-      const stopBtn = document.querySelector(`#${patternId} .btn-stop`);
-      
-      if (playBtn) {
-        playBtn.textContent = '⏸ Pause';
-        playBtn.classList.add('playing');
-      }
-      if (stopBtn) {
-        stopBtn.disabled = false;
-      }
-      
-      // Initialize audio if needed
-      if (!isAudioInitialized) {
-        initAudio();
+    async function playPattern(patternId) {
+      try {
+        // Update UI immediately
+        const playBtn = document.querySelector(`#${patternId} .btn-play`);
+        const stopBtn = document.querySelector(`#${patternId} .btn-stop`);
+        
+        if (playBtn) {
+          playBtn.textContent = '⏸ Pause';
+          playBtn.classList.add('playing');
+          playBtn.disabled = true;
+        }
+        if (stopBtn) {
+          stopBtn.disabled = false;
+        }
+        
+        addLine(`🔊 Initializing audio engine...`, 'system-line');
+        
+        // Play pattern using Strudel integration
+        await window.strudelIntegration.playPattern(patternId);
+        
+        addLine(`🎵 Playing pattern ${patternId}`, 'success-line');
+        
+        if (playBtn) {
+          playBtn.disabled = false;
+        }
+      } catch (error) {
+        console.error('Error playing pattern:', error);
+        addLine(`❌ Error playing pattern: ${error.message}`, 'error-line');
+        addLine(`💡 Try clicking Play again or refresh the page`, 'info-line');
+        
+        // Reset button states
+        const playBtn = document.querySelector(`#${patternId} .btn-play`);
+        const stopBtn = document.querySelector(`#${patternId} .btn-stop`);
+        if (playBtn) {
+          playBtn.textContent = '▶ Play';
+          playBtn.classList.remove('playing');
+          playBtn.disabled = false;
+        }
+        if (stopBtn) {
+          stopBtn.disabled = true;
+        }
       }
     }
     
-    function stopPattern(patternId) {
-      addLine(`⏹ Stopped pattern ${patternId}`, 'system-line');
-      
-      // Update button states
-      const playBtn = document.querySelector(`#${patternId} .btn-play`);
-      const stopBtn = document.querySelector(`#${patternId} .btn-stop`);
-      
-      if (playBtn) {
-        playBtn.textContent = '▶ Play';
-        playBtn.classList.remove('playing');
-      }
-      if (stopBtn) {
-        stopBtn.disabled = true;
+    async function stopPattern(patternId) {
+      try {
+        await window.strudelIntegration.stopPattern(patternId);
+        addLine(`⏹ Stopped pattern ${patternId}`, 'system-line');
+        
+        // Update button states
+        const playBtn = document.querySelector(`#${patternId} .btn-play`);
+        const stopBtn = document.querySelector(`#${patternId} .btn-stop`);
+        
+        if (playBtn) {
+          playBtn.textContent = '▶ Play';
+          playBtn.classList.remove('playing');
+        }
+        if (stopBtn) {
+          stopBtn.disabled = true;
+        }
+      } catch (error) {
+        console.error('Error stopping pattern:', error);
+        addLine(`❌ Error stopping pattern: ${error.message}`, 'error-line');
       }
     }
     
@@ -1547,7 +1578,11 @@
     }
     
     function sharePattern(patternId) {
-      const url = `${window.location.origin}/pattern/${patternId}`;
+      // Use production URL for sharing
+      const baseUrl = window.location.hostname === 'localhost' || window.location.hostname.includes('github.io') 
+        ? 'https://not-a-label.art' 
+        : window.location.origin;
+      const url = `${baseUrl}/pattern/${patternId}`;
       
       if (navigator.clipboard) {
         navigator.clipboard.writeText(url).then(() => {
@@ -1633,8 +1668,9 @@
         voiceRecognition = new SpeechRecognition();
         
         voiceRecognition.continuous = false;
-        voiceRecognition.interimResults = false;
+        voiceRecognition.interimResults = true;
         voiceRecognition.lang = 'en-US';
+        voiceRecognition.maxAlternatives = 1;
         
         voiceRecognition.onresult = function(event) {
           const transcript = event.results[0][0].transcript;
@@ -1667,8 +1703,20 @@
       }
     }
     
-    function startVoiceInput() {
-      if (voiceRecognition && !isListening) {
+    async function startVoiceInput() {
+      if (!voiceRecognition) {
+        addLine('❌ Voice input not supported in your browser', 'error-line');
+        addLine('💡 Try using Chrome, Edge, or Safari', 'info-line');
+        return;
+      }
+      
+      if (isListening) return;
+      
+      try {
+        // Request microphone permission
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        stream.getTracks().forEach(track => track.stop()); // Stop immediately, we just needed permission
+        
         isListening = true;
         const voiceBtn = document.getElementById('voiceBtn');
         voiceBtn.classList.add('listening');
@@ -1676,6 +1724,14 @@
         
         addLine('🎤 Listening... Speak your command', 'system-line');
         voiceRecognition.start();
+      } catch (error) {
+        console.error('Microphone access error:', error);
+        if (error.name === 'NotAllowedError') {
+          addLine('❌ Microphone access denied', 'error-line');
+          addLine('💡 Please allow microphone access and try again', 'info-line');
+        } else {
+          addLine(`❌ Voice input error: ${error.message}`, 'error-line');
+        }
       }
     }
     
