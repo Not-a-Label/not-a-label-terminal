@@ -116,66 +116,131 @@ class BasicAudioEngine {
   }
 
   async playBasicPattern(patternId, genre = 'lo-fi') {
-    await this.initialize();
+    try {
+      await this.initialize();
 
-    // Stop any existing pattern
-    this.stopPattern(patternId);
+      // Stop any existing pattern
+      this.stopPattern(patternId);
 
-    // Create a simple beat based on genre
-    const patterns = {
-      'lo-fi': { 
-        kick: [1, 0, 0, 0, 0.5, 0, 0, 0], 
-        snare: [0, 0, 1, 0, 0, 0, 0.5, 0],
-        hihat: [0.3, 0.2, 0.3, 0.2, 0.3, 0.2, 0.3, 0.2],
-        tempo: 80
-      },
-      'trap': {
-        kick: [1, 0, 0.5, 0, 0, 0, 1, 0],
-        snare: [0, 0, 0, 1, 0, 0, 0, 0],
-        hihat: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5],
-        tempo: 140
-      },
-      'house': {
-        kick: [1, 0, 1, 0, 1, 0, 1, 0],
-        snare: [0, 0, 1, 0, 0, 0, 1, 0],
-        hihat: [0, 0.5, 0, 0.5, 0, 0.5, 0, 0.5],
-        tempo: 120
-      }
-    };
+      // Create genre-specific patterns
+      const patterns = {
+        'lo-fi': { 
+          kick: [1, 0, 0, 0, 0.5, 0, 0, 0], 
+          snare: [0, 0, 1, 0, 0, 0, 0.5, 0],
+          hihat: [0.3, 0.2, 0.3, 0.2, 0.3, 0.2, 0.3, 0.2],
+          tempo: 80
+        },
+        'trap': {
+          kick: [1, 0, 0.5, 0, 0, 0, 1, 0],
+          snare: [0, 0, 0, 1, 0, 0, 0, 0],
+          hihat: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5],
+          tempo: 140
+        },
+        'drill': {
+          kick: [1, 0, 1, 1, 0, 0, 1, 0],
+          snare: [0, 0, 1, 0, 0, 1, 0, 0],
+          hihat: [0.8, 0.4, 0.8, 0.4, 0.8, 0.4, 0.8, 0.4],
+          tempo: 150
+        },
+        'house': {
+          kick: [1, 0, 1, 0, 1, 0, 1, 0],
+          snare: [0, 0, 1, 0, 0, 0, 1, 0],
+          hihat: [0, 0.5, 0, 0.5, 0, 0.5, 0, 0.5],
+          tempo: 128
+        },
+        'afrobeats': {
+          kick: [1, 0, 1, 0, 0.5, 0, 1, 0],
+          snare: [0, 1, 0, 1, 0, 0, 0, 1],
+          hihat: [0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4],
+          tempo: 110
+        }
+      };
 
-    const pattern = patterns[genre] || patterns['lo-fi'];
-    const stepTime = 60 / pattern.tempo / 2; // 8th notes
+      const pattern = patterns[genre] || patterns['lo-fi'];
+      const stepTime = 60 / pattern.tempo / 2; // 8th notes
 
-    // Create audio nodes
-    const gainNode = this.context.createGain();
-    gainNode.gain.value = 0.5;
-    gainNode.connect(this.context.destination);
+      // Create master gain node
+      const masterGain = this.context.createGain();
+      masterGain.gain.value = 0.6;
+      masterGain.connect(this.context.destination);
 
-    // Play pattern loop
-    let currentStep = 0;
-    const interval = setInterval(() => {
-      const now = this.context.currentTime;
+      // Add some compression for better sound
+      const compressor = this.context.createDynamicsCompressor();
+      compressor.threshold.value = -20;
+      compressor.knee.value = 40;
+      compressor.ratio.value = 12;
+      compressor.attack.value = 0.003;
+      compressor.release.value = 0.25;
+      compressor.connect(masterGain);
 
-      // Kick drum
-      if (pattern.kick[currentStep] > 0) {
-        this.playKick(now, pattern.kick[currentStep], gainNode);
-      }
+      // Play pattern loop with swing for certain genres
+      let currentStep = 0;
+      const maxSteps = 16; // Extended pattern length
+      
+      const interval = setInterval(() => {
+        const now = this.context.currentTime;
+        const step8 = currentStep % 8; // For 8-step patterns
 
-      // Snare
-      if (pattern.snare[currentStep] > 0) {
-        this.playSnare(now, pattern.snare[currentStep], gainNode);
-      }
+        // Add swing for lo-fi and afrobeats
+        let swingDelay = 0;
+        if ((genre === 'lo-fi' || genre === 'afrobeats') && step8 % 2 === 1) {
+          swingDelay = stepTime * 0.1; // Slight swing
+        }
 
-      // Hi-hat
-      if (pattern.hihat[currentStep] > 0) {
-        this.playHihat(now, pattern.hihat[currentStep], gainNode);
-      }
+        // Kick drum
+        if (pattern.kick[step8] > 0) {
+          this.playKick(now + swingDelay, pattern.kick[step8], compressor);
+        }
 
-      currentStep = (currentStep + 1) % 8;
-    }, stepTime * 1000);
+        // Snare
+        if (pattern.snare[step8] > 0) {
+          this.playSnare(now + swingDelay, pattern.snare[step8], compressor);
+        }
 
-    this.oscillators.set(patternId, { interval, gainNode });
-    return true;
+        // Hi-hat
+        if (pattern.hihat[step8] > 0) {
+          this.playHihat(now + swingDelay, pattern.hihat[step8], compressor);
+        }
+
+        // Add bass for trap and drill
+        if ((genre === 'trap' || genre === 'drill') && currentStep % 4 === 0) {
+          this.play808(now + swingDelay, 0.7, compressor);
+        }
+
+        currentStep = (currentStep + 1) % maxSteps;
+      }, stepTime * 1000);
+
+      this.oscillators.set(patternId, { interval, gainNode: masterGain, compressor });
+      return true;
+    } catch (error) {
+      console.error('Error playing basic pattern:', error);
+      throw error;
+    }
+  }
+
+  play808(time, velocity, output) {
+    const osc = this.context.createOscillator();
+    const gain = this.context.createGain();
+    const filter = this.context.createBiquadFilter();
+    
+    // 808-style sub bass
+    osc.frequency.setValueAtTime(55, time); // Low C
+    osc.frequency.exponentialRampToValueAtTime(35, time + 0.1);
+    
+    // Filter for that 808 character
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(100, time);
+    filter.Q.value = 5;
+    
+    gain.gain.setValueAtTime(velocity, time);
+    gain.gain.exponentialRampToValueAtTime(0.01, time + 0.3);
+    
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(output);
+    
+    osc.start(time);
+    osc.stop(time + 0.3);
   }
 
   playKick(time, velocity, output) {

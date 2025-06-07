@@ -688,12 +688,12 @@
       <div class="terminal-line output-line"></div>
       <div class="terminal-line info-line">💡 QUICK START:</div>
       <div class="terminal-line dim-line">  "create account"                    - Revolutionary musical signup</div>
-      <div class="terminal-line dim-line">  "create trap beat"                  - Generate music instantly</div>
-      <div class="terminal-line dim-line">  "show community feed"               - Explore what others are making</div>
-      <div class="terminal-line dim-line">  "tutorial"                          - Interactive walkthrough</div>
+      <div class="terminal-line dim-line">  "create aggressive trap beat"       - AI generates unique patterns</div>
+      <div class="terminal-line dim-line">  "make dreamy lo-fi for studying"    - Natural language understanding</div>
+      <div class="terminal-line dim-line">  "generate dark drill music"         - Custom Strudel code generation</div>
       <div class="terminal-line dim-line">  "help"                              - Full command reference</div>
       <div class="terminal-line output-line"></div>
-      <div class="terminal-line success-line">🚀 Ready! Try: "create account" for revolutionary authentication!</div>
+      <div class="terminal-line success-line">🤖 Enhanced Nala AI ready! Try natural language music creation!</div>
       <div class="terminal-line system-line"></div>
     </div>
     
@@ -1263,26 +1263,40 @@
           const userHistory = tasteTracker ? tasteTracker.getInteractions(userId) : [];
           const tasteProfile = tasteTracker ? tasteTracker.getTasteProfile(userId) : {};
           
-          // Use enhanced generator for custom patterns
+          // Use enhanced generator for truly custom patterns
           let pattern;
           if (enhancedGenerator) {
+            // Create enhanced request with detailed context
             const enhancedRequest = {
               userInput: originalCommand,
-              musicDNA: currentUser ? currentUser.musicDNA : { primaryGenre: genre, preferredMood: mood },
+              musicDNA: currentUser ? currentUser.musicDNA : { 
+                primaryGenre: genre, 
+                preferredMood: mood,
+                energyLevel: 5,
+                complexity: 5,
+                keywords: []
+              },
               context: tasteTracker ? tasteTracker.getCurrentContext() : {},
               userHistory: userHistory,
               preferences: tasteProfile
             };
             
+            addLine(`🔍 Analyzing: "${originalCommand}"`, 'system-line');
             pattern = await enhancedGenerator.generateCustomPattern(enhancedRequest);
-            addLine('🎨 Custom pattern generated based on your taste!', 'success-line');
             
-            // Show personalization details
-            if (pattern.metadata.personalizedElements && pattern.metadata.personalizedElements.length > 0) {
-              addLine(`✨ Personalized with: ${pattern.metadata.personalizedElements.join(', ')}`, 'info-line');
+            // Show what Nala understood
+            if (pattern.metadata) {
+              addLine(`🎯 Detected: ${pattern.metadata.genre} • ${pattern.metadata.mood} • Energy: ${pattern.metadata.energy}/10`, 'info-line');
+              
+              if (pattern.metadata.personalizedElements && pattern.metadata.personalizedElements.length > 0) {
+                addLine(`✨ Personal touches: ${pattern.metadata.personalizedElements.join(', ')}`, 'success-line');
+              }
             }
+            
+            addLine('🤖 Generated unique Strudel code!', 'success-line');
           } else {
             // Fallback to original generator
+            addLine('⚠️ Using basic generator (enhanced AI not available)', 'dim-line');
             pattern = generateStrudelPattern(genre, mood, tempo);
           }
           
