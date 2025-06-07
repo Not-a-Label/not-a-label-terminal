@@ -722,6 +722,7 @@
   <!-- Include Natural Language Processor -->
   <script src="js/nlp.js"></script>
   <script src="js/onboarding.js"></script>
+  <script src="js/auth-system.js"></script>
   <script src="js/musical-identity-creator.js"></script>
 
   <script>
@@ -742,6 +743,7 @@
     let nlp = null;
     let onboarding = null;
     let musicalIdentityCreator = null;
+    let authSystem = null;
     
     // Pattern storage
     let activePatterns = new Map();
@@ -752,6 +754,7 @@
       initializeTerminal();
       initializeNLP();
       initializeOnboarding();
+      initializeAuthSystem();
       initializeMusicalIdentity();
       setupPWA();
       setupNetworkMonitoring();
@@ -847,12 +850,22 @@
       });
     }
     
+    function initializeAuthSystem() {
+      authSystem = new AuthSystem({
+        addLine: addLine,
+        addHTML: addHTML,
+        focusInput: () => document.getElementById('terminalInput').focus(),
+        updatePrompt: updatePrompt
+      });
+    }
+    
     function initializeMusicalIdentity() {
       musicalIdentityCreator = new MusicalIdentityCreator({
         addLine: addLine,
         addHTML: addHTML,
         addStrudelPlayer: addStrudelPlayer,
-        focusInput: () => document.getElementById('terminalInput').focus()
+        focusInput: () => document.getElementById('terminalInput').focus(),
+        authSystem: authSystem
       });
     }
     
@@ -1034,6 +1047,12 @@
         return;
       }
       
+      // Check if auth system should handle this
+      if (authSystem && authSystem.isActive && await authSystem.handleLoginInput(command)) {
+        scrollToBottom();
+        return;
+      }
+      
       // Handle special commands first
       if (handleSpecialCommands(command.trim())) {
         scrollToBottom();
@@ -1069,12 +1088,43 @@
       }
       
       if (lowerCommand === 'login') {
-        showLogin();
+        if (authSystem) {
+          authSystem.startLogin();
+        } else {
+          showLogin();
+        }
+        return true;
+      }
+      
+      if (lowerCommand === 'logout') {
+        if (authSystem) {
+          authSystem.logout();
+        } else {
+          addLine('❌ No user currently logged in.', 'error-line');
+        }
         return true;
       }
       
       if (lowerCommand === 'register') {
-        showRegister();
+        startMusicalIdentityCreation();
+        return true;
+      }
+      
+      if (lowerCommand === 'my profile' || lowerCommand === 'profile') {
+        if (authSystem) {
+          authSystem.showProfile();
+        } else {
+          showProfile();
+        }
+        return true;
+      }
+      
+      if (lowerCommand === 'my patterns' || lowerCommand === 'show my patterns') {
+        if (authSystem) {
+          authSystem.showMyPatterns();
+        } else {
+          addLine('❌ Please login to view your patterns', 'error-line');
+        }
         return true;
       }
       
@@ -1755,6 +1805,15 @@
     
     // Session management
     function checkExistingSession() {
+      if (authSystem) {
+        const user = authSystem.restoreSession();
+        if (user) {
+          currentUser = user;
+          return;
+        }
+      }
+      
+      // Fallback to old session restore
       const savedUser = localStorage.getItem('user');
       if (savedUser) {
         try {
