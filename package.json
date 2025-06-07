@@ -1,0 +1,27 @@
+{
+  "name": "not-a-label-terminal",
+  "version": "2.0.0",
+  "description": "AI-powered music creation terminal with natural language interface",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve .",
+    "dev": "npx serve . --listen 3000",
+    "deploy": "npx netlify deploy --prod --dir=.",
+    "deploy:preview": "npx netlify deploy --dir=.",
+    "deploy:github": "echo 'Push to GitHub and enable Pages'",
+    "test": "npx lighthouse http://localhost:3000 --view"
+  },
+  "keywords": [
+    "music",
+    "ai",
+    "terminal",
+    "pwa",
+    "strudel",
+    "natural-language"
+  ],
+  "author": "Not a Label",
+  "license": "MIT",
+  "devDependencies": {
+    "serve": "^14.0.0"
+  }
+}

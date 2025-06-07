@@ -1,0 +1,3 @@
+/pattern/* /index.html 200
+/api/* https://your-api-domain.com/api/:splat 200
+/* /index.html 200
