@@ -1,0 +1,38 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Deploy to DigitalOcean
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.DIGITALOCEAN_HOST }}
+        username: ${{ secrets.DIGITALOCEAN_USERNAME }}
+        key: ${{ secrets.DIGITALOCEAN_SSH_KEY }}
+        port: ${{ secrets.DIGITALOCEAN_PORT }}
+        source: "index.html,manifest.json,sw.js,offline.html,js/,*.png,*.ico"
+        target: "/var/www/not-a-label-terminal"
+        strip_components: 0
+        rm: true
+    
+    - name: Reload Nginx
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.DIGITALOCEAN_HOST }}
+        username: ${{ secrets.DIGITALOCEAN_USERNAME }}
+        key: ${{ secrets.DIGITALOCEAN_SSH_KEY }}
+        port: ${{ secrets.DIGITALOCEAN_PORT }}
+        script: |
+          nginx -t
+          systemctl reload nginx
+          echo "✅ Deployment complete!"
+          echo "🌐 Site updated at https://not-a-label.art/"
