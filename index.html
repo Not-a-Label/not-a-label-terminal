@@ -686,13 +686,13 @@
       <div class="terminal-line output-line">Just talk to create, explore, and share amazing music!</div>
       <div class="terminal-line output-line"></div>
       <div class="terminal-line info-line">💡 QUICK START:</div>
+      <div class="terminal-line dim-line">  "create account"                    - Revolutionary musical signup</div>
       <div class="terminal-line dim-line">  "create trap beat"                  - Generate music instantly</div>
       <div class="terminal-line dim-line">  "show community feed"               - Explore what others are making</div>
-      <div class="terminal-line dim-line">  "make lo-fi music for studying"     - Context-aware creation</div>
       <div class="terminal-line dim-line">  "tutorial"                          - Interactive walkthrough</div>
       <div class="terminal-line dim-line">  "help"                              - Full command reference</div>
       <div class="terminal-line output-line"></div>
-      <div class="terminal-line success-line">🚀 Ready! Try: "hey nala, create some chill music"</div>
+      <div class="terminal-line success-line">🚀 Ready! Try: "create account" for revolutionary authentication!</div>
       <div class="terminal-line system-line"></div>
     </div>
     
@@ -722,6 +722,7 @@
   <!-- Include Natural Language Processor -->
   <script src="js/nlp.js"></script>
   <script src="js/onboarding.js"></script>
+  <script src="js/musical-identity-creator.js"></script>
 
   <script>
     // Global state
@@ -740,6 +741,7 @@
     // Initialize components
     let nlp = null;
     let onboarding = null;
+    let musicalIdentityCreator = null;
     
     // Pattern storage
     let activePatterns = new Map();
@@ -750,6 +752,7 @@
       initializeTerminal();
       initializeNLP();
       initializeOnboarding();
+      initializeMusicalIdentity();
       setupPWA();
       setupNetworkMonitoring();
       setupAudio();
@@ -840,6 +843,15 @@
         addHTML: addHTML,
         generateMusicFromOnboarding: generateMusicFromOnboarding,
         showCommunityFeed: showCommunityFeed,
+        focusInput: () => document.getElementById('terminalInput').focus()
+      });
+    }
+    
+    function initializeMusicalIdentity() {
+      musicalIdentityCreator = new MusicalIdentityCreator({
+        addLine: addLine,
+        addHTML: addHTML,
+        addStrudelPlayer: addStrudelPlayer,
         focusInput: () => document.getElementById('terminalInput').focus()
       });
     }
@@ -996,7 +1008,7 @@
     }
     
     // Command execution
-    function executeCommand(command) {
+    async function executeCommand(command) {
       if (!command.trim()) return;
       
       // Add to history
@@ -1012,6 +1024,12 @@
       
       // Check if onboarding should handle this
       if (onboarding && onboarding.isActive && onboarding.handleInput(command)) {
+        scrollToBottom();
+        return;
+      }
+      
+      // Check if musical identity creation should handle this
+      if (musicalIdentityCreator && musicalIdentityCreator.isActive && await musicalIdentityCreator.handleInput(command)) {
         scrollToBottom();
         return;
       }
@@ -1057,6 +1075,16 @@
       
       if (lowerCommand === 'register') {
         showRegister();
+        return true;
+      }
+      
+      if (lowerCommand === 'create account' || lowerCommand === 'signup' || lowerCommand === 'sign up') {
+        startMusicalIdentityCreation();
+        return true;
+      }
+      
+      if (lowerCommand === 'create musical identity' || lowerCommand === 'musical signup') {
+        startMusicalIdentityCreation();
         return true;
       }
       
@@ -1121,7 +1149,13 @@
           
         case 'unknown':
         default:
-          handleUnknownCommand(result, originalCommand);
+          // Check if this might be a musical identity creation request
+          if (!currentUser && (originalCommand.includes('account') || originalCommand.includes('signup') || originalCommand.includes('register') || originalCommand.includes('identity'))) {
+            addLine('🎵 Did you want to create a musical identity?', 'info-line');
+            addLine('💡 Try: "create account" for revolutionary authentication through music!', 'dim-line');
+          } else {
+            handleUnknownCommand(result, originalCommand);
+          }
           break;
       }
     }
@@ -1675,6 +1709,7 @@
       addLine('', 'output-line');
       
       addLine('👤 PROFILE & ACCOUNT:', 'success-line');
+      addLine('  "create account"                     - Musical identity creation', 'output-line');
       addLine('  "my profile"                         - View your profile', 'output-line');
       addLine('  "my patterns"                        - Your creations', 'output-line');
       addLine('  "login" / "register"                 - Account access', 'output-line');
@@ -1739,8 +1774,23 @@
     }
     
     function showRegister() {
-      addLine('📝 Registration coming soon!', 'info-line');
-      addLine('💡 Create patterns as a guest and save them later', 'dim-line');
+      startMusicalIdentityCreation();
+    }
+    
+    function startMusicalIdentityCreation() {
+      if (currentUser) {
+        addLine('✅ You already have a musical identity!', 'success-line');
+        addLine(`🎵 Welcome back, ${currentUser.artistName}`, 'info-line');
+        return;
+      }
+      
+      if (musicalIdentityCreator && !musicalIdentityCreator.isActive) {
+        musicalIdentityCreator.start();
+      } else if (!musicalIdentityCreator) {
+        addLine('❌ Musical identity system not ready. Please refresh the page.', 'error-line');
+      } else {
+        addLine('🎵 Musical identity creation already in progress!', 'info-line');
+      }
     }
     
     function showUserMenu() {
