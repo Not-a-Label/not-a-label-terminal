@@ -22,17 +22,19 @@ not-a-label-terminal/
 
 ## 🎯 Deployment Options
 
-### Option 1: Vercel (Recommended)
+### Option 1: Netlify (Recommended)
 ```bash
-npm run deploy:vercel
+# Install Netlify CLI if needed
+npm install -g netlify-cli
+
+# Deploy to production
+npm run deploy
+
+# Or deploy preview first
+npm run deploy:preview
 ```
 
-### Option 2: Netlify
-```bash
-npm run deploy:netlify
-```
-
-### Option 3: GitHub Pages
+### Option 2: GitHub Pages (Automatic)
 ```bash
 # Initialize git repo and push to GitHub
 git init
@@ -44,7 +46,7 @@ git push -u origin main
 # Then enable GitHub Pages in repository settings
 ```
 
-### Option 4: Manual Upload
+### Option 3: Manual Upload
 Upload all files to your web hosting via FTP/SFTP
 
 ## 🧪 Local Testing
@@ -56,6 +58,15 @@ python3 -m http.server 8000
 
 # Visit: http://localhost:8000
 ```
+
+## 🎯 Recommended Deployment Path
+
+**For fastest deployment:** Use Netlify
+1. Push to GitHub repository
+2. Connect Netlify to your GitHub repo
+3. Deploy automatically on every push
+
+**Alternative:** Use the Netlify CLI for direct deployment without GitHub
 
 ## 📝 Pre-Deployment Updates Needed
 
@@ -92,15 +103,26 @@ If you have a backend API, update the API_BASE URLs in:
 ## 🔗 Quick Deploy Commands
 
 ```bash
-# Deploy to Vercel
-npx vercel --prod
+# Deploy to Netlify (Production)
+npm run deploy
 
-# Deploy to Netlify
-npx netlify deploy --prod --dir=.
+# Deploy preview to Netlify
+npm run deploy:preview
+
+# Push to GitHub for Pages deployment
+git push origin master
 
 # Local test
 npm start
 ```
+
+## 📊 Platform Comparison
+
+| Platform | Pros | Cons | Best For |
+|----------|------|------|----------|
+| **Netlify** | ✅ Free tier, instant deploys, great PWA support | ❌ Build limits on free tier | **Recommended** |
+| **GitHub Pages** | ✅ Free, automatic deploys, version control | ❌ Static sites only, no server functions | Open source projects |
+| **Traditional Hosting** | ✅ Full control, no limits | ❌ Manual uploads, no automation | Custom domains |
 
 ## 🎵 Your AI Music Terminal is Ready to Launch! 🚀
 
