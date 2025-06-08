@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Phase 3 AI Ensemble Testing</title>
+    <style>
+        body { font-family: monospace; background: #000; color: #00ff00; padding: 20px; }
+        .test-result { margin: 10px 0; padding: 10px; border: 1px solid #00ff0033; }
+        .success { border-color: #00ff00; }
+        .error { border-color: #ff0066; color: #ff0066; }
+        .code { background: rgba(0,255,0,0.1); padding: 10px; margin: 5px 0; overflow-x: auto; }
+        button { background: #00ff00; color: #000; border: none; padding: 10px; margin: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>🎼 Phase 3 AI Ensemble Testing</h1>
+    <div id="output"></div>
+    
+    <button onclick="testAllGenres()">Test All Genres</button>
+    <button onclick="testComplexity()">Test Complexity Levels</button>
+    <button onclick="testMoodVariations()">Test Mood Variations</button>
+    
+    <script>
+        const output = document.getElementById('output');
+        
+        function log(message, type = 'info') {
+            console.log(message);
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.innerHTML = message;
+            output.appendChild(div);
+        }
+        
+        function logCode(code) {
+            const div = document.createElement('div');
+            div.className = 'code';
+            div.textContent = code;
+            output.appendChild(div);
+        }
+        
+        log('Starting Phase 3 component test...');
+    </script>
+    
+    <!-- Load Phase 3 Components -->
+    <script src="/js/semantic-analysis-engine.js?v=2000000000"></script>
+    <script src="/js/procedural-pattern-generator.js?v=2000000000"></script>
+    <script src="/js/uniqueness-engine.js?v=2000000000"></script>
+    <script src="/js/pattern-dna-engine.js?v=2100000000"></script>
+    <script src="/js/context-aware-engine.js?v=2100000000"></script>
+    <script src="/js/advanced-personalization-engine.js?v=2100000000"></script>
+    <script src="/js/phase2-integration-engine.js?v=2100000000"></script>
+    <script src="/js/specialized-ai-agents.js?v=3000000000"></script>
+    <script src="/js/ai-ensemble-conductor.js?v=3000000000"></script>
+    <script src="/js/phase3-integration-engine.js?v=3000000000"></script>
+    
+    <script>
+        let phase3Engine = null;
+        
+        // Test component loading
+        log('Checking Phase 3 components:');
+        log('- Phase3IntegrationEngine: ' + (!!window.Phase3IntegrationEngine));
+        log('- AIEnsembleConductor: ' + (!!window.AIEnsembleConductor));
+        log('- RhythmistAI: ' + (!!window.RhythmistAI));
+        log('- MelodistAI: ' + (!!window.MelodistAI));
+        log('- HarmonistAI: ' + (!!window.HarmonistAI));
+        
+        // Initialize Phase 3
+        if (window.Phase3IntegrationEngine) {
+            try {
+                log('🎼 Initializing Phase 3 AI Ensemble...', 'success');
+                phase3Engine = new Phase3IntegrationEngine();
+                log('✅ Phase 3 initialization successful', 'success');
+            } catch (error) {
+                log('❌ Phase 3 initialization failed: ' + error.message, 'error');
+            }
+        } else {
+            log('❌ Phase3IntegrationEngine not found', 'error');
+        }
+        
+        async function testGenre(genre, description) {
+            if (!phase3Engine) {
+                log('❌ Phase 3 engine not available', 'error');
+                return;
+            }
+            
+            try {
+                log(`🎵 Testing ${genre}: "${description}"...`);
+                
+                const context = {
+                    timeOfDay: 'afternoon',
+                    activity: 'creating',
+                    userAgent: navigator.userAgent
+                };
+                
+                const result = await phase3Engine.generateEnsemblePattern(description, context);
+                
+                if (result.success) {
+                    log(`✅ ${genre} generation successful`, 'success');
+                    log(`📝 Description: ${result.description}`);
+                    log(`🎭 Contributors: ${result.metadata.ensembleContributors?.join(', ') || 'Unknown'}`);
+                    log(`📊 Coherence: ${((result.metadata.ensembleCoherence || 0) * 100).toFixed(0)}%`);
+                    log(`🚀 Innovation: ${((result.metadata.innovationQuotient || 0) * 100).toFixed(0)}%`);
+                    logCode(result.code);
+                } else {
+                    log(`❌ ${genre} generation failed`, 'error');
+                }
+            } catch (error) {
+                log(`❌ ${genre} test error: ${error.message}`, 'error');
+            }
+            
+            log('---');
+        }
+        
+        async function testAllGenres() {
+            log('🎼 Testing Phase 3 AI Ensemble with various genres...', 'success');
+            
+            const tests = [
+                ['Jazz', 'create smooth jazz with complex harmonies'],
+                ['Trap', 'create dark trap beat with heavy 808s'],
+                ['Ambient', 'create atmospheric ambient soundscape'],
+                ['House', 'create energetic house music for dancing'],
+                ['Experimental', 'create weird experimental electronic music'],
+                ['Classical', 'create orchestral classical composition'],
+                ['Drill', 'create aggressive drill pattern'],
+                ['Lo-fi', 'create chill lo-fi music for studying']
+            ];
+            
+            for (const [genre, description] of tests) {
+                await testGenre(genre, description);
+                await new Promise(resolve => setTimeout(resolve, 500)); // Brief pause
+            }
+            
+            log('🎯 Genre testing complete!', 'success');
+        }
+        
+        async function testComplexity() {
+            log('🧩 Testing complexity levels...', 'success');
+            
+            const tests = [
+                ['Simple', 'create simple trap beat'],
+                ['Medium', 'create jazz music'],
+                ['Complex', 'create complex experimental polyrhythmic composition'],
+                ['Advanced', 'create sophisticated classical piece with intricate harmonies']
+            ];
+            
+            for (const [complexity, description] of tests) {
+                await testGenre(complexity, description);
+                await new Promise(resolve => setTimeout(resolve, 500);
+            }
+            
+            log('🎯 Complexity testing complete!', 'success');
+        }
+        
+        async function testMoodVariations() {
+            log('🎭 Testing mood variations...', 'success');
+            
+            const tests = [
+                ['Dark', 'create dark sinister music'],
+                ['Bright', 'create bright happy music'],
+                ['Melancholic', 'create sad melancholic music'],
+                ['Energetic', 'create explosive energetic music'],
+                ['Peaceful', 'create calm peaceful music'],
+                ['Aggressive', 'create intense aggressive music']
+            ];
+            
+            for (const [mood, description] of tests) {
+                await testGenre(mood, description);
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+            
+            log('🎯 Mood testing complete!', 'success');
+        }
+        
+        // Auto-run basic test
+        setTimeout(() => {
+            if (phase3Engine) {
+                testGenre('Auto-Test', 'create innovative jazz trap fusion');
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

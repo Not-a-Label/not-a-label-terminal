@@ -237,14 +237,28 @@
   <script src="/js/advanced-personalization-engine.js?v=2100000000"></script>
   <script src="/js/phase2-integration-engine.js?v=2100000000"></script>
   
+  <!-- Phase 3 AI Ensemble System -->
+  <script src="/js/specialized-ai-agents.js?v=3000000000"></script>
+  <script src="/js/ai-ensemble-conductor.js?v=3000000000"></script>
+  <script src="/js/phase3-integration-engine.js?v=3000000000"></script>
+  
+  <!-- Advanced Pattern Evolution System -->
+  <script src="/js/pattern-evolution-engine.js?v=3100000000"></script>
+  <script src="/js/dna-mutation-system.js?v=3100000000"></script>
+  <script src="/js/cross-pattern-breeding.js?v=3100000000"></script>
+  
   <script>
-    console.log('🚀 Not a Label Terminal loading v2.2.0 - Phase 2 Advanced AI Integration...');
+    console.log('🚀 Not a Label Terminal loading v3.1.0 - Phase 3 AI Ensemble + Pattern Evolution...');
     
     // Initialize AI components
     let nalaAI, nlp, patternGenerator, musicalIdentityCreator, communitySystem, patternSharingSystem;
     let currentPattern = null;
     let audioContext = null;
     let currentUser = null;
+    
+    // Evolution system components
+    let evolutionEngine, mutationSystem, breedingSystem;
+    let patternLibrary = [];
     
     function addLine(text, className = 'output-line') {
       const line = document.createElement('div');
@@ -300,7 +314,7 @@
           let result;
           
           try {
-            // Try backend API first (Phase 1 Procedural System)
+            // Try backend API first (with Phase 3 support)
             const response = await fetch('/api/generate-music', {
               method: 'POST',
               headers: {
@@ -309,30 +323,54 @@
               body: JSON.stringify({
                 userInput: command,
                 musicDNA: musicDNA,
-                context: context
+                context: context,
+                requestPhase: 3 // Request Phase 3 if available
               })
             });
             
             if (response.ok) {
               result = await response.json();
-              console.log('🤖 Backend Phase 1 result:', result);
+              console.log('🤖 Backend result:', result);
             } else {
               throw new Error(`API error: ${response.status}`);
             }
           } catch (apiError) {
-            console.log('🔄 Backend unavailable, using client-side Phase 1 system');
-            addLine('🤖 Using client-side Phase 1 Procedural AI...', 'info-line');
+            console.log('🔄 Backend unavailable, using client-side AI systems');
             
-            // Try Phase 2 Advanced AI System first
-            console.log('🔍 Checking Phase 2 in generateMusic:', {
-              Phase2IntegrationEngine: !!window.Phase2IntegrationEngine,
-              PatternDNAEngine: !!window.PatternDNAEngine,
-              ContextAwareEngine: !!window.ContextAwareEngine,
-              AdvancedPersonalizationEngine: !!window.AdvancedPersonalizationEngine
+            // Try Phase 3 AI Ensemble System first
+            console.log('🔍 Checking Phase 3 in generateMusic:', {
+              Phase3IntegrationEngine: !!window.Phase3IntegrationEngine,
+              AIEnsembleConductor: !!window.AIEnsembleConductor,
+              RhythmistAI: !!window.RhythmistAI,
+              MelodistAI: !!window.MelodistAI,
+              HarmonistAI: !!window.HarmonistAI
             });
             
-            if (window.Phase2IntegrationEngine && window.PatternDNAEngine && window.ContextAwareEngine && window.AdvancedPersonalizationEngine) {
-              console.log('🚀 Using Phase 2 Advanced AI System');
+            if (window.Phase3IntegrationEngine && window.AIEnsembleConductor) {
+              console.log('🎼 Using Phase 3 AI Ensemble System');
+              addLine('🎼 Activating Phase 3: AI Ensemble Collaboration...', 'success-line');
+              
+              const phase3Engine = new Phase3IntegrationEngine();
+              const phase3Context = {
+                musicDNA: musicDNA,
+                userContext: context,
+                sessionData: { interactions: 1 },
+                timeConstraints: 'realtime'
+              };
+              
+              const phase3Result = await phase3Engine.generateEnsemblePattern(command, phase3Context);
+              
+              result = {
+                success: true,
+                code: phase3Result.code,
+                description: phase3Result.description,
+                metadata: phase3Result.metadata
+              };
+              console.log('🎼 Phase 3 AI Ensemble result:', result);
+              
+            } else if (window.Phase2IntegrationEngine && window.PatternDNAEngine && window.ContextAwareEngine && window.AdvancedPersonalizationEngine) {
+              // Fallback to Phase 2 Advanced AI System
+              console.log('🔄 Phase 3 unavailable, using Phase 2 Advanced AI System');
               addLine('🧬 Activating Phase 2: Multi-dimensional Pattern DNA...', 'success-line');
               
               const phase2Engine = new Phase2IntegrationEngine();
@@ -354,7 +392,7 @@
               
             } else if (window.ProceduralPatternGenerator && window.SemanticAnalysisEngine && window.UniquenessEngine) {
               // Fallback to Phase 1 Procedural System
-              console.log('🔄 Phase 2 unavailable, using Phase 1 Procedural System');
+              console.log('🔄 Advanced AI unavailable, using Phase 1 Procedural System');
               addLine('🤖 Using Phase 1 Procedural AI...', 'info-line');
               
               const proceduralGenerator = new ProceduralPatternGenerator();
@@ -830,6 +868,220 @@
       addLine('', 'output-line');
     }
     
+    // Evolution command handlers
+    async function handleEvolutionCommand(command) {
+      if (!evolutionEngine) {
+        addLine('❌ Evolution engine not available', 'error-line');
+        return;
+      }
+      
+      if (!currentPattern) {
+        addLine('❌ No pattern to evolve. Create a pattern first!', 'error-line');
+        return;
+      }
+      
+      addLine('🧬 Starting pattern evolution...', 'info-line');
+      
+      try {
+        const generations = command.match(/(\d+)\s*generations?/i)?.[1] || 3;
+        const strategy = command.includes('experimental') ? 'experimental' : 
+                        command.includes('guided') ? 'guided' : 'natural';
+        
+        const evolvedPattern = await evolutionEngine.evolvePattern(currentPattern, {
+          strategy: strategy,
+          generations: parseInt(generations),
+          targetFitness: 0.8
+        });
+        
+        if (evolvedPattern.success) {
+          currentPattern = evolvedPattern;
+          patternLibrary.push(evolvedPattern);
+          
+          addLine('', 'output-line');
+          addLine('🧬 PATTERN EVOLUTION COMPLETE:', 'success-line');
+          addLine(`📊 Strategy: ${strategy}, Generations: ${generations}`, 'info-line');
+          addLine(`📝 ${evolvedPattern.description}`, 'info-line');
+          
+          const codeDisplay = document.createElement('div');
+          codeDisplay.className = 'terminal-line';
+          codeDisplay.style.cssText = `
+            background: rgba(0, 255, 0, 0.05);
+            border: 1px solid #00ff0033;
+            border-radius: 4px;
+            padding: 12px;
+            margin: 8px 0;
+            font-family: 'Courier New', monospace;
+            color: #00ff88;
+            overflow-x: auto;
+            white-space: pre;
+          `;
+          codeDisplay.textContent = evolvedPattern.code;
+          document.getElementById('terminalContent').appendChild(codeDisplay);
+          
+          addLine('', 'output-line');
+          addPlaybackControls(evolvedPattern);
+        }
+      } catch (error) {
+        console.error('Evolution error:', error);
+        addLine('❌ Evolution failed: ' + error.message, 'error-line');
+      }
+    }
+    
+    async function handleMutationCommand(command) {
+      if (!mutationSystem) {
+        addLine('❌ DNA mutation system not available', 'error-line');
+        return;
+      }
+      
+      if (!currentPattern) {
+        addLine('❌ No pattern to mutate. Create a pattern first!', 'error-line');
+        return;
+      }
+      
+      addLine('🧬 Applying DNA mutations...', 'info-line');
+      
+      try {
+        const intensity = command.match(/intensity\s+([0-9.]+)/i)?.[1] || 0.3;
+        const mutationType = command.includes('experimental') ? 'random' : 'adaptive';
+        
+        const mutatedPattern = await mutationSystem.mutatePatternDNA(currentPattern, {
+          mutationType: mutationType,
+          intensity: parseFloat(intensity),
+          preserveGenre: !command.includes('radical')
+        });
+        
+        if (mutatedPattern.success) {
+          currentPattern = mutatedPattern;
+          patternLibrary.push(mutatedPattern);
+          
+          addLine('', 'output-line');
+          addLine('🧬 DNA MUTATION COMPLETE:', 'success-line');
+          addLine(`🔬 Mutation Type: ${mutatedPattern.metadata.mutationType}`, 'info-line');
+          addLine(`📝 ${mutatedPattern.description}`, 'info-line');
+          
+          const codeDisplay = document.createElement('div');
+          codeDisplay.className = 'terminal-line';
+          codeDisplay.style.cssText = `
+            background: rgba(0, 255, 0, 0.05);
+            border: 1px solid #00ff0033;
+            border-radius: 4px;
+            padding: 12px;
+            margin: 8px 0;
+            font-family: 'Courier New', monospace;
+            color: #00ff88;
+            overflow-x: auto;
+            white-space: pre;
+          `;
+          codeDisplay.textContent = mutatedPattern.code;
+          document.getElementById('terminalContent').appendChild(codeDisplay);
+          
+          addLine('', 'output-line');
+          addPlaybackControls(mutatedPattern);
+        }
+      } catch (error) {
+        console.error('Mutation error:', error);
+        addLine('❌ Mutation failed: ' + error.message, 'error-line');
+      }
+    }
+    
+    async function handleBreedingCommand(command) {
+      if (!breedingSystem) {
+        addLine('❌ Breeding system not available', 'error-line');
+        return;
+      }
+      
+      if (patternLibrary.length < 2) {
+        addLine('❌ Need at least 2 patterns in library to breed. Create more patterns!', 'error-line');
+        addLine('💡 Try: "create trap beat", then "create jazz melody", then "breed patterns"', 'info-line');
+        return;
+      }
+      
+      addLine('🧬 Starting pattern breeding...', 'info-line');
+      
+      try {
+        const strategy = command.includes('experimental') ? 'polygamous' :
+                        command.includes('chimeric') ? 'chimeric' : 'sexual';
+        const offspring = command.match(/(\d+)\s*offspring/i)?.[1] || 1;
+        
+        // Select parents (last 2-4 patterns from library)
+        const parentCount = Math.min(patternLibrary.length, strategy === 'polygamous' ? 4 : 2);
+        const parents = patternLibrary.slice(-parentCount);
+        
+        const breedingResult = await breedingSystem.breedPatterns(parents, {
+          strategy: strategy,
+          offspring: parseInt(offspring),
+          allowHybridization: true
+        });
+        
+        if (breedingResult.length > 0) {
+          const child = breedingResult[0];
+          currentPattern = child;
+          patternLibrary.push(child);
+          
+          addLine('', 'output-line');
+          addLine('🧬 PATTERN BREEDING COMPLETE:', 'success-line');
+          addLine(`👨‍👩‍👧‍👦 Strategy: ${strategy}, Parents: ${parents.length}`, 'info-line');
+          addLine(`📝 ${child.description}`, 'info-line');
+          
+          const codeDisplay = document.createElement('div');
+          codeDisplay.className = 'terminal-line';
+          codeDisplay.style.cssText = `
+            background: rgba(0, 255, 0, 0.05);
+            border: 1px solid #00ff0033;
+            border-radius: 4px;
+            padding: 12px;
+            margin: 8px 0;
+            font-family: 'Courier New', monospace;
+            color: #00ff88;
+            overflow-x: auto;
+            white-space: pre;
+          `;
+          codeDisplay.textContent = child.code;
+          document.getElementById('terminalContent').appendChild(codeDisplay);
+          
+          addLine('', 'output-line');
+          addPlaybackControls(child);
+        }
+      } catch (error) {
+        console.error('Breeding error:', error);
+        addLine('❌ Breeding failed: ' + error.message, 'error-line');
+      }
+    }
+    
+    function addPlaybackControls(pattern) {
+      const patternId = `pattern_${Date.now()}`;
+      const controlsHTML = `
+        <div style="display: flex; gap: 10px; align-items: center; margin: 10px 0;">
+          <button id="playBtn_${patternId}" style="background: #00ff00; color: #000; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold;">
+            ▶️ PLAY
+          </button>
+          <button id="stopBtn_${patternId}" style="background: #ff0066; color: #fff; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold;">
+            ⏹️ STOP
+          </button>
+          <button id="saveBtn_${patternId}" style="background: #0066ff; color: #fff; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold;">
+            💾 SAVE
+          </button>
+        </div>
+      `;
+      addHTML(controlsHTML);
+      
+      setTimeout(() => {
+        const playBtn = document.getElementById(`playBtn_${patternId}`);
+        const stopBtn = document.getElementById(`stopBtn_${patternId}`);
+        const saveBtn = document.getElementById(`saveBtn_${patternId}`);
+        
+        if (playBtn) {
+          playBtn.addEventListener('click', () => playPattern(pattern.code));
+        }
+        if (stopBtn) {
+          stopBtn.addEventListener('click', stopPattern);
+        }
+        if (saveBtn) {
+          saveBtn.addEventListener('click', () => savePattern(pattern));
+        }
+      }, 100);
+    }
+    
     async function executeCommand(command) {
       if (!command.trim()) return;
       
@@ -1015,6 +1267,22 @@
         }
       }
       
+      // Evolution Commands
+      if (lowerCommand.includes('evolve') || lowerCommand.includes('evolution')) {
+        handleEvolutionCommand(command);
+        return;
+      }
+      
+      if (lowerCommand.includes('mutate') || lowerCommand.includes('mutation')) {
+        handleMutationCommand(command);
+        return;
+      }
+      
+      if (lowerCommand.includes('breed') && !lowerCommand.includes('breeding')) {
+        handleBreedingCommand(command);
+        return;
+      }
+      
       if (lowerCommand.includes('create') || lowerCommand.includes('make') || lowerCommand.includes('generate')) {
         generateMusic(command);
         return;
@@ -1126,6 +1394,22 @@
           playPattern: playPattern
         });
         
+        // Initialize Evolution Systems
+        if (window.PatternEvolutionEngine) {
+          evolutionEngine = new PatternEvolutionEngine();
+          console.log('🧬 Pattern Evolution Engine initialized');
+        }
+        
+        if (window.DNAMutationSystem) {
+          mutationSystem = new DNAMutationSystem();
+          console.log('🧬 DNA Mutation System initialized');
+        }
+        
+        if (window.CrossPatternBreedingSystem) {
+          breedingSystem = new CrossPatternBreedingSystem();
+          console.log('🧬 Cross-Pattern Breeding System initialized');
+        }
+        
         // Check AI health
         nalaAI.checkHealth().then(health => {
           console.log('🤖 Nala AI Health:', health);
@@ -1136,21 +1420,26 @@
           }
         });
         
-        // Check Phase 2 availability with debugging
-        console.log('🔍 Checking Phase 2 components:', {
-          Phase2IntegrationEngine: !!window.Phase2IntegrationEngine,
-          PatternDNAEngine: !!window.PatternDNAEngine,
-          ContextAwareEngine: !!window.ContextAwareEngine,
-          AdvancedPersonalizationEngine: !!window.AdvancedPersonalizationEngine
+        // Check Phase 3 AI Ensemble System availability
+        console.log('🔍 Checking Phase 3 components:', {
+          Phase3IntegrationEngine: !!window.Phase3IntegrationEngine,
+          AIEnsembleConductor: !!window.AIEnsembleConductor,
+          RhythmistAI: !!window.RhythmistAI,
+          MelodistAI: !!window.MelodistAI,
+          HarmonistAI: !!window.HarmonistAI
         });
         
-        if (window.Phase2IntegrationEngine && window.PatternDNAEngine && window.ContextAwareEngine && window.AdvancedPersonalizationEngine) {
+        if (window.Phase3IntegrationEngine && window.AIEnsembleConductor) {
+          addLine('🎼 Phase 3 AI Ensemble System: Multi-agent collaboration ready', 'success-line');
+          addLine('🎭 10 specialized AI agents active for creative collaboration', 'success-line');
+          console.log('✅ Phase 3 AI Ensemble System activated');
+        } else if (window.Phase2IntegrationEngine && window.PatternDNAEngine && window.ContextAwareEngine && window.AdvancedPersonalizationEngine) {
           addLine('🧬 Phase 2 Advanced AI System: Multi-dimensional Pattern DNA ready', 'success-line');
           addLine('🎨 Context-aware generation and advanced personalization active', 'success-line');
-          console.log('✅ Phase 2 System activated');
+          console.log('⚠️ Phase 3 unavailable, using Phase 2');
         } else if (window.ProceduralPatternGenerator && window.SemanticAnalysisEngine && window.UniquenessEngine) {
           addLine('🤖 Phase 1 Procedural AI System ready', 'success-line');
-          console.log('⚠️ Phase 2 unavailable, using Phase 1');
+          console.log('⚠️ Advanced AI unavailable, using Phase 1');
         } else {
           addLine('🔄 Enhanced fallback generation system ready', 'info-line');
           console.log('⚠️ Advanced AI unavailable, using fallback');
@@ -1160,6 +1449,12 @@
         addLine('🎸 Live jam rooms ready - type "jam help" to get started', 'system-line');
         addLine('🧬 Pattern breeding ready - type "breed" to see commands', 'system-line');
         addLine('🎤 Voice input ready - type "hum" to sing a melody', 'system-line');
+        
+        // Evolution system status
+        if (evolutionEngine && mutationSystem && breedingSystem) {
+          addLine('🧬 Advanced Pattern Evolution: Genetic algorithms active', 'success-line');
+          addLine('🔬 DNA Mutation & Cross-breeding systems online', 'success-line');
+        }
       } catch (error) {
         console.error('AI initialization error:', error);
         addLine('⚠️ AI system loading... some features may be limited', 'info-line');
