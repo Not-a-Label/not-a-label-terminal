@@ -1,5 +1,5 @@
 // Not a Label Service Worker - PWA Offline Support
-const CACHE_NAME = 'not-a-label-v2.1.1-pattern-fix';
+const CACHE_NAME = 'not-a-label-v3.2.2-no-js-cache';
 const OFFLINE_URL = '/offline.html';
 
 // Core files to cache immediately
@@ -85,6 +85,12 @@ self.addEventListener('fetch', event => {
     return;
   }
   
+  // BYPASS ALL JAVASCRIPT FILES - NO CACHING
+  if (url.pathname.endsWith('.js') || url.pathname.includes('js/')) {
+    console.log('[SW] Bypassing cache for ALL JS files:', url.pathname);
+    return; // Let browser handle directly without service worker intervention
+  }
+  
   // Skip CDN requests completely - don't even handle them
   if (url.hostname.includes('unpkg.com') || 
       url.hostname.includes('cdn.skypack.dev') ||
@@ -104,6 +110,19 @@ async function handleFetchRequest(request) {
   const url = new URL(request.url);
   
   try {
+    // BYPASS ALL JAVASCRIPT FILES - NO SERVICE WORKER CACHING
+    if (url.pathname.endsWith('.js') || url.pathname.includes('js/')) {
+      console.log('[SW] Force bypassing cache for JS file:', url.pathname);
+      const response = await fetch(request, {
+        cache: 'no-cache',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
+        }
+      });
+      return response;
+    }
+    
     // Strategy 1: Core app files - Cache First
     if (isCoreFile(url.pathname)) {
       return await cacheFirst(request);

@@ -11,9 +11,334 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('.'));
 
-// RunPod API configuration
-const RUNPOD_API_KEY = process.env.RUNPOD_API_KEY || 'not-a-label-nala-ai';
-const RUNPOD_ENDPOINT = process.env.RUNPOD_ENDPOINT || 'https://api.runpod.ai/v2/your-endpoint-id';
+// AI Service Configuration
+const RUNPOD_API_KEY = process.env.RUNPOD_API_KEY || 'YOUR_API_KEY';
+const RUNPOD_ENDPOINT = process.env.RUNPOD_ENDPOINT || 'https://api.runpod.ai/v2/m4ri0is2v69hu1/run';
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY || 'your_openai_key_here';
+const CLAUDE_API_KEY = process.env.CLAUDE_API_KEY || 'your_claude_key_here';
+
+// New Ollama Configuration
+const RUNPOD_OLLAMA_ENDPOINT = process.env.RUNPOD_OLLAMA_ENDPOINT;
+const RUNPOD_OLLAMA_ENABLED = process.env.RUNPOD_OLLAMA_ENABLED === 'true';
+const OLLAMA_DIRECT_ENDPOINT = process.env.OLLAMA_DIRECT_ENDPOINT;
+const API_TIMEOUT = parseInt(process.env.API_TIMEOUT) || 300000; // 5 minutes
+
+// OpenAI API Integration
+async function callOpenAIAPI(userInput, musicDNA, context) {
+  const prompt = createMusicGenerationPrompt(userInput, musicDNA, context);
+  
+  console.log('🤖 Calling OpenAI GPT-4 with prompt:', prompt.substring(0, 100) + '...');
+  
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${OPENAI_API_KEY}`
+    },
+    body: JSON.stringify({
+      model: 'gpt-4o',
+      messages: [{
+        role: 'system',
+        content: 'You are Nala AI, an expert music generation system that creates Strudel.js code patterns. Always respond with valid Strudel code and a description in the exact format requested.'
+      }, {
+        role: 'user',
+        content: prompt
+      }],
+      max_tokens: 1000,
+      temperature: 0.8
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error(`OpenAI API error: ${response.status} ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  console.log('🤖 OpenAI response received');
+
+  const aiText = data.choices[0].message.content;
+  return parseAIResponse({ output: [aiText] }, userInput, musicDNA);
+}
+
+/**
+ * Call RunPod Ollama endpoint for music generation
+ */
+async function callRunPodOllama(userInput, musicDNA, context) {
+    if (!RUNPOD_OLLAMA_ENABLED || !RUNPOD_OLLAMA_ENDPOINT) {
+        console.log('🚫 RunPod Ollama not enabled or configured');
+        return null;
+    }
+
+    try {
+        console.log('🤖 Calling RunPod Ollama for music generation...');
+        
+        const requestPayload = {
+            input: {
+                userInput: userInput,
+                musicDNA: musicDNA || {},
+                context: context || {},
+                type: 'music',
+                temperature: 0.8,
+                max_tokens: 1000
+            }
+        };
+
+        const response = await fetch(RUNPOD_OLLAMA_ENDPOINT, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${RUNPOD_API_KEY}`
+            },
+            body: JSON.stringify(requestPayload),
+            timeout: API_TIMEOUT
+        });
+
+        if (!response.ok) {
+            console.error(`❌ RunPod Ollama API error: ${response.status}`);
+            return null;
+        }
+
+        const data = await response.json();
+        
+        // Handle RunPod response format
+        if (data.status === 'COMPLETED' && data.output) {
+            const output = data.output;
+            
+            if (output.success !== false && output.code) {
+                console.log('✅ RunPod Ollama generation successful');
+                
+                return {
+                    success: true,
+                    code: output.strudel_code || output.code,
+                    description: output.description || 'AI-generated music pattern',
+                    metadata: {
+                        ...output.metadata,
+                        source: 'runpod_ollama_deepseek_r1',
+                        endpoint: 'runpod_serverless',
+                        timestamp: new Date().toISOString()
+                    },
+                    uniqueness: output.uniqueness || 0.9,
+                    analysis: output.analysis || {
+                        confidence: 0.85,
+                        innovation: 0.8,
+                        genre_match: 0.9
+                    }
+                };
+            }
+        }
+        
+        console.log('⚠️ RunPod Ollama returned incomplete response');
+        return null;
+        
+    } catch (error) {
+        console.error('❌ RunPod Ollama error:', error.message);
+        return null;
+    }
+}
+
+/**
+ * Call direct Ollama endpoint (backup option)
+ */
+async function callDirectOllama(userInput, musicDNA, context) {
+    if (!OLLAMA_DIRECT_ENDPOINT) {
+        console.log('🚫 Direct Ollama endpoint not configured');
+        return null;
+    }
+
+    try {
+        console.log('🤖 Calling direct Ollama endpoint...');
+        
+        const requestPayload = {
+            userInput: userInput,
+            musicDNA: musicDNA || {},
+            context: context || {},
+            requestPhase: 3
+        };
+
+        const response = await fetch(`${OLLAMA_DIRECT_ENDPOINT}/generate-music`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestPayload),
+            timeout: API_TIMEOUT
+        });
+
+        if (!response.ok) {
+            console.error(`❌ Direct Ollama API error: ${response.status}`);
+            return null;
+        }
+
+        const result = await response.json();
+        
+        if (result.success && result.code) {
+            console.log('✅ Direct Ollama generation successful');
+            
+            return {
+                success: true,
+                code: result.code,
+                description: result.description,
+                metadata: {
+                    ...result.metadata,
+                    source: 'direct_ollama_deepseek_r1',
+                    endpoint: 'direct_ollama'
+                },
+                uniqueness: result.uniqueness || 0.9,
+                analysis: result.analysis
+            };
+        }
+        
+        return null;
+        
+    } catch (error) {
+        console.error('❌ Direct Ollama error:', error.message);
+        return null;
+    }
+}
+
+// Original RunPod API Integration
+async function callRunPodAPI(userInput, musicDNA, context) {
+  const prompt = createMusicGenerationPrompt(userInput, musicDNA, context);
+  
+  console.log('🤖 Calling RunPod with prompt:', prompt);
+  
+  const response = await fetch(RUNPOD_ENDPOINT, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${RUNPOD_API_KEY}`
+    },
+    body: JSON.stringify({
+      input: {
+        prompt: prompt,
+        max_tokens: 1000,
+        temperature: 0.8,
+        system_prompt: "You are Nala AI, an expert music generation system that creates Strudel.js code patterns. Always respond with valid Strudel code and a description."
+      }
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error(`RunPod API error: ${response.status} ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  console.log('🤖 RunPod response:', data);
+
+  // Parse the AI response to extract Strudel code
+  return parseAIResponse(data, userInput, musicDNA);
+}
+
+function createMusicGenerationPrompt(userInput, musicDNA, context) {
+  return `Create a Strudel.js music pattern based on this request: "${userInput}"
+
+Musical DNA Context:
+- Primary Genre: ${musicDNA?.primaryGenre || 'not specified'}
+- Preferred Mood: ${musicDNA?.preferredMood || 'not specified'}
+- Energy Level: ${musicDNA?.energyLevel || 'not specified'}
+- Context: ${context?.timeOfDay || 'unknown'} time
+
+Requirements:
+1. Generate valid Strudel.js code using stack(), sound(), note(), and effects
+2. Match the requested genre and mood
+3. Include rhythm, melody, and harmonic elements
+4. Use appropriate sound sources (bd, sd, hh, etc.)
+5. Add effects like reverb, delay, lpf as needed
+
+Response format:
+CODE: [your strudel code here]
+DESCRIPTION: [brief description of the pattern]
+
+Example for trap:
+CODE: stack(
+  sound("bd*2 ~ bd ~").gain(0.8),
+  sound("~ ~ sd ~").gain(0.7),
+  sound("hh*16").gain(0.4),
+  note("c1 ~ f1 g1").sound("808").lpf(80)
+)
+DESCRIPTION: Heavy trap beat with rolling 808s and crisp hi-hats`;
+}
+
+function parseAIResponse(runpodData, userInput, musicDNA) {
+  let aiText = '';
+  
+  // Extract the generated text from RunPod response
+  if (runpodData.output && runpodData.output.length > 0) {
+    aiText = runpodData.output[0];
+  } else if (runpodData.text) {
+    aiText = runpodData.text;
+  } else if (runpodData.generated_text) {
+    aiText = runpodData.generated_text;
+  } else {
+    throw new Error('No generated text in RunPod response');
+  }
+
+  console.log('🤖 Parsing AI text:', aiText);
+
+  // Extract code and description
+  const codeMatch = aiText.match(/CODE:\s*([\s\S]*?)(?=DESCRIPTION:|$)/i);
+  const descMatch = aiText.match(/DESCRIPTION:\s*(.*?)(?:\n|$)/i);
+
+  let strudelCode = '';
+  let description = '';
+
+  if (codeMatch) {
+    strudelCode = codeMatch[1].trim();
+    // Clean up the code
+    strudelCode = strudelCode.replace(/```javascript|```js|```/g, '').trim();
+  }
+
+  if (descMatch) {
+    description = descMatch[1].trim();
+  }
+
+  // Fallback if parsing fails
+  if (!strudelCode || strudelCode.length < 10) {
+    console.log('🔄 AI parsing failed, using fallback pattern');
+    return generateFallbackFromAI(aiText, userInput, musicDNA);
+  }
+
+  return {
+    success: true,
+    code: strudelCode,
+    description: description || `AI-generated ${musicDNA?.primaryGenre || 'music'} pattern`,
+    metadata: {
+      genre: musicDNA?.primaryGenre || extractGenre(userInput),
+      mood: musicDNA?.preferredMood || 'creative',
+      ai_source: 'deepseek_r1_runpod',
+      raw_response: aiText.substring(0, 200) + '...'
+    },
+    uniqueness: 0.9,
+    analysis: {
+      confidence: 0.85,
+      innovation: 0.8
+    }
+  };
+}
+
+function generateFallbackFromAI(aiText, userInput, musicDNA) {
+  // Try to extract any code-like patterns from the AI response
+  const codePatterns = aiText.match(/stack\([\s\S]*?\)|sound\([^)]+\)|note\([^)]+\)/g);
+  
+  if (codePatterns && codePatterns.length > 0) {
+    // Reconstruct from found patterns
+    const code = codePatterns.length === 1 ? codePatterns[0] : `stack(\n  ${codePatterns.slice(0, 4).join(',\n  ')}\n)`;
+    
+    return {
+      success: true,
+      code: code,
+      description: `AI-generated pattern based on: "${userInput}"`,
+      metadata: {
+        genre: musicDNA?.primaryGenre || extractGenre(userInput),
+        fallback: true
+      },
+      uniqueness: 0.7
+    };
+  }
+
+  // Ultimate fallback
+  return generateFallbackPattern(userInput);
+}
 
 // AI Music Generation Endpoint
 app.post('/api/generate-music', async (req, res) => {
@@ -21,6 +346,96 @@ app.post('/api/generate-music', async (req, res) => {
     const { userInput, musicDNA, context, requestPhase } = req.body;
     
     console.log('🎵 AI Request:', { userInput, musicDNA, context, requestPhase });
+    
+    // Try OpenAI GPT-4 API first (if available and enabled)
+    if (OPENAI_API_KEY && OPENAI_API_KEY !== 'your_openai_key_here' && process.env.OPENAI_ENABLED === 'true') {
+      console.log('🤖 Attempting OpenAI GPT-4 generation...');
+      
+      try {
+        const openaiResult = await callOpenAIAPI(userInput, musicDNA, context);
+        if (openaiResult.success) {
+          res.json({
+            success: true,
+            code: openaiResult.code,
+            description: openaiResult.description + ' (Generated by Nala AI - GPT-4 via OpenAI)',
+            metadata: {
+              ...openaiResult.metadata,
+              timestamp: new Date().toISOString(),
+              source: 'nala_gpt4_openai',
+              uniqueness: openaiResult.uniqueness || 1.0,
+              semantic_analysis: openaiResult.analysis
+            }
+          });
+          return;
+        }
+      } catch (openaiError) {
+        console.error('🤖 OpenAI API failed:', openaiError);
+        console.log('🔄 Trying RunPod Ollama fallback...');
+      }
+    }
+    
+    // Try RunPod Ollama DeepSeek R1 API (NEW ENHANCED VERSION)
+    const ollamaResult = await callRunPodOllama(userInput, musicDNA, context);
+    if (ollamaResult) {
+      res.json({
+        success: true,
+        code: ollamaResult.code,
+        description: ollamaResult.description + ' (Generated by Nala AI - DeepSeek R1 via RunPod Ollama)',
+        metadata: {
+          ...ollamaResult.metadata,
+          timestamp: new Date().toISOString(),
+          source: 'nala_ollama_deepseek_r1_runpod',
+          uniqueness: ollamaResult.uniqueness || 1.0,
+          semantic_analysis: ollamaResult.analysis
+        }
+      });
+      return;
+    }
+    
+    // Try Direct Ollama endpoint as backup
+    const directOllamaResult = await callDirectOllama(userInput, musicDNA, context);
+    if (directOllamaResult) {
+      res.json({
+        success: true,
+        code: directOllamaResult.code,
+        description: directOllamaResult.description + ' (Generated by Nala AI - Direct Ollama)',
+        metadata: {
+          ...directOllamaResult.metadata,
+          timestamp: new Date().toISOString(),
+          source: 'nala_direct_ollama',
+          uniqueness: directOllamaResult.uniqueness || 1.0,
+          semantic_analysis: directOllamaResult.analysis
+        }
+      });
+      return;
+    }
+    
+    // Try Original RunPod DeepSeek R1 API (legacy fallback)
+    if (RUNPOD_API_KEY && RUNPOD_API_KEY !== 'YOUR_API_KEY' && RUNPOD_API_KEY !== 'disabled') {
+      console.log('🤖 Attempting original RunPod DeepSeek R1 generation...');
+      
+      try {
+        const runpodResult = await callRunPodAPI(userInput, musicDNA, context);
+        if (runpodResult.success) {
+          res.json({
+            success: true,
+            code: runpodResult.code,
+            description: runpodResult.description + ' (Generated by Nala AI - DeepSeek R1 via RunPod Legacy)',
+            metadata: {
+              ...runpodResult.metadata,
+              timestamp: new Date().toISOString(),
+              source: 'nala_deepseek_r1_runpod_legacy',
+              uniqueness: runpodResult.uniqueness || 1.0,
+              semantic_analysis: runpodResult.analysis
+            }
+          });
+          return;
+        }
+      } catch (runpodError) {
+        console.error('🤖 Original RunPod API failed:', runpodError);
+        console.log('🔄 Falling back to local AI systems...');
+      }
+    }
     
     // Try Phase 3 AI Ensemble System first (if available)
     if (process.env.PHASE3_ENABLED === 'true' && requestPhase >= 3) {
@@ -294,7 +709,7 @@ function synthesizeEnsembleContributions(contributions, vision) {
   };
 }
 
-function applyPhase2Enhancements(pattern, analysis, context) {
+function applyPhase2Enhancements(pattern, analysis, context = {}) {
   // Context-aware adaptations
   if (context.timeOfDay === 'night') {
     pattern.code = pattern.code.replace(/gain\(([^)]+)\)/g, (match, gain) => {
@@ -958,15 +1373,58 @@ function extractGenre(userInput) {
 
 // Health check
 app.get('/api/health', (req, res) => {
+  const hasRunPodKey = RUNPOD_API_KEY && RUNPOD_API_KEY !== 'YOUR_API_KEY';
+  const hasOllamaEndpoint = RUNPOD_OLLAMA_ENDPOINT && RUNPOD_OLLAMA_ENDPOINT.includes('runpod');
+  const hasOpenAI = OPENAI_API_KEY && OPENAI_API_KEY !== 'your_openai_key_here';
+  
   res.json({ 
     status: 'ok', 
     timestamp: new Date().toISOString(),
-    ai: 'deepseek-r1',
-    service: 'nala-music-ai'
+    ai: 'multi-tier-with-ollama',
+    service: 'nala-music-ai',
+    runpod: {
+      configured: hasRunPodKey,
+      endpoint: hasRunPodKey ? RUNPOD_ENDPOINT : 'not configured'
+    },
+    ollama: {
+      configured: hasOllamaEndpoint,
+      endpoint: hasOllamaEndpoint ? RUNPOD_OLLAMA_ENDPOINT : 'not configured',
+      enabled: RUNPOD_OLLAMA_ENABLED,
+      direct_endpoint: OLLAMA_DIRECT_ENDPOINT || 'not configured'
+    },
+    openai: {
+      configured: hasOpenAI,
+      enabled: process.env.OPENAI_ENABLED === 'true'
+    },
+    features: {
+      phase1: true,
+      phase2: process.env.PHASE2_ENABLED === 'true',
+      phase3: process.env.PHASE3_ENABLED === 'true',
+      runpod_ai: hasRunPodKey,
+      ollama_ai: hasOllamaEndpoint,
+      openai_ai: hasOpenAI,
+      fallback_chain: true
+    },
+    integration_status: {
+      ollama_ready: hasOllamaEndpoint && RUNPOD_OLLAMA_ENABLED,
+      deployment_pending: !RUNPOD_OLLAMA_ENABLED,
+      fallback_active: true
+    }
   });
 });
 
 app.listen(PORT, () => {
   console.log(`🤖 Nala AI Server running on port ${PORT}`);
   console.log(`🎵 DeepSeek R1 Music Generation API ready`);
+  
+  const hasRunPodKey = RUNPOD_API_KEY && RUNPOD_API_KEY !== 'YOUR_API_KEY';
+  if (hasRunPodKey) {
+    console.log(`🔗 RunPod Integration: ACTIVE`);
+    console.log(`📡 Endpoint: ${RUNPOD_ENDPOINT}`);
+  } else {
+    console.log(`⚠️ RunPod Integration: DISABLED (no API key)`);
+    console.log(`💡 Set RUNPOD_API_KEY environment variable to enable`);
+  }
+  
+  console.log(`🎼 Phase Systems: 1✓ 2${process.env.PHASE2_ENABLED === 'true' ? '✓' : '✗'} 3${process.env.PHASE3_ENABLED === 'true' ? '✓' : '✗'}`);
 });

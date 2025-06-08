@@ -84,8 +84,18 @@ server {
         try_files $uri $uri/ /index.html;
     }
 
-    # Cache static assets
-    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+    # NO CACHE for JavaScript files - force fresh download
+    location ~* \.js$ {
+        add_header Cache-Control "no-cache, no-store, must-revalidate, max-age=0";
+        add_header Pragma "no-cache";
+        add_header Expires "0";
+        add_header Last-Modified "";
+        if_modified_since off;
+        etag off;
+    }
+
+    # Cache other static assets (but not JS)
+    location ~* \.(css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
         expires 1y;
         add_header Cache-Control "public, immutable";
     }

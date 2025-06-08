@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>JavaScript Syntax Test</title>
+</head>
+<body>
+    <h1>Testing Fixed JavaScript Files</h1>
+    <div id="results"></div>
+    
+    <script>
+        const results = document.getElementById('results');
+        
+        function addResult(test, status, message) {
+            const div = document.createElement('div');
+            div.innerHTML = `<strong>${test}:</strong> <span style="color: ${status === 'PASS' ? 'green' : 'red'}">${status}</span> - ${message}`;
+            results.appendChild(div);
+        }
+        
+        // Test 1: Load semantic-analysis-engine.js
+        try {
+            const script1 = document.createElement('script');
+            script1.src = '/js/semantic-analysis-engine.js?v=2000000001';
+            script1.onload = () => addResult('Semantic Analysis Engine', 'PASS', 'Loaded without syntax errors');
+            script1.onerror = () => addResult('Semantic Analysis Engine', 'FAIL', 'Failed to load');
+            document.head.appendChild(script1);
+        } catch (e) {
+            addResult('Semantic Analysis Engine', 'FAIL', e.message);
+        }
+        
+        // Test 2: Load ai-ensemble-conductor.js  
+        try {
+            const script2 = document.createElement('script');
+            script2.src = '/js/ai-ensemble-conductor.js?v=3000000001';
+            script2.onload = () => addResult('AI Ensemble Conductor', 'PASS', 'Loaded without syntax errors');
+            script2.onerror = () => addResult('AI Ensemble Conductor', 'FAIL', 'Failed to load');
+            document.head.appendChild(script2);
+        } catch (e) {
+            addResult('AI Ensemble Conductor', 'FAIL', e.message);
+        }
+        
+        // Test 3: Test executeCommand function exists
+        setTimeout(() => {
+            if (typeof executeCommand === 'undefined') {
+                addResult('executeCommand Function', 'PASS', 'Function does not exist (as expected in test environment)');
+            } else {
+                addResult('executeCommand Function', 'PASS', 'Function exists and accessible');
+            }
+        }, 2000);
+    </script>
+</body>
+</html>

@@ -188,7 +188,7 @@ class SemanticAnalysisEngine {
       country: ['country', 'folk', 'bluegrass'],
       ambient: ['ambient', 'atmospheric', 'drone'],
       funk: ['funk', 'funky', 'groove'],
-      r&b: ['r&b', 'soul', 'rnb']
+      'r&b': ['r&b', 'soul', 'rnb']
     };
     
     for (const [genre, keywords] of Object.entries(genreMap)) {

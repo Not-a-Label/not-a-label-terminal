@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Not a Label - AI Music Terminal</title>
   
+  <!-- AGGRESSIVE CACHE BUSTING -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  
   <!-- PWA Meta Tags -->
   <meta name="description" content="AI-powered music creation terminal. Create, share, and collaborate through natural language commands.">
   <meta name="theme-color" content="#00ff00">
@@ -12,6 +17,11 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Not a Label Terminal">
+  
+  <!-- Cache Control - Force Fresh JS Files -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   
   <!-- PWA Manifest -->
   <link rel="manifest" href="/manifest.json">
@@ -188,6 +198,48 @@
     </div>
   </div>
 
+  <!-- Force Cache Clear and Fresh JS Loading -->
+  <script>
+    // FORCE CLEAR ALL CACHES ON LOAD
+    (function() {
+      console.log('🔄 Clearing all caches and forcing fresh JS load...');
+      
+      // Clear browser cache
+      if ('caches' in window) {
+        caches.keys().then(function(names) {
+          names.forEach(function(name) {
+            console.log('🗑️ Deleting cache:', name);
+            caches.delete(name);
+          });
+        });
+      }
+      
+      // Unregister all service workers
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for(let registration of registrations) {
+            console.log('🗑️ Unregistering service worker:', registration.scope);
+            registration.unregister();
+          }
+        });
+      }
+      
+      // Force reload if version mismatch detected
+      const expectedVersion = '2000000002';
+      const storedVersion = localStorage.getItem('js-version');
+      if (storedVersion !== expectedVersion) {
+        console.log('🔄 Version mismatch - forcing cache clear and reload');
+        localStorage.setItem('js-version', expectedVersion);
+        if (storedVersion && storedVersion !== expectedVersion) {
+          setTimeout(() => window.location.reload(true), 1000);
+          return;
+        }
+      }
+      
+      console.log('✅ Cache clearing complete - loading fresh JS files');
+    })();
+  </script>
+
   <!-- Simple Web Audio for immediate sound feedback -->
   <script>
     // Initialize simple audio system that always works
@@ -219,48 +271,52 @@
   </script>
   
   <!-- Load AI Components -->
-  <script src="/js/ai-integration.js?v=1749313000"></script>
-  <script src="/js/nlp.js?v=1749313000"></script>
-  <script src="/js/enhanced-pattern-generator.js?v=1749313000"></script>
-  <script src="/js/musical-identity-creator.js?v=1749313000"></script>
-  <script src="/js/community.js?v=1749313000"></script>
-  <script src="/js/pattern-sharing.js?v=1749313000"></script>
+  <script src="/js/ai-integration.js?v=2000000002&nc=" data-no-cache></script>
+  <script src="/js/nlp.js?v=2000000002&nc=" data-no-cache></script>
+  <script src="/js/enhanced-pattern-generator.js?v=2000000002&nc=" data-no-cache></script>
+  <script src="/js/musical-identity-creator.js?v=2000000002&nc=" data-no-cache></script>
+  <script src="/js/community.js?v=2000000002&nc=" data-no-cache></script>
+  <script src="/js/pattern-sharing.js?v=2000000002&nc=" data-no-cache></script>
   
   <!-- Phase 1 Procedural AI System (Client-side) -->
-  <script src="/js/semantic-analysis-engine.js?v=2000000000"></script>
-  <script src="/js/procedural-pattern-generator.js?v=2000000000"></script>
-  <script src="/js/uniqueness-engine.js?v=2000000000"></script>
+  <script src="/js/semantic-analysis-engine.js?v=2000000002&nc=" data-no-cache></script>
+  <script src="/js/procedural-pattern-generator.js?v=2000000002&nc=" data-no-cache></script>
+  <script src="/js/uniqueness-engine.js?v=2000000002&nc=" data-no-cache></script>
   
   <!-- Phase 2 Advanced AI System -->
-  <script src="/js/pattern-dna-engine.js?v=2100000000"></script>
-  <script src="/js/context-aware-engine.js?v=2100000000"></script>
-  <script src="/js/advanced-personalization-engine.js?v=2100000000"></script>
-  <script src="/js/phase2-integration-engine.js?v=2100000000"></script>
+  <script src="/js/pattern-dna-engine.js?v=2100000002&nc=" data-no-cache></script>
+  <script src="/js/context-aware-engine.js?v=2100000002&nc=" data-no-cache></script>
+  <script src="/js/advanced-personalization-engine.js?v=2100000002&nc=" data-no-cache></script>
+  <script src="/js/phase2-integration-engine.js?v=2100000002&nc=" data-no-cache></script>
   
   <!-- Phase 3 AI Ensemble System -->
-  <script src="/js/specialized-ai-agents.js?v=3000000000"></script>
-  <script src="/js/ai-ensemble-conductor.js?v=3000000000"></script>
-  <script src="/js/phase3-integration-engine.js?v=3000000000"></script>
+  <script src="/js/specialized-ai-agents.js?v=3000000002&nc=" data-no-cache></script>
+  <script src="/js/ai-ensemble-conductor.js?v=3000000002&nc=" data-no-cache></script>
+  <script src="/js/phase3-integration-engine.js?v=3000000002&nc=" data-no-cache></script>
   
   <!-- Advanced Pattern Evolution System -->
-  <script src="/js/pattern-evolution-engine.js?v=3100000000"></script>
-  <script src="/js/dna-mutation-system.js?v=3100000000"></script>
-  <script src="/js/cross-pattern-breeding.js?v=3100000000"></script>
+  <script src="/js/pattern-evolution-engine.js?v=3100000002&nc=" data-no-cache></script>
+  <script src="/js/dna-mutation-system.js?v=3100000002&nc=" data-no-cache></script>
+  <script src="/js/cross-pattern-breeding.js?v=3100000002&nc=" data-no-cache></script>
   
   <!-- Voice-First Onboarding System -->
-  <script src="/js/voice-first-onboarding.js?v=3200000000"></script>
+  <script src="/js/voice-first-onboarding.js?v=3200000002&nc=" data-no-cache></script>
   
   <!-- Beta Program System -->
-  <script src="/js/beta-program.js?v=3200000000"></script>
+  <script src="/js/beta-program.js?v=3200000002&nc=" data-no-cache></script>
   
   <!-- Beta Feedback System -->
-  <script src="/js/beta-feedback.js?v=3200000000"></script>
+  <script src="/js/beta-feedback.js?v=3200000002&nc=" data-no-cache></script>
   
   <!-- Analytics System -->
-  <script src="/js/analytics.js?v=3200000000"></script>
+  <script src="/js/analytics.js?v=3200000002&nc=" data-no-cache></script>
   
   <script>
-    console.log('🚀 Not a Label Terminal loading v3.2.0 - Phase 3 AI Ensemble + Voice-First Onboarding...');
+    const VERSION = 'v3.2.3';
+    const CACHE_BUSTER = Date.now();
+    console.log(`🚀 Not a Label Terminal loading ${VERSION} - NUCLEAR CACHE FIX + OpenAI Integration...`);
+    console.log(`🔄 Cache buster: ${CACHE_BUSTER}`);
+    console.log('🔄 ALL JavaScript caches bypassed - guaranteed fresh files...');
     
     // Initialize AI components
     let nalaAI, nlp, patternGenerator, musicalIdentityCreator, communitySystem, patternSharingSystem;
@@ -1620,6 +1676,9 @@
       } else {
         addLine('⌨️ Try "create musical identity" or "create trap beat"!', 'info-line');
       }
+      
+      // Override executeCommand to add visualizer support
+      setupVisualizerCommands();
     });
     
     // Register service worker for PWA features
@@ -1635,85 +1694,87 @@
       });
     }
   </script>
-  <script src="js/ascii-visualizer.js?v=2.0"></script>
-  <script src="js/live-jam-rooms.js?v=2.0"></script>
-  <script src="js/jam-terminal-ui.js?v=2.0"></script>
-  <script src="js/pattern-breeding.js?v=2.0"></script>
-  <script src="js/breeding-terminal-ui.js?v=2.0"></script>
-  <script src="js/voice-input.js?v=2.0"></script>
-  <script src="js/voice-terminal-ui.js?v=2.0"></script>
+  <script src="js/ascii-visualizer.js?v=2000000002&nc=" data-no-cache></script>
+  <script src="js/live-jam-rooms.js?v=2000000002&nc=" data-no-cache></script>
+  <script src="js/jam-terminal-ui.js?v=2000000002&nc=" data-no-cache></script>
+  <script src="js/pattern-breeding.js?v=2000000002&nc=" data-no-cache></script>
+  <script src="js/breeding-terminal-ui.js?v=2000000002&nc=" data-no-cache></script>
+  <script src="js/voice-input.js?v=2000000002&nc=" data-no-cache></script>
+  <script src="js/voice-terminal-ui.js?v=2000000002&nc=" data-no-cache></script>
   <script>
     // Initialize ASCII Visualizer
     const visualizer = new ASCIIVisualizer();
     let visualizerContainer = null;
     
-    // Add visualizer commands
-    const originalProcessCommand = processCommand;
-    processCommand = async function(command) {
-      const lowerCommand = command.toLowerCase().trim();
-      
-      // Jam commands
-      if (window.jamUI) {
-        const isJamCommand = await window.jamUI.processCommand(command);
-        if (isJamCommand) return;
-      }
-      
-      // Breeding commands
-      if (window.breedingUI) {
-        const isBreedingCommand = window.breedingUI.processCommand(command);
-        if (isBreedingCommand) return;
-      }
-      
-      // Voice commands
-      if (window.voiceUI) {
-        const isVoiceCommand = window.voiceUI.processCommand(command);
-        if (isVoiceCommand) return;
-      }
-      
-      // Visualizer commands
-      if (lowerCommand.startsWith('viz ') || lowerCommand.startsWith('visualizer ')) {
-        const vizCommand = lowerCommand.replace(/^(viz|visualizer)\s+/, '');
+    // Setup visualizer commands
+    function setupVisualizerCommands() {
+      const originalExecuteCommand = executeCommand;
+      executeCommand = async function(command) {
+        const lowerCommand = command.toLowerCase().trim();
         
-        switch (vizCommand) {
-          case 'on':
-          case 'start':
-            startVisualizer();
-            return;
-            
-          case 'off':
-          case 'stop':
-            stopVisualizer();
-            return;
-            
-          case 'spectrum':
-          case 'waveform':
-          case 'matrix':
-          case 'particles':
-            if (visualizer.isActive) {
-              visualizer.setMode(vizCommand);
-              addLine(`🎨 Visualizer mode: ${vizCommand}`, 'success-line');
-            } else {
-              addLine('❌ Start visualizer first with "viz on"', 'error-line');
-            }
-            return;
-            
-          case 'help':
-            addLine('', 'output-line');
-            addLine('🎨 ASCII Visualizer Commands:', 'info-line');
-            addLine('  viz on/start     - Start visualizer', 'output-line');
-            addLine('  viz off/stop     - Stop visualizer', 'output-line');
-            addLine('  viz spectrum     - Frequency spectrum bars', 'output-line');
-            addLine('  viz waveform     - Audio waveform', 'output-line');
-            addLine('  viz matrix       - Matrix rain effect', 'output-line');
-            addLine('  viz particles    - Particle system', 'output-line');
-            addLine('', 'output-line');
-            return;
+        // Jam commands
+        if (window.jamUI) {
+          const isJamCommand = await window.jamUI.processCommand(command);
+          if (isJamCommand) return;
         }
-      }
-      
-      // Call original command processor
-      return originalProcessCommand.call(this, command);
-    };
+        
+        // Breeding commands
+        if (window.breedingUI) {
+          const isBreedingCommand = window.breedingUI.processCommand(command);
+          if (isBreedingCommand) return;
+        }
+        
+        // Voice commands
+        if (window.voiceUI) {
+          const isVoiceCommand = window.voiceUI.processCommand(command);
+          if (isVoiceCommand) return;
+        }
+        
+        // Visualizer commands
+        if (lowerCommand.startsWith('viz ') || lowerCommand.startsWith('visualizer ')) {
+          const vizCommand = lowerCommand.replace(/^(viz|visualizer)\s+/, '');
+          
+          switch (vizCommand) {
+            case 'on':
+            case 'start':
+              startVisualizer();
+              return;
+              
+            case 'off':
+            case 'stop':
+              stopVisualizer();
+              return;
+              
+            case 'spectrum':
+            case 'waveform':
+            case 'matrix':
+            case 'particles':
+              if (visualizer.isActive) {
+                visualizer.setMode(vizCommand);
+                addLine(`🎨 Visualizer mode: ${vizCommand}`, 'success-line');
+              } else {
+                addLine('❌ Start visualizer first with "viz on"', 'error-line');
+              }
+              return;
+              
+            case 'help':
+              addLine('', 'output-line');
+              addLine('🎨 ASCII Visualizer Commands:', 'info-line');
+              addLine('  viz on/start     - Start visualizer', 'output-line');
+              addLine('  viz off/stop     - Stop visualizer', 'output-line');
+              addLine('  viz spectrum     - Frequency spectrum bars', 'output-line');
+              addLine('  viz waveform     - Audio waveform', 'output-line');
+              addLine('  viz matrix       - Matrix rain effect', 'output-line');
+              addLine('  viz particles    - Particle system', 'output-line');
+              addLine('', 'output-line');
+              return;
+          }
+        }
+        
+        // Call original command processor
+        return originalExecuteCommand.call(this, command);
+      };
+    }
     
     function startVisualizer() {
       if (visualizerContainer) {

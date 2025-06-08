@@ -62,7 +62,7 @@ class AIEnsembleConductor {
     const ensembleSynthesis = await this.synthesizeEnsembleOutput(collaborativeRefinement, creativeVision);
     
     // Phase 5: Final Conductor Touches
-    console.log('✨ Phase 5: Applying conductor's final touches...');
+    console.log('⭐ Phase 5: Applying conductor\'s final touches...');
     const finalComposition = await this.applyConductorFinalization(ensembleSynthesis, userInput);
     
     // Track collaboration for learning

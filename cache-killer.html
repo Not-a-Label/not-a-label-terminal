@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>🚨 CACHE KILLER - Force Refresh</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <style>
+        body { 
+            font-family: monospace; 
+            background: #000; 
+            color: #00ff00; 
+            padding: 20px; 
+            text-align: center;
+        }
+        .killer-button { 
+            background: #ff0000; 
+            color: #fff; 
+            padding: 20px 40px; 
+            border: none; 
+            margin: 20px; 
+            cursor: pointer; 
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 10px;
+        }
+        .status { 
+            margin: 10px 0; 
+            padding: 10px; 
+            border: 1px solid #00ff00; 
+            background: rgba(0, 255, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <h1>🚨 NUCLEAR CACHE KILLER</h1>
+    <h2>Fix JavaScript Syntax Errors</h2>
+    
+    <div class="status">
+        <strong>CURRENT ISSUE:</strong> Browser loading old cached JavaScript files<br>
+        <strong>SOLUTION:</strong> Nuclear cache clearing + force refresh
+    </div>
+    
+    <button class="killer-button" onclick="nuclearCacheClear()">
+        💥 NUCLEAR CACHE CLEAR 💥
+    </button>
+    
+    <div id="progress"></div>
+    
+    <script>
+        async function nuclearCacheClear() {
+            const progress = document.getElementById('progress');
+            
+            function addProgress(msg) {
+                const div = document.createElement('div');
+                div.className = 'status';
+                div.innerHTML = `⚡ ${msg}`;
+                progress.appendChild(div);
+            }
+            
+            addProgress('Starting nuclear cache clearing...');
+            
+            try {
+                // 1. Clear all browser caches
+                const cacheNames = await caches.keys();
+                for (const name of cacheNames) {
+                    await caches.delete(name);
+                    addProgress(`Deleted cache: ${name}`);
+                }
+                
+                // 2. Unregister ALL service workers
+                if ('serviceWorker' in navigator) {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    for (const registration of registrations) {
+                        await registration.unregister();
+                        addProgress(`Unregistered service worker: ${registration.scope}`);
+                    }
+                }
+                
+                // 3. Clear localStorage and sessionStorage
+                localStorage.clear();
+                sessionStorage.clear();
+                addProgress('Cleared local and session storage');
+                
+                // 4. Clear IndexedDB
+                if ('indexedDB' in window) {
+                    const databases = await indexedDB.databases();
+                    for (const db of databases) {
+                        indexedDB.deleteDatabase(db.name);
+                        addProgress(`Cleared IndexedDB: ${db.name}`);
+                    }
+                }
+                
+                addProgress('✅ NUCLEAR CACHE CLEAR COMPLETE!');
+                addProgress('🔄 Redirecting to fresh version in 3 seconds...');
+                
+                // 5. Redirect with cache-busting parameters
+                setTimeout(() => {
+                    const timestamp = Date.now();
+                    window.location.href = `/?nocache=${timestamp}&force=true&v=3.2.2`;
+                }, 3000);
+                
+            } catch (error) {
+                addProgress(`❌ Error: ${error.message}`);
+            }
+        }
+        
+        // Auto-detect old cached files
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                // Test if old versions are still loading
+                const scripts = document.querySelectorAll('script[src*="v=2000000000"]');
+                if (scripts.length > 0) {
+                    document.body.innerHTML += '<div class="status" style="border-color: red; color: red;">🚨 OLD CACHED FILES DETECTED! Click the button above.</div>';
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,111 @@
+name: Build and Deploy Nala AI Ollama to RunPod
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'runpod-ollama/**'
+  workflow_dispatch:
+    inputs:
+      force_deploy:
+        description: 'Force deployment even if no changes'
+        required: false
+        default: 'false'
+
+env:
+  REGISTRY: docker.io
+  IMAGE_NAME: nala-ollama
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=sha,prefix={{branch}}-
+          type=raw,value=latest,enable={{is_default_branch}}
+          type=raw,value=v1.0
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./runpod-ollama
+        platforms: linux/amd64
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - name: Create RunPod template (if configured)
+      if: ${{ secrets.RUNPOD_API_KEY }}
+      run: |
+        echo "🚀 Container built and pushed successfully!"
+        echo "📦 Image: ${{ env.REGISTRY }}/${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:latest"
+        echo ""
+        echo "🎯 Next steps:"
+        echo "1. Go to RunPod Console: https://www.runpod.io/console"
+        echo "2. Create new template with image: ${{ env.REGISTRY }}/${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:latest"
+        echo "3. Deploy serverless endpoint"
+        echo "4. Update RUNPOD_OLLAMA_ENDPOINT in production"
+        
+        # Optional: Auto-create template via RunPod API
+        if [ ! -z "${{ secrets.RUNPOD_API_KEY }}" ]; then
+          echo "🔧 Auto-configuring RunPod template..."
+          curl -X POST "https://api.runpod.ai/graphql" \
+            -H "Authorization: Bearer ${{ secrets.RUNPOD_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "query": "mutation { saveTemplate(input: { 
+                name: \"Nala AI Ollama DeepSeek R1\",
+                imageName: \"${{ env.REGISTRY }}/${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:latest\",
+                dockerArgs: \"./startup.sh\",
+                containerDiskInGb: 25,
+                volumeInGb: 50,
+                volumeMountPath: \"/root/.ollama\",
+                ports: \"8000/http,11434/http\",
+                env: [
+                  {key: \"OLLAMA_HOST\", value: \"0.0.0.0:11434\"},
+                  {key: \"OLLAMA_MODEL\", value: \"deepseek-r1:8b\"},
+                  {key: \"API_PORT\", value: \"8000\"},
+                  {key: \"PYTHONUNBUFFERED\", value: \"1\"}
+                ]
+              }) { id name } }"
+            }'
+        fi
+
+    - name: Output deployment info
+      run: |
+        echo "✅ Deployment complete!"
+        echo ""
+        echo "📊 Deployment Summary:"
+        echo "- Container: ${{ env.REGISTRY }}/${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:latest"
+        echo "- Platforms: linux/amd64 (CUDA-enabled)"
+        echo "- Size: ~8GB (includes CUDA runtime + Python + Ollama)"
+        echo "- Model: DeepSeek R1 (auto-downloaded on first run)"
+        echo ""
+        echo "🔗 Next Steps:"
+        echo "1. Create RunPod template with the container image above"
+        echo "2. Deploy serverless endpoint with RTX 4090+ GPU"
+        echo "3. Update production environment variables"
+        echo "4. Test integration with frontend"
