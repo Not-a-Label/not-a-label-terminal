@@ -174,8 +174,8 @@
       <div class="terminal-line highlight-line">🎵 Welcome to Not a Label - Where Music Meets AI</div>
       <div class="terminal-line output-line">Create, share, and discover music through natural language.</div>
       <div class="terminal-line output-line"></div>
-      <div class="terminal-line success-line">✨ NEW: Voice-first musical identity - speak your creativity!</div>
-      <div class="terminal-line info-line">🎯 Quick Start: "voice identity" or "create trap beat"</div>
+      <div class="terminal-line success-line">👑 BETA: Founding Artist Program - 100 exclusive spots!</div>
+      <div class="terminal-line info-line">🎯 Quick Start: "beta" for founding artist or "voice identity"</div>
       <div class="terminal-line dim-line">💡 Type "help" to see all features</div>
       <div class="terminal-line system-line"></div>
     </div>
@@ -250,6 +250,12 @@
   <!-- Voice-First Onboarding System -->
   <script src="/js/voice-first-onboarding.js?v=3200000000"></script>
   
+  <!-- Beta Program System -->
+  <script src="/js/beta-program.js?v=3200000000"></script>
+  
+  <!-- Beta Feedback System -->
+  <script src="/js/beta-feedback.js?v=3200000000"></script>
+  
   <script>
     console.log('🚀 Not a Label Terminal loading v3.2.0 - Phase 3 AI Ensemble + Voice-First Onboarding...');
     
@@ -265,6 +271,12 @@
     
     // Voice-First Onboarding
     let voiceFirstOnboarding;
+    
+    // Beta Program
+    let betaProgram;
+    
+    // Beta Feedback
+    let betaFeedback;
     
     function addLine(text, className = 'output-line') {
       const line = document.createElement('div');
@@ -1116,11 +1128,14 @@
         addLine('  create dark house music       - Dark electronic', 'output-line');
         addLine('', 'output-line');
         addLine('🎨 IDENTITY & PROFILE:', 'info-line');
+        addLine('  beta                          - 👑 Apply for founding artist program', 'output-line');
         addLine('  voice identity                - 🎤 Revolutionary voice-first signup', 'output-line');
         addLine('  create musical identity       - Start identity creation', 'output-line');
         addLine('  signup                        - Begin account creation', 'output-line');
         addLine('  login                         - Sign into existing account', 'output-line');
         addLine('  my profile                    - View your musical profile', 'output-line');
+        addLine('  beta status                   - Check founding artist status', 'output-line');
+        addLine('  feedback                      - 📝 Share feedback as founding artist', 'output-line');
         addLine('', 'output-line');
         addLine('🌍 COMMUNITY & DISCOVERY:', 'info-line');
         addLine('  community feed                - View recent activity', 'output-line');
@@ -1174,6 +1189,38 @@
         addLine('🎵 Musical Identity Login:', 'success-line');
         addLine('💡 Try: "I\'m [your artist name]" or "login as [name]"', 'info-line');
         addLine('🎨 Or create a new identity with: "create musical identity"', 'output-line');
+        return;
+      }
+      
+      // Beta Program Commands
+      if (lowerCommand === 'beta' || lowerCommand.includes('beta program') || lowerCommand.includes('founding artist')) {
+        if (betaProgram) {
+          betaProgram.startBetaInvitation();
+          return;
+        } else {
+          addLine('❌ Beta Program not available', 'error-line');
+          return;
+        }
+      }
+      
+      if (lowerCommand.includes('beta status') || lowerCommand.includes('founding status')) {
+        window.BetaProgram.showFoundingArtistStatus(addLine);
+        return;
+      }
+      
+      // Feedback Commands
+      if (lowerCommand === 'feedback' || lowerCommand.includes('give feedback') || lowerCommand.includes('provide feedback')) {
+        if (betaFeedback) {
+          betaFeedback.startFeedbackCollection();
+          return;
+        } else {
+          addLine('❌ Feedback system not available', 'error-line');
+          return;
+        }
+      }
+      
+      if (lowerCommand.includes('feedback history') || lowerCommand.includes('my feedback')) {
+        window.BetaFeedback.showFeedbackStats(addLine);
         return;
       }
       
@@ -1316,6 +1363,18 @@
         if (handled) return;
       }
       
+      // Check if Beta Program is handling input
+      if (betaProgram && betaProgram.isActive) {
+        const handled = await betaProgram.handleInput(command);
+        if (handled) return;
+      }
+      
+      // Check if Beta Feedback is handling input
+      if (betaFeedback && betaFeedback.isActive) {
+        const handled = await betaFeedback.handleInput(command);
+        if (handled) return;
+      }
+      
       // Try NLP processing for other commands
       if (nlp) {
         const result = nlp.processCommand(command);
@@ -1441,6 +1500,26 @@
             musicalIdentityCreator: musicalIdentityCreator
           });
           console.log('🎤 Voice-First Onboarding initialized');
+        }
+        
+        // Initialize Beta Program
+        if (window.BetaProgram) {
+          betaProgram = new BetaProgram({
+            addLine: addLine,
+            addHTML: addHTML,
+            focusInput: () => terminalInput.focus()
+          });
+          console.log('👑 Beta Program initialized');
+        }
+        
+        // Initialize Beta Feedback
+        if (window.BetaFeedback) {
+          betaFeedback = new BetaFeedback({
+            addLine: addLine,
+            addHTML: addHTML,
+            focusInput: () => terminalInput.focus()
+          });
+          console.log('📝 Beta Feedback initialized');
         }
         
         // Check AI health
