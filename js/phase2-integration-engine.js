@@ -5,14 +5,34 @@
 
 class Phase2IntegrationEngine {
   constructor() {
-    this.dnaEngine = new PatternDNAEngine();
-    this.contextEngine = new ContextAwareEngine();
-    this.personalizationEngine = new AdvancedPersonalizationEngine();
+    this.dnaEngine = null;
+    this.contextEngine = null;
+    this.personalizationEngine = null;
     
     // Phase 1 components (fallback)
-    this.semanticEngine = new SemanticAnalysisEngine();
-    this.proceduralGenerator = new ProceduralPatternGenerator();
-    this.uniquenessEngine = new UniquenessEngine();
+    this.semanticEngine = null;
+    this.proceduralGenerator = null;
+    this.uniquenessEngine = null;
+    
+    // Initialize components safely
+    try {
+      this.dnaEngine = new PatternDNAEngine();
+      this.contextEngine = new ContextAwareEngine();
+      this.personalizationEngine = new AdvancedPersonalizationEngine();
+      console.log('✅ Phase 2 components initialized');
+    } catch (error) {
+      console.warn('⚠️ Phase 2 components failed to initialize:', error);
+    }
+    
+    // Initialize Phase 1 fallbacks
+    try {
+      if (window.SemanticAnalysisEngine) this.semanticEngine = new SemanticAnalysisEngine();
+      if (window.ProceduralPatternGenerator) this.proceduralGenerator = new ProceduralPatternGenerator();
+      if (window.UniquenessEngine) this.uniquenessEngine = new UniquenessEngine();
+      console.log('✅ Phase 1 fallback components initialized');
+    } catch (error) {
+      console.warn('⚠️ Phase 1 fallback components failed to initialize:', error);
+    }
     
     this.isActive = false;
     this.performanceMode = 'balanced'; // minimal, balanced, maximum
@@ -27,6 +47,12 @@ class Phase2IntegrationEngine {
     const startTime = performance.now();
     
     try {
+      // Check if Phase 2 components are available
+      if (!this.dnaEngine || !this.contextEngine || !this.personalizationEngine) {
+        console.log('⚠️ Phase 2 components not available, falling back to Phase 1');
+        return this.fallbackToPhase1(userInput, context);
+      }
+      
       // Step 1: Multi-dimensional context analysis
       console.log('📊 Step 1: Analyzing multi-dimensional context...');
       const enrichedContext = await this.contextEngine.analyzeCurrentContext(userInput, context);
@@ -45,7 +71,10 @@ class Phase2IntegrationEngine {
       
       // Step 5: Ensure uniqueness with enhanced fingerprinting
       console.log('🔍 Step 5: Ensuring pattern uniqueness...');
-      const uniquePattern = await this.uniquenessEngine.ensureUniqueness(personalizedDNA, personalizedDNA.analysis);
+      let uniquePattern = personalizedDNA;
+      if (this.uniquenessEngine) {
+        uniquePattern = await this.uniquenessEngine.ensureUniqueness(personalizedDNA, personalizedDNA.analysis);
+      }
       
       // Step 6: Generate final Strudel code
       console.log('🎼 Step 6: Synthesizing Strudel pattern...');

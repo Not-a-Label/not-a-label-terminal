@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Phase 2 Component Test</title>
+</head>
+<body>
+    <h1>Phase 2 Component Loading Test</h1>
+    <div id="output"></div>
+    
+    <script>
+        const output = document.getElementById('output');
+        
+        function log(message) {
+            console.log(message);
+            output.innerHTML += message + '<br>';
+        }
+        
+        log('Starting Phase 2 component test...');
+    </script>
+    
+    <!-- Phase 1 Components -->
+    <script src="/js/semantic-analysis-engine.js?v=2000000000"></script>
+    <script src="/js/procedural-pattern-generator.js?v=2000000000"></script>
+    <script src="/js/uniqueness-engine.js?v=2000000000"></script>
+    
+    <!-- Phase 2 Components -->
+    <script src="/js/pattern-dna-engine.js?v=2100000000"></script>
+    <script src="/js/context-aware-engine.js?v=2100000000"></script>
+    <script src="/js/advanced-personalization-engine.js?v=2100000000"></script>
+    <script src="/js/phase2-integration-engine.js?v=2100000000"></script>
+    
+    <script>
+        // Test component loading
+        log('Checking Phase 1 components:');
+        log('- SemanticAnalysisEngine: ' + (!!window.SemanticAnalysisEngine));
+        log('- ProceduralPatternGenerator: ' + (!!window.ProceduralPatternGenerator));
+        log('- UniquenessEngine: ' + (!!window.UniquenessEngine));
+        
+        log('Checking Phase 2 components:');
+        log('- PatternDNAEngine: ' + (!!window.PatternDNAEngine));
+        log('- ContextAwareEngine: ' + (!!window.ContextAwareEngine));
+        log('- AdvancedPersonalizationEngine: ' + (!!window.AdvancedPersonalizationEngine));
+        log('- Phase2IntegrationEngine: ' + (!!window.Phase2IntegrationEngine));
+        
+        // Test Phase 2 initialization
+        if (window.Phase2IntegrationEngine) {
+            try {
+                log('Testing Phase 2 initialization...');
+                const phase2 = new Phase2IntegrationEngine();
+                log('✅ Phase 2 initialization successful');
+                
+                // Test pattern generation
+                phase2.generateAdvancedPattern('create dark jazz').then(result => {
+                    log('✅ Phase 2 pattern generation successful');
+                    log('Generated code: ' + result.code.substring(0, 100) + '...');
+                }).catch(error => {
+                    log('❌ Phase 2 pattern generation failed: ' + error.message);
+                });
+                
+            } catch (error) {
+                log('❌ Phase 2 initialization failed: ' + error.message);
+            }
+        } else {
+            log('❌ Phase2IntegrationEngine not found');
+        }
+    </script>
+</body>
+</html>

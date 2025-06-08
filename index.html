@@ -324,6 +324,13 @@
             addLine('🤖 Using client-side Phase 1 Procedural AI...', 'info-line');
             
             // Try Phase 2 Advanced AI System first
+            console.log('🔍 Checking Phase 2 in generateMusic:', {
+              Phase2IntegrationEngine: !!window.Phase2IntegrationEngine,
+              PatternDNAEngine: !!window.PatternDNAEngine,
+              ContextAwareEngine: !!window.ContextAwareEngine,
+              AdvancedPersonalizationEngine: !!window.AdvancedPersonalizationEngine
+            });
+            
             if (window.Phase2IntegrationEngine && window.PatternDNAEngine && window.ContextAwareEngine && window.AdvancedPersonalizationEngine) {
               console.log('🚀 Using Phase 2 Advanced AI System');
               addLine('🧬 Activating Phase 2: Multi-dimensional Pattern DNA...', 'success-line');
@@ -1129,14 +1136,24 @@
           }
         });
         
-        // Check Phase 2 availability
+        // Check Phase 2 availability with debugging
+        console.log('🔍 Checking Phase 2 components:', {
+          Phase2IntegrationEngine: !!window.Phase2IntegrationEngine,
+          PatternDNAEngine: !!window.PatternDNAEngine,
+          ContextAwareEngine: !!window.ContextAwareEngine,
+          AdvancedPersonalizationEngine: !!window.AdvancedPersonalizationEngine
+        });
+        
         if (window.Phase2IntegrationEngine && window.PatternDNAEngine && window.ContextAwareEngine && window.AdvancedPersonalizationEngine) {
           addLine('🧬 Phase 2 Advanced AI System: Multi-dimensional Pattern DNA ready', 'success-line');
           addLine('🎨 Context-aware generation and advanced personalization active', 'success-line');
+          console.log('✅ Phase 2 System activated');
         } else if (window.ProceduralPatternGenerator && window.SemanticAnalysisEngine && window.UniquenessEngine) {
           addLine('🤖 Phase 1 Procedural AI System ready', 'success-line');
+          console.log('⚠️ Phase 2 unavailable, using Phase 1');
         } else {
           addLine('🔄 Enhanced fallback generation system ready', 'info-line');
+          console.log('⚠️ Advanced AI unavailable, using fallback');
         }
         
         addLine('🧠 AI music generation & community system initialized', 'system-line');
