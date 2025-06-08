@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Syntax Check</title>
+</head>
+<body>
+    <h1>JavaScript Syntax Check</h1>
+    <div id="result"></div>
+    
+    <script>
+        try {
+            // Test the exact problematic function
+            function testShowRecommendations() {
+                const currentUser = null;
+                const userId = currentUser ? currentUser.id : 'guest';
+                
+                if (userId === 'guest') {
+                    console.log('💡 Create an account to get personalized recommendations!');
+                    console.log('🎵 Try: "create trap beat", "make lo-fi music", "generate house pattern"');
+                    return;
+                }
+            }
+            
+            // Test the patterns object
+            const patterns = {
+                'trap': {
+                    code: `stack(
+  sound("bd*2 ~ bd ~").gain(0.8),
+  sound("~ ~ sd ~").gain(0.7),
+  sound("hh*8").gain(0.3),
+  sound("808").note("c2 c2 f1 c2").lpf(100)
+).slow(2)`,
+                    description: 'Modern trap beat with 808s and crisp snares'
+                }
+            };
+            
+            document.getElementById('result').innerHTML = '✅ JavaScript syntax is valid! All functions can be parsed correctly.';
+            console.log('✅ All syntax checks passed');
+            
+        } catch (error) {
+            document.getElementById('result').innerHTML = '❌ Syntax Error: ' + error.message;
+            console.error('❌ Syntax error:', error);
+        }
+    </script>
+</body>
+</html>

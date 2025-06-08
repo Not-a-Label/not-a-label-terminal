@@ -1,0 +1,2440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Not a Label - AI Music Terminal</title>
+  
+  <!-- PWA Meta Tags -->
+  <meta name="description" content="AI-powered music creation terminal. Create, share, and collaborate through natural language commands.">
+  <meta name="theme-color" content="#00ff00">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Not a Label Terminal">
+  
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="/manifest.json">
+  
+  <style>
+    * { 
+      margin: 0; 
+      padding: 0; 
+      box-sizing: border-box;
+    }
+    
+    body { 
+      background: #000; 
+      color: #00ff00; 
+      font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+      overflow: hidden;
+      height: 100vh;
+      position: fixed;
+      width: 100%;
+      touch-action: manipulation;
+    }
+    
+    /* Terminal Container */
+    .terminal {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+    
+    /* Terminal Header */
+    .terminal-header {
+      background: linear-gradient(135deg, #111, #001100);
+      border-bottom: 1px solid #00ff0055;
+      padding: 8px 15px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 45px;
+      flex-shrink: 0;
+      backdrop-filter: blur(10px);
+    }
+    
+    .terminal-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #00ff00;
+      font-size: 14px;
+      font-weight: bold;
+    }
+    
+    .logo-dot {
+      width: 8px;
+      height: 8px;
+      background: #00ff00;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    
+    .terminal-status {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 11px;
+      color: #00ff0088;
+    }
+    
+    .status-item {
+      cursor: pointer;
+      transition: color 0.2s;
+      padding: 2px 4px;
+      border-radius: 3px;
+    }
+    
+    .status-item:hover {
+      color: #00ff00;
+      background: rgba(0, 255, 0, 0.1);
+    }
+    
+    .network-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #00ff00;
+      margin-right: 4px;
+    }
+    
+    .network-indicator.offline {
+      background: #ff0066;
+      animation: pulse 1s infinite;
+    }
+    
+    /* Terminal Content */
+    .terminal-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 15px;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+      background: radial-gradient(ellipse at center, rgba(0, 255, 0, 0.02) 0%, transparent 70%);
+    }
+    
+    /* Terminal Lines */
+    .terminal-line {
+      margin: 2px 0;
+      line-height: 1.4;
+      font-size: 13px;
+      word-wrap: break-word;
+      white-space: pre-wrap;
+      animation: fadeIn 0.3s ease-out;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .system-line { color: #00ffff; }
+    .error-line { color: #ff0066; font-weight: bold; }
+    .input-line { color: #00ff00; font-weight: bold; }
+    .output-line { color: #cccccc; }
+    .success-line { color: #00ff88; font-weight: bold; }
+    .info-line { color: #ffaa00; }
+    .dim-line { color: #00ff0066; }
+    .highlight-line { 
+      color: #00ff00; 
+      background: rgba(0, 255, 0, 0.1);
+      padding: 4px 8px;
+      border-left: 3px solid #00ff00;
+      margin: 4px 0;
+      border-radius: 0 4px 4px 0;
+    }
+    
+    /* Enhanced Strudel Player */
+    .inline-strudel-player {
+      margin: 12px 0;
+      padding: 16px;
+      background: linear-gradient(135deg, #001100, #002200);
+      border: 1px solid #00ff0050;
+      border-radius: 8px;
+      font-family: inherit;
+      box-shadow: 0 4px 12px rgba(0, 255, 0, 0.1);
+    }
+    
+    .player-header {
+      color: #00ff00;
+      font-size: 13px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: bold;
+    }
+    
+    .pattern-id {
+      color: #00ff0066;
+      font-size: 10px;
+      cursor: pointer;
+      padding: 2px 6px;
+      border: 1px solid #00ff0030;
+      border-radius: 3px;
+      font-weight: normal;
+      transition: all 0.2s;
+    }
+    
+    .pattern-id:hover {
+      color: #00ff00;
+      border-color: #00ff0050;
+      background: rgba(0, 255, 0, 0.05);
+    }
+    
+    .strudel-code {
+      background: #000;
+      border: 1px solid #00ff0030;
+      color: #00ff00;
+      padding: 12px;
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 11px;
+      width: 100%;
+      min-height: 80px;
+      resize: vertical;
+      margin-bottom: 12px;
+      line-height: 1.4;
+    }
+    
+    .strudel-code:focus {
+      outline: none;
+      border-color: #00ff00;
+      box-shadow: 0 0 8px rgba(0, 255, 0, 0.3);
+    }
+    
+    .player-controls {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    
+    .control-btn {
+      background: transparent;
+      border: 1px solid #00ff0050;
+      color: #00ff00;
+      padding: 6px 12px;
+      font-family: inherit;
+      font-size: 11px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      min-height: 32px;
+    }
+    
+    .control-btn:hover {
+      border-color: #00ff00;
+      background: #00ff0020;
+      transform: translateY(-1px);
+    }
+    
+    .control-btn:active {
+      transform: translateY(0);
+    }
+    
+    .control-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .btn-play.playing { 
+      background: #00ff0020; 
+      border-color: #00ff00;
+    }
+    
+    .btn-save.saved { 
+      background: #ffaa0020; 
+      border-color: #ffaa00;
+      color: #ffaa00;
+    }
+    
+    /* Enhanced Tables */
+    .terminal-table {
+      border-collapse: collapse;
+      margin: 8px 0;
+      font-family: inherit;
+      font-size: 12px;
+      width: 100%;
+      background: rgba(0, 17, 0, 0.3);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    
+    .terminal-table th,
+    .terminal-table td {
+      border: 1px solid #00ff0030;
+      padding: 8px 10px;
+      text-align: left;
+    }
+    
+    .terminal-table th {
+      background: rgba(0, 255, 0, 0.1);
+      color: #00ff00;
+      font-weight: bold;
+      border-bottom: 2px solid #00ff0050;
+    }
+    
+    .terminal-table td {
+      color: #cccccc;
+    }
+    
+    .terminal-table tr:hover {
+      background: rgba(0, 255, 0, 0.05);
+    }
+    
+    /* Command Input */
+    .terminal-input-container {
+      background: linear-gradient(135deg, #111, #001100);
+      border-top: 1px solid #00ff0055;
+      padding: 12px 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+      backdrop-filter: blur(10px);
+    }
+    
+    .terminal-prompt {
+      color: #00ff00;
+      font-weight: bold;
+      white-space: nowrap;
+      user-select: none;
+      min-width: fit-content;
+    }
+    
+    .input-wrapper {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    
+    .terminal-input {
+      background: transparent;
+      border: none;
+      color: #00ff00;
+      font-family: inherit;
+      font-size: 13px;
+      outline: none;
+      padding: 6px 0;
+      width: 100%;
+      caret-color: transparent; /* Hide default cursor */
+    }
+    
+    .terminal-input::placeholder {
+      color: #00ff0055;
+      font-style: italic;
+    }
+    
+    .voice-btn {
+      background: transparent;
+      border: 1px solid #00ff0050;
+      color: #00ff00;
+      padding: 6px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.2s;
+      min-width: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .voice-btn:hover {
+      border-color: #00ff00;
+      background: #00ff0020;
+    }
+    
+    .voice-btn.listening {
+      background: #ff0066;
+      border-color: #ff0066;
+      color: white;
+      animation: pulse 1s infinite;
+    }
+    
+    .cursor {
+      color: #00ff00;
+      background: #00ff00;
+      width: 2px;
+      height: 16px;
+      display: inline-block;
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      animation: blink 1s infinite;
+      pointer-events: none;
+    }
+    
+    /* Command Suggestions */
+    .command-suggestions {
+      position: absolute;
+      bottom: 65px;
+      left: 15px;
+      right: 15px;
+      background: linear-gradient(135deg, #111, #001100);
+      border: 1px solid #00ff0050;
+      border-radius: 6px;
+      max-height: 300px;
+      overflow-y: auto;
+      display: none;
+      z-index: 100;
+      box-shadow: 0 8px 24px rgba(0, 255, 0, 0.2);
+      backdrop-filter: blur(10px);
+    }
+    
+    .command-suggestions.show {
+      display: block;
+    }
+    
+    .suggestion-item {
+      padding: 10px 15px;
+      cursor: pointer;
+      border-bottom: 1px solid #00ff0020;
+      color: #cccccc;
+      font-size: 12px;
+      transition: all 0.2s;
+    }
+    
+    .suggestion-item:hover,
+    .suggestion-item.selected {
+      background: #00ff0020;
+      color: #00ff00;
+    }
+    
+    .suggestion-item:last-child {
+      border-bottom: none;
+    }
+    
+    .suggestion-command {
+      color: #00ff00;
+      font-weight: bold;
+      margin-bottom: 2px;
+    }
+    
+    .suggestion-desc {
+      color: #00ff0088;
+      font-size: 11px;
+    }
+    
+    /* Progress indicators */
+    .progress-bar {
+      background: #333;
+      height: 6px;
+      border-radius: 3px;
+      overflow: hidden;
+      margin: 6px 0;
+      width: 200px;
+    }
+    
+    .progress-fill {
+      background: linear-gradient(90deg, #00ff00, #00ff88);
+      height: 100%;
+      transition: width 0.3s ease;
+      border-radius: 3px;
+    }
+    
+    /* Loading animations */
+    .loading-dots::after {
+      content: '';
+      animation: loadingDots 1.5s infinite;
+    }
+    
+    @keyframes loadingDots {
+      0%, 20% { content: ''; }
+      40% { content: '.'; }
+      60% { content: '..'; }
+      80%, 100% { content: '...'; }
+    }
+    
+    /* Tutorial specific styles */
+    .tutorial-box {
+      background: linear-gradient(135deg, #001100, #002200);
+      border: 1px solid #00ff00;
+      border-radius: 6px;
+      padding: 15px;
+      margin: 10px 0;
+      border-left: 4px solid #00ff00;
+    }
+    
+    .achievement-notification {
+      background: linear-gradient(135deg, #003300, #002200);
+      border: 1px solid #00ff88;
+      color: #00ff88;
+      padding: 8px 12px;
+      border-radius: 4px;
+      margin: 4px 0;
+      font-size: 12px;
+      animation: slideInRight 0.5s ease-out;
+    }
+    
+    @keyframes slideInRight {
+      from { opacity: 0; transform: translateX(20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    
+    /* PWA Install Banner */
+    .pwa-install-banner {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, #001100, #003300);
+      border: 1px solid #00ff00;
+      border-radius: 8px;
+      padding: 12px 16px;
+      color: #00ff00;
+      font-size: 12px;
+      cursor: pointer;
+      z-index: 200;
+      display: none;
+      max-width: 90%;
+      box-shadow: 0 8px 24px rgba(0, 255, 0, 0.3);
+      backdrop-filter: blur(10px);
+    }
+    
+    .pwa-install-banner.show {
+      display: block;
+      animation: slideUp 0.3s ease-out;
+    }
+    
+    .pwa-install-banner:hover {
+      transform: translateX(-50%) translateY(-2px);
+      box-shadow: 0 12px 32px rgba(0, 255, 0, 0.4);
+    }
+    
+    /* Animations */
+    @keyframes blink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0; }
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.7; transform: scale(0.95); }
+    }
+    
+    @keyframes slideUp {
+      from { transform: translateX(-50%) translateY(100px); opacity: 0; }
+      to { transform: translateX(-50%) translateY(0); opacity: 1; }
+    }
+    
+    @keyframes glow {
+      0%, 100% { text-shadow: 0 0 5px #00ff00; }
+      50% { text-shadow: 0 0 15px #00ff00, 0 0 25px #00ff00; }
+    }
+    
+    /* Mobile Optimizations */
+    @media (max-width: 768px) {
+      .terminal-header {
+        padding: 6px 12px;
+        min-height: 40px;
+      }
+      
+      .terminal-title {
+        font-size: 12px;
+      }
+      
+      .terminal-content {
+        padding: 12px;
+      }
+      
+      .terminal-line {
+        font-size: 12px;
+      }
+      
+      .terminal-input-container {
+        padding: 10px 12px;
+      }
+      
+      .terminal-input {
+        font-size: 16px; /* Prevents zoom on iOS */
+      }
+      
+      .player-controls {
+        justify-content: center;
+      }
+      
+      .control-btn {
+        min-width: 44px; /* Touch target size */
+        padding: 8px 10px;
+      }
+      
+      .command-suggestions {
+        bottom: 55px;
+        left: 10px;
+        right: 10px;
+      }
+    }
+    
+    /* Landscape mobile */
+    @media screen and (orientation: landscape) and (max-height: 500px) {
+      .terminal-header {
+        padding: 4px 12px;
+        min-height: 35px;
+      }
+      
+      .terminal-content {
+        padding: 8px 12px;
+      }
+      
+      .inline-strudel-player {
+        padding: 12px;
+      }
+      
+      .strudel-code {
+        min-height: 60px;
+      }
+    }
+    
+    /* High contrast mode */
+    @media (prefers-contrast: high) {
+      .terminal-header {
+        border-bottom-width: 2px;
+      }
+      
+      .control-btn {
+        border-width: 2px;
+      }
+      
+      .inline-strudel-player {
+        border-width: 2px;
+      }
+    }
+    
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+    
+    /* Dark mode (already dark, but for system preference) */
+    @media (prefers-color-scheme: dark) {
+      body {
+        background: #000;
+      }
+    }
+    
+    /* Focus styles for accessibility */
+    .control-btn:focus,
+    .terminal-input:focus,
+    .voice-btn:focus {
+      outline: 2px solid #00ff00;
+      outline-offset: 2px;
+    }
+    
+    /* Scrollbar styling */
+    .terminal-content::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    .terminal-content::-webkit-scrollbar-track {
+      background: #111;
+    }
+    
+    .terminal-content::-webkit-scrollbar-thumb {
+      background: #00ff0050;
+      border-radius: 4px;
+    }
+    
+    .terminal-content::-webkit-scrollbar-thumb:hover {
+      background: #00ff0080;
+    }
+  </style>
+</head>
+<body>
+  <div class="terminal">
+    <!-- Terminal Header -->
+    <div class="terminal-header">
+      <div class="terminal-title">
+        <div class="logo-dot"></div>
+        <span>NOT A LABEL TERMINAL v2.0</span>
+      </div>
+      <div class="terminal-status">
+        <div class="status-item" id="userStatus" onclick="showUserMenu()">guest@nal</div>
+        <div class="status-item" id="networkStatus">
+          <div class="network-indicator" id="networkDot"></div>
+          <span id="networkText">online</span>
+        </div>
+        <div class="status-item" id="timeStatus"></div>
+      </div>
+    </div>
+    
+    <!-- Terminal Content -->
+    <div class="terminal-content" id="terminalContent">
+      <div class="terminal-line system-line">[SYSTEM] Not a Label AI Music Terminal v2.0 initialized</div>
+      <div class="terminal-line system-line">[SYSTEM] Natural language processing online</div>
+      <div class="terminal-line system-line">[SYSTEM] Web Audio API ready</div>
+      <div class="terminal-line system-line">[SYSTEM] PWA features active</div>
+      <div class="terminal-line system-line">[SYSTEM] Community feed synchronized</div>
+      <div class="terminal-line system-line">[SYSTEM] Voice input available</div>
+      <div class="terminal-line system-line"></div>
+      <div class="terminal-line highlight-line">🎵 Welcome to Not a Label - AI Music Creation Terminal</div>
+      <div class="terminal-line output-line">The intelligent music terminal that understands natural language.</div>
+      <div class="terminal-line output-line">Just talk to create, explore, and share amazing music!</div>
+      <div class="terminal-line info-line">🌐 Production URL: https://not-a-label.art/</div>
+      <div class="terminal-line output-line"></div>
+      <div class="terminal-line info-line">💡 QUICK START:</div>
+      <div class="terminal-line dim-line">  "create account"                    - Revolutionary musical signup</div>
+      <div class="terminal-line dim-line">  "create aggressive trap beat"       - AI generates unique patterns</div>
+      <div class="terminal-line dim-line">  "make dreamy lo-fi for studying"    - Natural language understanding</div>
+      <div class="terminal-line dim-line">  "generate dark drill music"         - Custom Strudel code generation</div>
+      <div class="terminal-line dim-line">  "help"                              - Full command reference</div>
+      <div class="terminal-line output-line"></div>
+      <div class="terminal-line success-line">🤖 Enhanced Nala AI ready! Try natural language music creation!</div>
+      <div class="terminal-line system-line"></div>
+    </div>
+    
+    <!-- Terminal Input -->
+    <div class="terminal-input-container">
+      <span class="terminal-prompt" id="terminalPrompt">nal@music:~$</span>
+      <div class="input-wrapper">
+        <input type="text" class="terminal-input" id="terminalInput" 
+               placeholder="Type any command in natural language..." 
+               autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        <span class="cursor" id="terminalCursor">█</span>
+      </div>
+      <button class="voice-btn" id="voiceBtn" title="Voice input">🎤</button>
+    </div>
+    
+    <!-- Command Suggestions -->
+    <div class="command-suggestions" id="commandSuggestions">
+      <!-- Suggestions will be populated here -->
+    </div>
+  </div>
+  
+  <!-- PWA Install Prompt -->
+  <div class="pwa-install-banner" id="pwaInstallBanner">
+    📱 Install Not a Label Terminal for the best experience - Add to home screen
+  </div>
+
+  <!-- Include Natural Language Processor -->
+  <script src="js/nlp.js"></script>
+  <script src="js/onboarding.js"></script>
+  <script src="js/auth-system.js"></script>
+  <script src="js/musical-identity-creator.js"></script>
+  <!-- <script src="js/strudel-integration.js"></script> Disabled due to CDN issues -->
+  <script src="js/simple-strudel.js"></script>
+  <script src="js/enhanced-pattern-generator.js"></script>
+  <script src="js/user-taste-tracker.js"></script>
+
+  <script>
+    // Global state
+    let currentUser = null;
+    let accessToken = null;
+    let audioContext = null;
+    let isAudioInitialized = false;
+    let commandHistory = [];
+    let historyIndex = -1;
+    let suggestionIndex = -1;
+    let isOffline = false;
+    let deferredPrompt = null;
+    let voiceRecognition = null;
+    let isListening = false;
+    
+    // Initialize components
+    let nlp = null;
+    let onboarding = null;
+    let musicalIdentityCreator = null;
+    let authSystem = null;
+    let enhancedGenerator = null;
+    let tasteTracker = null;
+    
+    // Pattern storage
+    let activePatterns = new Map();
+    let patternCounter = 0;
+    
+    // Initialize terminal
+    document.addEventListener('DOMContentLoaded', function() {
+      initializeTerminal();
+      initializeNLP();
+      initializeOnboarding();
+      initializeAuthSystem();
+      initializeMusicalIdentity();
+      initializeEnhancedGenerator();
+      initializeTasteTracker();
+      setupPWA();
+      setupNetworkMonitoring();
+      setupAudio();
+      setupVoiceInput();
+      checkExistingSession();
+      startClock();
+      
+      // Check if user should see tutorial
+      if (TerminalOnboarding.shouldShowTutorial()) {
+        setTimeout(() => {
+          addLine('💡 New to Not a Label? Type "tutorial" for an interactive guide!', 'info-line');
+        }, 2000);
+      }
+    });
+    
+    function initializeTerminal() {
+      const terminalInput = document.getElementById('terminalInput');
+      
+      // Input event handlers
+      terminalInput.addEventListener('keydown', handleKeyDown);
+      terminalInput.addEventListener('input', handleInput);
+      terminalInput.addEventListener('input', updateCursorPosition);
+      terminalInput.addEventListener('keyup', updateCursorPosition);
+      terminalInput.addEventListener('focus', updateCursorPosition);
+      terminalInput.addEventListener('click', updateCursorPosition);
+      terminalInput.addEventListener('blur', () => {
+        // Refocus on mobile to keep keyboard open
+        setTimeout(() => terminalInput.focus(), 100);
+      });
+      
+      // Auto-focus terminal
+      terminalInput.focus();
+      
+      // Initialize cursor position
+      setTimeout(() => {
+        console.log('Initializing cursor position...');
+        updateCursorPosition();
+      }, 100);
+      
+      // Force cursor update every second for debugging
+      setInterval(updateCursorPosition, 1000);
+      
+      // Click anywhere to focus terminal
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('.command-suggestions') && 
+            !e.target.closest('.inline-strudel-player') &&
+            !e.target.closest('.voice-btn')) {
+          terminalInput.focus();
+        }
+      });
+      
+      // Handle URL parameters
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('quick')) {
+        setTimeout(() => executeQuickCommand(urlParams.get('quick')), 1000);
+      }
+      if (urlParams.get('voice') === 'true') {
+        setTimeout(() => startVoiceInput(), 500);
+      }
+    }
+    
+    // Update cursor position to follow text
+    function updateCursorPosition() {
+      try {
+        const input = document.getElementById('terminalInput');
+        const cursor = document.getElementById('terminalCursor');
+        
+        if (!input || !cursor) {
+          console.warn('Cursor update failed: missing elements', { input: !!input, cursor: !!cursor });
+          return;
+        }
+        
+        // Create a temporary span to measure text width
+        const tempSpan = document.createElement('span');
+        tempSpan.style.font = window.getComputedStyle(input).font;
+        tempSpan.style.visibility = 'hidden';
+        tempSpan.style.position = 'absolute';
+        tempSpan.style.whiteSpace = 'pre';
+        
+        // Get text up to cursor position
+        const textBeforeCursor = input.value.substring(0, input.selectionStart);
+        tempSpan.textContent = textBeforeCursor;
+        
+        document.body.appendChild(tempSpan);
+        const textWidth = tempSpan.offsetWidth;
+        document.body.removeChild(tempSpan);
+        
+        // Position cursor after the text
+        cursor.style.left = textWidth + 'px';
+        
+        // Debug log
+        console.log('Cursor position updated:', { textWidth, textBeforeCursor, selectionStart: input.selectionStart });
+      } catch (error) {
+        console.error('Error updating cursor position:', error);
+      }
+    }
+    
+    function initializeNLP() {
+      nlp = new NaturalLanguageProcessor();
+      addLine('🧠 Natural language processor ready', 'system-line');
+    }
+    
+    function initializeOnboarding() {
+      onboarding = new TerminalOnboarding({
+        addLine: addLine,
+        addHTML: addHTML,
+        generateMusicFromOnboarding: generateMusicFromOnboarding,
+        showCommunityFeed: showCommunityFeed,
+        focusInput: () => document.getElementById('terminalInput').focus()
+      });
+    }
+    
+    function initializeAuthSystem() {
+      authSystem = new AuthSystem({
+        addLine: addLine,
+        addHTML: addHTML,
+        focusInput: () => document.getElementById('terminalInput').focus(),
+        updatePrompt: updatePrompt
+      });
+    }
+    
+    function initializeMusicalIdentity() {
+      musicalIdentityCreator = new MusicalIdentityCreator({
+        addLine: addLine,
+        addHTML: addHTML,
+        addStrudelPlayer: addStrudelPlayer,
+        focusInput: () => document.getElementById('terminalInput').focus(),
+        authSystem: authSystem
+      });
+    }
+    
+    function initializeEnhancedGenerator() {
+      try {
+        if (typeof EnhancedPatternGenerator === 'undefined') {
+          addLine('❌ EnhancedPatternGenerator class not found', 'error-line');
+          return;
+        }
+        enhancedGenerator = new EnhancedPatternGenerator();
+        addLine('🤖 Enhanced AI pattern generator ready', 'system-line');
+        console.log('Enhanced generator initialized:', enhancedGenerator);
+      } catch (error) {
+        addLine('❌ Failed to initialize enhanced generator: ' + error.message, 'error-line');
+        console.error('Enhanced generator error:', error);
+      }
+    }
+    
+    function initializeTasteTracker() {
+      tasteTracker = new UserTasteTracker();
+      addLine('🎯 User taste learning system active', 'system-line');
+    }
+    
+    // Input handling
+    function handleKeyDown(event) {
+      const input = event.target;
+      const suggestions = document.getElementById('commandSuggestions');
+      
+      switch (event.key) {
+        case 'Enter':
+          event.preventDefault();
+          if (suggestions.classList.contains('show') && suggestionIndex >= 0) {
+            const selectedSuggestion = suggestions.children[suggestionIndex];
+            const command = selectedSuggestion.querySelector('.suggestion-command').textContent;
+            input.value = command;
+            hideSuggestions();
+          }
+          executeCommand(input.value);
+          break;
+          
+        case 'ArrowUp':
+          event.preventDefault();
+          if (suggestions.classList.contains('show')) {
+            navigateSuggestions(-1);
+          } else {
+            navigateHistory(-1);
+          }
+          break;
+          
+        case 'ArrowDown':
+          event.preventDefault();
+          if (suggestions.classList.contains('show')) {
+            navigateSuggestions(1);
+          } else {
+            navigateHistory(1);
+          }
+          break;
+          
+        case 'Escape':
+          hideSuggestions();
+          break;
+          
+        case 'Tab':
+          event.preventDefault();
+          if (suggestions.classList.contains('show') && suggestionIndex >= 0) {
+            const selectedSuggestion = suggestions.children[suggestionIndex];
+            const command = selectedSuggestion.querySelector('.suggestion-command').textContent;
+            input.value = command;
+            hideSuggestions();
+          }
+          break;
+      }
+    }
+    
+    function handleInput(event) {
+      const query = event.target.value;
+      
+      if (query.length >= 2) {
+        showSuggestions(query);
+      } else {
+        hideSuggestions();
+      }
+    }
+    
+    // Command suggestions
+    const commandSuggestions = [
+      { cmd: "create trap beat", desc: "Generate modern trap pattern" },
+      { cmd: "make lo-fi music for studying", desc: "Create chill study beats" },
+      { cmd: "generate drill pattern", desc: "UK drill with sliding 808s" },
+      { cmd: "show community feed", desc: "Browse recent patterns" },
+      { cmd: "what's trending", desc: "Popular community content" },
+      { cmd: "my profile", desc: "View your account and patterns" },
+      { cmd: "who's online", desc: "See active creators" },
+      { cmd: "tutorial", desc: "Interactive walkthrough" },
+      { cmd: "help", desc: "Full command reference" },
+      { cmd: "create jazz chords", desc: "Generate jazz progression" },
+      { cmd: "make house music", desc: "Create house 4/4 pattern" },
+      { cmd: "generate afrobeats", desc: "African rhythm patterns" },
+      { cmd: "create synthwave", desc: "Retro electronic vibes" },
+      { cmd: "recent patterns", desc: "Latest community creations" },
+      { cmd: "save this pattern", desc: "Save current pattern" }
+    ];
+    
+    function showSuggestions(query) {
+      const suggestions = document.getElementById('commandSuggestions');
+      const filtered = commandSuggestions.filter(item => 
+        item.cmd.toLowerCase().includes(query.toLowerCase()) ||
+        item.desc.toLowerCase().includes(query.toLowerCase())
+      ).slice(0, 8);
+      
+      if (filtered.length === 0) {
+        hideSuggestions();
+        return;
+      }
+      
+      suggestions.innerHTML = filtered.map((item, index) => `
+        <div class="suggestion-item" data-index="${index}">
+          <div class="suggestion-command">${item.cmd}</div>
+          <div class="suggestion-desc">${item.desc}</div>
+        </div>
+      `).join('');
+      
+      // Add click handlers
+      suggestions.querySelectorAll('.suggestion-item').forEach((item, index) => {
+        item.addEventListener('click', () => {
+          const command = item.querySelector('.suggestion-command').textContent;
+          document.getElementById('terminalInput').value = command;
+          hideSuggestions();
+          executeCommand(command);
+        });
+      });
+      
+      suggestions.classList.add('show');
+      suggestionIndex = -1;
+    }
+    
+    function hideSuggestions() {
+      document.getElementById('commandSuggestions').classList.remove('show');
+      suggestionIndex = -1;
+    }
+    
+    function navigateSuggestions(direction) {
+      const suggestions = document.getElementById('commandSuggestions');
+      const items = suggestions.querySelectorAll('.suggestion-item');
+      
+      if (items.length === 0) return;
+      
+      if (suggestionIndex >= 0) {
+        items[suggestionIndex].classList.remove('selected');
+      }
+      
+      suggestionIndex += direction;
+      if (suggestionIndex < 0) suggestionIndex = items.length - 1;
+      if (suggestionIndex >= items.length) suggestionIndex = 0;
+      
+      items[suggestionIndex].classList.add('selected');
+      items[suggestionIndex].scrollIntoView({ block: 'nearest' });
+    }
+    
+    function navigateHistory(direction) {
+      const input = document.getElementById('terminalInput');
+      
+      if (direction === -1 && historyIndex > 0) {
+        historyIndex--;
+        input.value = commandHistory[historyIndex];
+      } else if (direction === 1 && historyIndex < commandHistory.length - 1) {
+        historyIndex++;
+        input.value = commandHistory[historyIndex];
+      } else if (direction === 1 && historyIndex === commandHistory.length - 1) {
+        historyIndex = commandHistory.length;
+        input.value = '';
+      }
+    }
+    
+    // Command execution
+    async function executeCommand(command) {
+      if (!command.trim()) return;
+      
+      // Add to history
+      commandHistory.push(command);
+      historyIndex = commandHistory.length;
+      
+      // Clear input
+      document.getElementById('terminalInput').value = '';
+      hideSuggestions();
+      
+      // Display command
+      addLine(`${getCurrentPrompt()} ${command}`, 'input-line');
+      
+      // Check if onboarding should handle this
+      if (onboarding && onboarding.isActive && onboarding.handleInput(command)) {
+        scrollToBottom();
+        return;
+      }
+      
+      // Check if musical identity creation should handle this
+      if (musicalIdentityCreator && musicalIdentityCreator.isActive && await musicalIdentityCreator.handleInput(command)) {
+        scrollToBottom();
+        return;
+      }
+      
+      // Check if auth system should handle this
+      if (authSystem && authSystem.isActive && await authSystem.handleLoginInput(command)) {
+        scrollToBottom();
+        return;
+      }
+      
+      // Handle special commands first
+      if (handleSpecialCommands(command.trim())) {
+        scrollToBottom();
+        return;
+      }
+      
+      // Process with NLP
+      processNaturalLanguageCommand(command.trim());
+      scrollToBottom();
+    }
+    
+    function handleSpecialCommands(command) {
+      const lowerCommand = command.toLowerCase();
+      
+      if (lowerCommand === 'clear') {
+        clearTerminal();
+        return true;
+      }
+      
+      if (lowerCommand === 'tutorial') {
+        onboarding.start();
+        return true;
+      }
+      
+      if (lowerCommand === 'skip tutorial' && onboarding.isActive) {
+        onboarding.skip();
+        return true;
+      }
+      
+      if (lowerCommand === 'help') {
+        showHelp();
+        return true;
+      }
+      
+      if (lowerCommand === 'login') {
+        if (authSystem) {
+          authSystem.startLogin();
+        } else {
+          showLogin();
+        }
+        return true;
+      }
+      
+      if (lowerCommand === 'logout') {
+        if (authSystem) {
+          authSystem.logout();
+        } else {
+          addLine('❌ No user currently logged in.', 'error-line');
+        }
+        return true;
+      }
+      
+      if (lowerCommand === 'register') {
+        startMusicalIdentityCreation();
+        return true;
+      }
+      
+      if (lowerCommand === 'my profile' || lowerCommand === 'profile') {
+        if (authSystem) {
+          authSystem.showProfile();
+        } else {
+          showProfile();
+        }
+        return true;
+      }
+      
+      if (lowerCommand === 'my patterns' || lowerCommand === 'show my patterns') {
+        if (authSystem) {
+          authSystem.showMyPatterns();
+        } else {
+          addLine('❌ Please login to view your patterns', 'error-line');
+        }
+        return true;
+      }
+      
+      if (lowerCommand === 'i like this' || lowerCommand === 'like this' || lowerCommand === 'love this') {
+        handleUserFeedback('like');
+        return true;
+      }
+      
+      if (lowerCommand === 'i hate this' || lowerCommand === 'dislike this' || lowerCommand === 'not good') {
+        handleUserFeedback('dislike');
+        return true;
+      }
+      
+      if (lowerCommand === 'show recommendations' || lowerCommand === 'suggest something' || lowerCommand === 'what should i make') {
+        showRecommendations();
+        return true;
+      }
+      
+      if (lowerCommand === 'create account' || lowerCommand === 'signup' || lowerCommand === 'sign up') {
+        startMusicalIdentityCreation();
+        return true;
+      }
+      
+      if (lowerCommand === 'create musical identity' || lowerCommand === 'musical signup') {
+        startMusicalIdentityCreation();
+        return true;
+      }
+      
+      return false;
+    }
+    
+    function processNaturalLanguageCommand(command) {
+      // Check if this is a music creation command first
+      const musicKeywords = ['create', 'make', 'generate', 'build', 'produce'];
+      const genreKeywords = ['trap', 'drill', 'house', 'lo-fi', 'lofi', 'afrobeats', 'jazz', 'beat', 'music', 'pattern'];
+      const moodKeywords = ['aggressive', 'dreamy', 'dark', 'chill', 'energetic', 'bouncy', 'smooth', 'spacey'];
+      
+      const lowerCommand = command.toLowerCase();
+      const isMusicCommand = musicKeywords.some(keyword => lowerCommand.includes(keyword)) &&
+                           (genreKeywords.some(keyword => lowerCommand.includes(keyword)) || 
+                            moodKeywords.some(keyword => lowerCommand.includes(keyword)) ||
+                            lowerCommand.includes('something'));
+      
+      if (isMusicCommand) {
+        // Directly use enhanced music generation - FORCE enhanced path
+        addLine('🎵 Nala is analyzing your request<span class="loading-dots"></span>', 'system-line');
+        
+        setTimeout(async () => {
+          // Remove thinking indicator
+          const lines = document.querySelectorAll('.terminal-line');
+          const lastLine = lines[lines.length - 1];
+          if (lastLine && lastLine.textContent.includes('analyzing')) {
+            lastLine.remove();
+          }
+          
+          // Create enhanced request directly - bypass NLP fallback
+          await createMusicEnhanced(command);
+        }, 800);
+        return;
+      }
+      
+      // Fallback to regular NLP processing
+      if (!nlp) {
+        addLine('❌ Natural language processor not ready', 'error-line');
+        return;
+      }
+      
+      // Show thinking indicator
+      addLine('🎵 Nala is thinking<span class="loading-dots"></span>', 'system-line');
+      
+      setTimeout(() => {
+        const result = nlp.processCommand(command, {
+          currentUser: currentUser,
+          activePatterns: Array.from(activePatterns.keys())
+        });
+        
+        handleNLPResult(result, command);
+      }, 800);
+    }
+    
+    function handleNLPResult(result, originalCommand) {
+      // Remove thinking indicator
+      const lines = document.querySelectorAll('.terminal-line');
+      const lastLine = lines[lines.length - 1];
+      if (lastLine && lastLine.textContent.includes('thinking')) {
+        lastLine.remove();
+      }
+      
+      switch (result.type) {
+        case 'create_music':
+          createMusic(result, originalCommand);
+          break;
+          
+        case 'community':
+          showCommunityFeed();
+          break;
+          
+        case 'profile':
+          showProfile();
+          break;
+          
+        case 'social':
+          showSocial();
+          break;
+          
+        case 'pattern_control':
+          handlePatternControl(result);
+          break;
+          
+        case 'learning':
+          handleLearning(result);
+          break;
+          
+        case 'sentiment':
+          addLine(result.response, 'success-line');
+          break;
+          
+        case 'unknown':
+        default:
+          // Check if this might be a musical identity creation request
+          if (!currentUser && (originalCommand.includes('account') || originalCommand.includes('signup') || originalCommand.includes('register') || originalCommand.includes('identity'))) {
+            addLine('🎵 Did you want to create a musical identity?', 'info-line');
+            addLine('💡 Try: "create account" for revolutionary authentication through music!', 'dim-line');
+          } else {
+            handleUnknownCommand(result, originalCommand);
+          }
+          break;
+      }
+    }
+    
+    // Enhanced music creation - direct path to AI generator
+    async function createMusicEnhanced(originalCommand) {
+      addLine(`🎵 Nala is creating your custom pattern...`, 'system-line');
+      addLine('🧠 Analyzing your musical preferences...', 'system-line');
+      
+      setTimeout(async () => {
+        try {
+          // Ensure enhanced generator is available
+          console.log('Enhanced generator check:', enhancedGenerator);
+          if (!enhancedGenerator) {
+            addLine('❌ Enhanced AI generator not ready. Using fallback...', 'error-line');
+            addLine('🔧 Debug: enhancedGenerator is ' + typeof enhancedGenerator, 'system-line');
+            // Fallback to basic generation
+            const result = { genre: 'lo-fi', mood: null, tempo: null };
+            await createMusic(result, originalCommand);
+            return;
+          }
+          
+          addLine('✅ Enhanced generator available, proceeding...', 'system-line');
+          
+          // Get user data for personalization
+          const currentUser = authSystem ? authSystem.getCurrentUser() : null;
+          const userId = currentUser ? currentUser.id : 'guest';
+          
+          // Get user's interaction history
+          const userHistory = tasteTracker ? tasteTracker.getInteractions(userId) : [];
+          const tasteProfile = tasteTracker ? tasteTracker.getTasteProfile(userId) : {};
+          
+          // Create enhanced request with detailed context
+          const enhancedRequest = {
+            userInput: originalCommand,
+            musicDNA: currentUser ? currentUser.musicDNA : { 
+              primaryGenre: 'lo-fi', 
+              preferredMood: 'chill',
+              energyLevel: 5,
+              complexity: 5,
+              keywords: []
+            },
+            context: tasteTracker ? tasteTracker.getCurrentContext() : {},
+            userHistory: userHistory,
+            preferences: tasteProfile
+          };
+          
+          addLine(`🔍 Analyzing: "${originalCommand}"`, 'system-line');
+          
+          // Generate using enhanced AI
+          const pattern = await enhancedGenerator.generateCustomPattern(enhancedRequest);
+          
+          // Show what Nala understood
+          if (pattern.metadata) {
+            addLine(`🎯 Detected: ${pattern.metadata.genre} • ${pattern.metadata.mood} • Energy: ${pattern.metadata.energy}/10`, 'info-line');
+            
+            if (pattern.metadata.personalizedElements && pattern.metadata.personalizedElements.length > 0) {
+              addLine(`✨ Personal touches: ${pattern.metadata.personalizedElements.join(', ')}`, 'success-line');
+            }
+          }
+          
+          addLine('🤖 Generated unique Strudel code based on your request!', 'success-line');
+          
+          const patternId = generatePatternId();
+          
+          addLine(`🎼 Created: ${pattern.description}`, 'success-line');
+          addLine('', 'output-line');
+          
+          // Display inline Strudel player
+          addStrudelPlayer(pattern.code, pattern.description, patternId);
+          activePatterns.set(patternId, { 
+            ...pattern, 
+            genre: pattern.metadata.genre, 
+            metadata: pattern.metadata,
+            originalCommand: originalCommand 
+          });
+          
+          // Track the generation for learning
+          if (tasteTracker && userId !== 'guest') {
+            tasteTracker.trackGeneration(userId, originalCommand, pattern, 'generated');
+          }
+          
+          addLine('', 'output-line');
+          addLine('🎵 Commands: "play this", "save this", "I like this", "make it more [dreamy/aggressive/etc]"', 'dim-line');
+          
+          // Show AI recommendations if available
+          if (tasteTracker && userId !== 'guest') {
+            const recommendations = tasteTracker.generateRecommendations(userId);
+            if (recommendations.suggestedRequests.length > 0) {
+              addLine('💡 You might also like: "' + recommendations.suggestedRequests[0] + '"', 'dim-line');
+            }
+          }
+          
+          // Update NLP context
+          if (nlp) {
+            nlp.setCurrentPattern(patternId);
+          }
+          
+        } catch (error) {
+          console.error('Enhanced music generation error:', error);
+          addLine('❌ Enhanced generation failed. Using fallback...', 'error-line');
+          
+          // Fallback to simple generation
+          const result = { genre: 'lo-fi', mood: null, tempo: null };
+          await createMusic(result, originalCommand);
+        }
+      }, 1500);
+    }
+
+    // Enhanced music creation with AI
+    async function createMusic(result, originalCommand = '') {
+      const genre = result.genre || 'lo-fi';
+      const mood = result.mood || null;
+      const tempo = result.tempo || null;
+      
+      addLine(`🎵 Nala is creating your ${genre} pattern${mood ? ` for ${mood}` : ''}...`, 'system-line');
+      addLine('🧠 Analyzing your musical taste and preferences...', 'system-line');
+      
+      setTimeout(async () => {
+        try {
+          // Get user data for personalization
+          const currentUser = authSystem ? authSystem.getCurrentUser() : null;
+          const userId = currentUser ? currentUser.id : 'guest';
+          
+          // Get user's interaction history
+          const userHistory = tasteTracker ? tasteTracker.getInteractions(userId) : [];
+          const tasteProfile = tasteTracker ? tasteTracker.getTasteProfile(userId) : {};
+          
+          // Use enhanced generator for truly custom patterns
+          let pattern;
+          if (enhancedGenerator) {
+            // Create enhanced request with detailed context
+            const enhancedRequest = {
+              userInput: originalCommand,
+              musicDNA: currentUser ? currentUser.musicDNA : { 
+                primaryGenre: genre, 
+                preferredMood: mood,
+                energyLevel: 5,
+                complexity: 5,
+                keywords: []
+              },
+              context: tasteTracker ? tasteTracker.getCurrentContext() : {},
+              userHistory: userHistory,
+              preferences: tasteProfile
+            };
+            
+            addLine(`🔍 Analyzing: "${originalCommand}"`, 'system-line');
+            pattern = await enhancedGenerator.generateCustomPattern(enhancedRequest);
+            
+            // Show what Nala understood
+            if (pattern.metadata) {
+              addLine(`🎯 Detected: ${pattern.metadata.genre} • ${pattern.metadata.mood} • Energy: ${pattern.metadata.energy}/10`, 'info-line');
+              
+              if (pattern.metadata.personalizedElements && pattern.metadata.personalizedElements.length > 0) {
+                addLine(`✨ Personal touches: ${pattern.metadata.personalizedElements.join(', ')}`, 'success-line');
+              }
+            }
+            
+            addLine('🤖 Generated unique Strudel code!', 'success-line');
+          } else {
+            // Fallback to original generator
+            addLine('⚠️ Using basic generator (enhanced AI not available)', 'dim-line');
+            pattern = generateStrudelPattern(genre, mood, tempo);
+          }
+          
+          const patternId = generatePatternId();
+          
+          addLine(`🎼 Created: ${pattern.description}`, 'success-line');
+          addLine('', 'output-line');
+          
+          // Display inline Strudel player
+          addStrudelPlayer(pattern.code, pattern.description, patternId);
+          activePatterns.set(patternId, { ...pattern, genre: genre, metadata: pattern.metadata });
+          
+          // Track the generation for learning
+          if (tasteTracker && userId !== 'guest') {
+            tasteTracker.trackGeneration(userId, originalCommand, pattern, 'generated');
+          }
+          
+          addLine('', 'output-line');
+          addLine('🎵 Commands: "play this", "save this", "I like this", "make it more [dreamy/aggressive/etc]"', 'dim-line');
+          
+          // Show AI recommendations if available
+          if (tasteTracker && userId !== 'guest') {
+            const recommendations = tasteTracker.generateRecommendations(userId);
+            if (recommendations.suggestedRequests.length > 0) {
+              addLine('💡 You might also like: "' + recommendations.suggestedRequests[0] + '"', 'dim-line');
+            }
+          }
+          
+          // Update NLP context
+          nlp.setCurrentPattern(patternId);
+          
+        } catch (error) {
+          console.error('Enhanced music generation error:', error);
+          // Fallback to simple generation
+          const pattern = generateStrudelPattern(genre, mood, tempo);
+          const patternId = generatePatternId();
+          addStrudelPlayer(pattern.code, pattern.description, patternId);
+          activePatterns.set(patternId, { ...pattern, genre: genre });
+        }
+      }, 1500);
+    }
+    
+    function generateMusicFromOnboarding(command) {
+      // Special version for onboarding - simpler flow
+      const result = nlp.processCommand(command);
+      if (result.type === 'create_music') {
+        createMusic(result);
+      } else {
+        // Fallback to simple pattern
+        const pattern = generateStrudelPattern('lo-fi');
+        const patternId = generatePatternId();
+        addStrudelPlayer(pattern.code, pattern.description, patternId);
+        activePatterns.set(patternId, pattern);
+      }
+    }
+    
+    // Community features
+    function showCommunityFeed() {
+      addLine('🌍 Loading community feed...', 'system-line');
+      
+      setTimeout(() => {
+        addLine('', 'output-line');
+        addLine('═══════════════════════════════════════════════', 'dim-line');
+        addLine('🌍 COMMUNITY FEED - Recent Patterns', 'highlight-line');
+        addLine('═══════════════════════════════════════════════', 'dim-line');
+        addLine('', 'output-line');
+        
+        const feedData = [
+          { user: 'Alex Chen', genre: 'trap', title: 'Midnight Vibes', time: '2h ago', likes: 23, id: 'pat_001' },
+          { user: 'Jordan UK', genre: 'drill', title: 'UK Energy', time: '4h ago', likes: 41, id: 'pat_002' },
+          { user: 'Kemi Lagos', genre: 'afrobeats', title: 'Lagos Groove', time: '6h ago', likes: 67, id: 'pat_003' },
+          { user: 'Neon Rider', genre: 'synthwave', title: 'Retro Dreams', time: '8h ago', likes: 89, id: 'pat_004' }
+        ];
+        
+        // Create table
+        const tableHTML = `
+          <table class="terminal-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Title</th>
+                <th>Artist</th>
+                <th>Genre</th>
+                <th>Time</th>
+                <th>Likes</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${feedData.map((item, index) => `
+                <tr>
+                  <td>${index + 1}</td>
+                  <td>🎵 ${item.title}</td>
+                  <td>${item.user}</td>
+                  <td>${item.genre}</td>
+                  <td>${item.time}</td>
+                  <td>❤️ ${item.likes}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+        
+        addHTML(tableHTML);
+        
+        addLine('', 'output-line');
+        addLine('💡 Commands: "play pattern 1", "like pattern 2", "show trending"', 'info-line');
+        addLine('🔄 Updates automatically every 30 seconds', 'dim-line');
+        
+      }, 1000);
+    }
+    
+    function showProfile() {
+      if (!currentUser) {
+        addLine('❌ Please login to view your profile', 'error-line');
+        addLine('💡 Type "login" to access your account', 'info-line');
+        return;
+      }
+      
+      addLine('👤 Loading your profile...', 'system-line');
+      
+      setTimeout(() => {
+        addLine('', 'output-line');
+        addLine('═══════════════════════════════════════════════', 'dim-line');
+        addLine(`👤 ${currentUser.firstName || currentUser.email.split('@')[0]}'s Profile`, 'highlight-line');
+        addLine('═══════════════════════════════════════════════', 'dim-line');
+        addLine('', 'output-line');
+        
+        addLine(`📧 Email: ${currentUser.email}`, 'output-line');
+        addLine(`🎭 Role: ${currentUser.role}`, 'output-line');
+        addLine(`📅 Member since: ${new Date().toLocaleDateString()}`, 'output-line');
+        addLine('', 'output-line');
+        
+        // Stats table
+        const statsHTML = `
+          <table class="terminal-table">
+            <thead>
+              <tr><th>Metric</th><th>Value</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>🎵 Patterns created</td><td>7</td></tr>
+              <tr><td>❤️ Likes received</td><td>42</td></tr>
+              <tr><td>👥 Followers</td><td>12</td></tr>
+              <tr><td>🔗 Following</td><td>8</td></tr>
+            </tbody>
+          </table>
+        `;
+        
+        addHTML(statsHTML);
+        
+        addLine('', 'output-line');
+        addLine('💡 Commands: "edit profile", "show my patterns", "analytics"', 'info-line');
+        
+      }, 800);
+    }
+    
+    function showSocial() {
+      addLine('👥 Loading social overview...', 'system-line');
+      
+      setTimeout(() => {
+        addLine('', 'output-line');
+        addLine('═══════════════════════════════════════════════', 'dim-line');
+        addLine('👥 SOCIAL - Who's Creating', 'highlight-line');
+        addLine('═══════════════════════════════════════════════', 'dim-line');
+        addLine('', 'output-line');
+        
+        addLine('🟢 ONLINE NOW (4 creators):', 'success-line');
+        addLine('  🎹 Alex Chen - Creating trap beats', 'output-line');
+        addLine('  🥁 Jordan UK - Working on drill patterns', 'output-line');
+        addLine('  🌍 Kemi Lagos - Mixing afrobeats', 'output-line');
+        addLine('  🌆 Neon Rider - Synthesizing retro vibes', 'output-line');
+        addLine('', 'output-line');
+        
+        addLine('📈 TRENDING CREATORS:', 'info-line');
+        addLine('  1. BeatMaster3000 - 127 patterns this month', 'output-line');
+        addLine('  2. LoFiQueen - 98 chill beats', 'output-line');
+        addLine('  3. DrillSergeant - 76 UK drill hits', 'output-line');
+        addLine('', 'output-line');
+        
+        addLine('💡 Commands: "follow BeatMaster3000", "message Alex Chen"', 'info-line');
+        
+      }, 1200);
+    }
+    
+    // Pattern control
+    function handlePatternControl(result) {
+      const action = result.action;
+      const target = result.target;
+      
+      let patternId = null;
+      
+      if (target === 'current' || target === 'this' || target === 'that') {
+        // Use the last created pattern
+        const patterns = Array.from(activePatterns.keys());
+        patternId = patterns[patterns.length - 1];
+      } else if (target.match(/^\d+$/)) {
+        // Pattern number from feed/list
+        addLine(`🎵 Pattern ${target} from community feed`, 'info-line');
+        return;
+      }
+      
+      if (!patternId) {
+        addLine('❌ No pattern to control. Create one first!', 'error-line');
+        return;
+      }
+      
+      switch (action) {
+        case 'play':
+          playPattern(patternId);
+          break;
+        case 'stop':
+          stopPattern(patternId);
+          break;
+        case 'save':
+          savePattern(patternId);
+          break;
+        case 'share':
+          sharePattern(patternId);
+          break;
+        case 'edit':
+          addLine(`✏️ Edit mode for pattern ${patternId}`, 'info-line');
+          addLine('💡 Click in the code area above to edit', 'dim-line');
+          break;
+      }
+    }
+    
+    // Learning system
+    function handleLearning(result) {
+      const topic = result.topic;
+      const knowledge = result.knowledge;
+      
+      if (knowledge) {
+        addLine(`🎓 ${topic.toUpperCase()}:`, 'success-line');
+        addLine('', 'output-line');
+        
+        if (knowledge.type === 'genre') {
+          const genre = knowledge.data;
+          addLine(`📝 ${genre.description}`, 'output-line');
+          addLine('', 'output-line');
+          addLine(`🎵 Characteristics: ${genre.characteristics.join(', ')}`, 'output-line');
+          addLine(`⏱️ Typical BPM: ${genre.bpm}`, 'output-line');
+          addLine(`🌍 Origins: ${genre.origins}`, 'output-line');
+        } else if (knowledge.type === 'concept') {
+          addLine(`📝 ${knowledge.description}`, 'output-line');
+        }
+        
+        addLine('', 'output-line');
+        addLine(`💡 Want to try creating ${topic}? Say "create ${topic} music"`, 'info-line');
+      } else {
+        addLine(`🤔 I don't have detailed info about "${topic}" yet.`, 'output-line');
+        addLine('💡 Try asking about: trap, drill, lo-fi, house, jazz, afrobeats', 'dim-line');
+      }
+    }
+    
+    function handleUnknownCommand(result, originalCommand) {
+      addLine(`🤔 I'm not sure what you mean by "${originalCommand}"`, 'output-line');
+      addLine('', 'output-line');
+      
+      if (result.suggestions && result.suggestions.length > 0) {
+        addLine('💡 Did you mean:', 'info-line');
+        result.suggestions.forEach(suggestion => {
+          addLine(`  "${suggestion}"`, 'dim-line');
+        });
+      } else {
+        addLine('💡 Try these examples:', 'info-line');
+        addLine('  "create trap beat"', 'dim-line');
+        addLine('  "show community feed"', 'dim-line');
+        addLine('  "help"', 'dim-line');
+      }
+    }
+    
+    // Strudel player functions
+    function addStrudelPlayer(code, description, patternId) {
+      const playerHTML = `
+        <div class="inline-strudel-player" id="${patternId}">
+          <div class="player-header">
+            <span>🎵 ${description}</span>
+            <span class="pattern-id" onclick="copyPatternId('${patternId}')" title="Click to copy pattern ID">${patternId}</span>
+          </div>
+          <textarea class="strudel-code" id="${patternId}-code">${code}</textarea>
+          <div class="player-controls">
+            <button class="control-btn btn-play" onclick="playPattern('${patternId}')">▶ Play</button>
+            <button class="control-btn btn-stop" onclick="stopPattern('${patternId}')" disabled>⏹ Stop</button>
+            <button class="control-btn btn-save" onclick="savePattern('${patternId}')">💾 Save</button>
+            <button class="control-btn btn-share" onclick="sharePattern('${patternId}')">📤 Share</button>
+          </div>
+        </div>
+      `;
+      
+      addHTML(playerHTML);
+    }
+    
+    async function playPattern(patternId) {
+      try {
+        // Update UI immediately
+        const playBtn = document.querySelector(`#${patternId} .btn-play`);
+        const stopBtn = document.querySelector(`#${patternId} .btn-stop`);
+        
+        if (playBtn) {
+          playBtn.textContent = '⏸ Loading';
+          playBtn.classList.add('playing');
+          playBtn.disabled = true;
+        }
+        if (stopBtn) {
+          stopBtn.disabled = false;
+        }
+        
+        addLine(`🔊 Initializing audio engine...`, 'system-line');
+        
+        // Get pattern code
+        const codeElement = document.getElementById(`${patternId}-code`);
+        const code = codeElement ? codeElement.value : null;
+        
+        if (!code) {
+          throw new Error('Pattern code not found');
+        }
+        
+        // Use reliable audio methods only
+        let playbackSuccess = false;
+        
+        // Method 1: Open in new tab (most reliable for full Strudel experience)
+        try {
+          if (window.simpleStrudel) {
+            addLine(`🌐 Opening full Strudel editor in new tab...`, 'system-line');
+            await window.simpleStrudel.play(patternId, code);
+            addLine(`🎵 Strudel editor opened - you can edit and play the pattern there!`, 'success-line');
+            playbackSuccess = true;
+          }
+        } catch (tabError) {
+          console.warn('Tab playback failed:', tabError);
+          addLine(`⚠️ Could not open external tab, using built-in preview...`, 'info-line');
+        }
+        
+        // Method 2: Built-in audio engine (reliable preview)
+        if (!playbackSuccess || true) { // Always provide built-in preview
+          try {
+            if (window.basicAudioEngine) {
+              addLine(`🥁 Playing preview with built-in audio engine...`, 'system-line');
+              const pattern = activePatterns.get(patternId);
+              const genre = pattern?.metadata?.genre || pattern?.genre || 'lo-fi';
+              await window.basicAudioEngine.playBasicPattern(patternId, genre);
+              addLine(`🎵 Playing ${genre} style preview`, 'success-line');
+              addLine(`💡 Pattern preview playing - see the generated Strudel code above`, 'dim-line');
+              playbackSuccess = true;
+            }
+          } catch (basicError) {
+            console.warn('Basic audio failed:', basicError);
+            addLine(`❌ Built-in audio failed: ${basicError.message}`, 'error-line');
+          }
+        }
+        
+        if (!playbackSuccess) {
+          throw new Error('All audio engines failed to initialize');
+        }
+        
+        // Update button state
+        if (playBtn) {
+          playBtn.textContent = '⏹ Stop';
+          playBtn.disabled = false;
+        }
+        
+      } catch (error) {
+        console.error('Error playing pattern:', error);
+        addLine(`❌ Audio playback failed: ${error.message}`, 'error-line');
+        addLine(`💡 Try refreshing the page or check your browser's audio permissions`, 'info-line');
+        
+        // Reset button states
+        const playBtn = document.querySelector(`#${patternId} .btn-play`);
+        const stopBtn = document.querySelector(`#${patternId} .btn-stop`);
+        if (playBtn) {
+          playBtn.textContent = '▶ Play';
+          playBtn.classList.remove('playing');
+          playBtn.disabled = false;
+        }
+        if (stopBtn) {
+          stopBtn.disabled = true;
+        }
+      }
+    }
+    
+    async function stopPattern(patternId) {
+      try {
+        // Try to stop on all possible audio engines
+        const promises = [];
+        
+        if (window.strudelIntegration) {
+          promises.push(window.strudelIntegration.stopPattern(patternId).catch(e => console.warn('Strudel stop failed:', e)));
+        }
+        
+        if (window.simpleStrudel) {
+          promises.push(window.simpleStrudel.stop(patternId).catch(e => console.warn('Simple stop failed:', e)));
+        }
+        
+        if (window.basicAudioEngine) {
+          promises.push(window.basicAudioEngine.stopPattern(patternId).catch(e => console.warn('Basic stop failed:', e)));
+        }
+        
+        await Promise.allSettled(promises);
+        
+        addLine(`⏹ Stopped pattern ${patternId}`, 'system-line');
+        
+        // Update button states
+        const playBtn = document.querySelector(`#${patternId} .btn-play`);
+        const stopBtn = document.querySelector(`#${patternId} .btn-stop`);
+        
+        if (playBtn) {
+          playBtn.textContent = '▶ Play';
+          playBtn.classList.remove('playing');
+        }
+        if (stopBtn) {
+          stopBtn.disabled = true;
+        }
+      } catch (error) {
+        console.error('Error stopping pattern:', error);
+        addLine(`❌ Error stopping pattern: ${error.message}`, 'error-line');
+      }
+    }
+    
+    function savePattern(patternId) {
+      if (!currentUser) {
+        addLine('❌ Please login to save patterns', 'error-line');
+        addLine('💡 Type "login" to access your account', 'info-line');
+        return;
+      }
+      
+      addLine(`💾 Saving pattern ${patternId}...`, 'system-line');
+      
+      setTimeout(() => {
+        addLine(`✅ Pattern saved to your library!`, 'success-line');
+        
+        // Update button state
+        const saveBtn = document.querySelector(`#${patternId} .btn-save`);
+        if (saveBtn) {
+          saveBtn.textContent = '✅ Saved';
+          saveBtn.classList.add('saved');
+          saveBtn.disabled = true;
+        }
+      }, 1000);
+    }
+    
+    function sharePattern(patternId) {
+      // Use production URL for sharing
+      const baseUrl = window.location.hostname === 'localhost' || window.location.hostname.includes('github.io') 
+        ? 'https://not-a-label.art' 
+        : window.location.origin;
+      const url = `${baseUrl}/pattern/${patternId}`;
+      
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(url).then(() => {
+          addLine(`📤 Pattern link copied: ${url}`, 'success-line');
+          addLine('💡 Share on social media or send to friends!', 'dim-line');
+        });
+      } else {
+        addLine(`📤 Share link: ${url}`, 'success-line');
+      }
+    }
+    
+    function copyPatternId(patternId) {
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(patternId).then(() => {
+          addLine(`📋 Pattern ID copied: ${patternId}`, 'system-line');
+        });
+      }
+    }
+    
+    // Pattern generation
+    function generateStrudelPattern(genre, mood, tempo) {
+      const patterns = {
+        'trap': {
+          code: 'stack(\n  sound("bd*2 ~ bd ~").gain(0.8),\n  sound("~ ~ sd ~").gain(0.7),\n  sound("hh*8").gain(0.3),\n  sound("808").note("c2 c2 f1 c2").lpf(100)\n).slow(2)',
+          description: 'Modern trap beat with 808s and crisp snares'
+        },
+        'drill': {
+          code: 'stack(\n  sound("bd ~ bd bd").gain(0.9),\n  sound("~ ~ sd ~").gain(0.8),\n  sound("hh*16").gain(0.2),\n  sound("808*4").note("c1 ~ f1 g1").lpf(80)\n).slow(2)',
+          description: 'UK drill pattern with sliding 808s'
+        },
+        'lo-fi': {
+          code: 'stack(\n  sound("bd ~ sd ~").gain(0.6),\n  sound("hh*4").gain(0.2),\n  sound("vinyl").gain(0.1)\n).slow(2).room(0.3)',
+          description: 'Chill lo-fi beat perfect for studying'
+        },
+        'house': {
+          code: 'stack(\n  sound("bd bd bd bd"),\n  sound("~ hh ~ hh").gain(0.5),\n  sound("~ ~ sd ~").delay(0.05)\n).slow(2)',
+          description: 'Classic house 4/4 pattern'
+        },
+        'jazz': {
+          code: 'note("Cmaj7 Am7 Dm7 G7").sound("piano").slow(4).room(0.2)',
+          description: 'Jazz chord progression with piano'
+        },
+        'afrobeats': {
+          code: 'stack(\n  sound("bd ~ bd ~").gain(0.8),\n  sound("~ sd ~ sd").gain(0.6),\n  sound("perc*8").gain(0.4),\n  note("c4 eb4 f4 g4").sound("kalimba").slow(4)\n).slow(2)',
+          description: 'Afrobeats rhythm with polyrhythmic percussion'
+        },
+        'synthwave': {
+          code: 'stack(\n  sound("bd ~ ~ ~").gain(0.8),\n  sound("~ ~ sd ~").gain(0.6),\n  note("c4 eb4 f4 ab4").sound("sawtooth").slow(8).lpf(1200)\n).slow(2)',
+          description: 'Retro synthwave with nostalgic leads'
+        }
+      };
+      
+      let pattern = patterns[genre] || patterns['lo-fi'];
+      
+      // Modify description based on mood and tempo
+      if (mood) {
+        pattern = {
+          ...pattern,
+          description: `${pattern.description} - perfect for ${mood}`
+        };
+      }
+      
+      if (tempo) {
+        pattern = {
+          ...pattern,
+          description: `${pattern.description} at ${tempo} BPM`
+        };
+      }
+      
+      return pattern;
+    }
+    
+    function generatePatternId() {
+      return 'pat_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+    }
+    
+    // Voice input
+    function setupVoiceInput() {
+      const voiceBtn = document.getElementById('voiceBtn');
+      
+      if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        voiceRecognition = new SpeechRecognition();
+        
+        voiceRecognition.continuous = false;
+        voiceRecognition.interimResults = true;
+        voiceRecognition.lang = 'en-US';
+        voiceRecognition.maxAlternatives = 1;
+        
+        voiceRecognition.onresult = function(event) {
+          const transcript = event.results[0][0].transcript;
+          document.getElementById('terminalInput').value = transcript;
+          addLine(`🎤 Voice: "${transcript}"`, 'info-line');
+          executeCommand(transcript);
+          stopListening();
+        };
+        
+        voiceRecognition.onerror = function(event) {
+          addLine(`❌ Voice recognition error: ${event.error}`, 'error-line');
+          stopListening();
+        };
+        
+        voiceRecognition.onend = function() {
+          stopListening();
+        };
+        
+        voiceBtn.addEventListener('click', toggleVoiceInput);
+      } else {
+        voiceBtn.style.display = 'none';
+      }
+    }
+    
+    function toggleVoiceInput() {
+      if (isListening) {
+        stopListening();
+      } else {
+        startVoiceInput();
+      }
+    }
+    
+    async function startVoiceInput() {
+      if (!voiceRecognition) {
+        addLine('❌ Voice input not supported in your browser', 'error-line');
+        addLine('💡 Try using Chrome, Edge, or Safari', 'info-line');
+        return;
+      }
+      
+      if (isListening) return;
+      
+      try {
+        // Request microphone permission
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        stream.getTracks().forEach(track => track.stop()); // Stop immediately, we just needed permission
+        
+        isListening = true;
+        const voiceBtn = document.getElementById('voiceBtn');
+        voiceBtn.classList.add('listening');
+        voiceBtn.textContent = '🔴';
+        
+        addLine('🎤 Listening... Speak your command', 'system-line');
+        voiceRecognition.start();
+      } catch (error) {
+        console.error('Microphone access error:', error);
+        if (error.name === 'NotAllowedError') {
+          addLine('❌ Microphone access denied', 'error-line');
+          addLine('💡 Please allow microphone access and try again', 'info-line');
+        } else {
+          addLine(`❌ Voice input error: ${error.message}`, 'error-line');
+        }
+      }
+    }
+    
+    function stopListening() {
+      if (isListening) {
+        isListening = false;
+        const voiceBtn = document.getElementById('voiceBtn');
+        voiceBtn.classList.remove('listening');
+        voiceBtn.textContent = '🎤';
+        
+        if (voiceRecognition) {
+          voiceRecognition.stop();
+        }
+      }
+    }
+    
+    // Utility functions
+    function addLine(text, className = 'output-line') {
+      const line = document.createElement('div');
+      line.className = `terminal-line ${className}`;
+      line.innerHTML = text; // Use innerHTML to support HTML entities
+      document.getElementById('terminalContent').appendChild(line);
+      
+      setTimeout(scrollToBottom, 10);
+    }
+    
+    function addHTML(htmlContent) {
+      const div = document.createElement('div');
+      div.innerHTML = htmlContent;
+      document.getElementById('terminalContent').appendChild(div);
+      setTimeout(scrollToBottom, 10);
+    }
+    
+    function clearTerminal() {
+      document.getElementById('terminalContent').innerHTML = '';
+      addLine('Terminal cleared.', 'system-line');
+      addLine('💡 Type "help" for available commands', 'dim-line');
+    }
+    
+    function scrollToBottom() {
+      const content = document.getElementById('terminalContent');
+      content.scrollTop = content.scrollHeight;
+    }
+    
+    function getCurrentPrompt() {
+      return currentUser ? `${currentUser.email.split('@')[0]}@nal:~$` : 'nal@music:~$';
+    }
+    
+    function updatePrompt() {
+      document.getElementById('terminalPrompt').textContent = getCurrentPrompt();
+    }
+    
+    // Help system
+    function showHelp() {
+      addLine('', 'output-line');
+      addLine('═══════════════════════════════════════════════', 'dim-line');
+      addLine('🎵 NOT A LABEL TERMINAL - Command Guide', 'highlight-line');
+      addLine('═══════════════════════════════════════════════', 'dim-line');
+      addLine('', 'output-line');
+      
+      addLine('🎵 MUSIC CREATION (Natural Language):', 'success-line');
+      addLine('  "create trap beat"                   - Generate trap pattern', 'output-line');
+      addLine('  "make lo-fi music for studying"      - Create chill beats', 'output-line');
+      addLine('  "generate drill pattern"             - UK drill sounds', 'output-line');
+      addLine('  "hey nala create jazz chords"        - Jazz progressions', 'output-line');
+      addLine('  "create something energetic"         - Context-aware generation', 'output-line');
+      addLine('', 'output-line');
+      
+      addLine('🌍 COMMUNITY & SOCIAL:', 'success-line');
+      addLine('  "show community feed"                - Recent patterns', 'output-line');
+      addLine('  "what's trending"                   - Popular content', 'output-line');
+      addLine('  "who\'s online"                      - Active creators', 'output-line');
+      addLine('  "recent patterns"                    - Latest creations', 'output-line');
+      addLine('', 'output-line');
+      
+      addLine('🎼 PATTERN INTERACTION:', 'success-line');
+      addLine('  "play this pattern"                  - Play current pattern', 'output-line');
+      addLine('  "save this beat"                     - Save to library', 'output-line');
+      addLine('  "share this music"                   - Get share link', 'output-line');
+      addLine('  "make it faster"                     - Modify current pattern', 'output-line');
+      addLine('', 'output-line');
+      
+      addLine('👤 PROFILE & ACCOUNT:', 'success-line');
+      addLine('  "create account"                     - Musical identity creation', 'output-line');
+      addLine('  "my profile"                         - View your profile', 'output-line');
+      addLine('  "my patterns"                        - Your creations', 'output-line');
+      addLine('  "login" / "register"                 - Account access', 'output-line');
+      addLine('', 'output-line');
+      
+      addLine('🎓 LEARNING & HELP:', 'success-line');
+      addLine('  "what is trap music"                 - Learn about genres', 'output-line');
+      addLine('  "explain polyrhythm"                 - Music theory', 'output-line');
+      addLine('  "tutorial"                           - Interactive walkthrough', 'output-line');
+      addLine('', 'output-line');
+      
+      addLine('🛠️ SYSTEM COMMANDS:', 'success-line');
+      addLine('  help                                 - Show this guide', 'output-line');
+      addLine('  clear                                - Clear terminal', 'output-line');
+      addLine('  🎤                                   - Voice input button', 'output-line');
+      addLine('', 'output-line');
+      
+      addLine('💡 PRO TIPS:', 'info-line');
+      addLine('  • Use natural language: "create something chill"', 'dim-line');
+      addLine('  • Context aware: "play it", "save this", "make it darker"', 'dim-line');
+      addLine('  • Arrow keys navigate command history', 'dim-line');
+      addLine('  • Tab completes suggestions', 'dim-line');
+      addLine('  • Works offline with cached patterns', 'dim-line');
+      addLine('  • Voice input available on mobile', 'dim-line');
+      addLine('', 'output-line');
+    }
+    
+    // Quick commands
+    function executeQuickCommand(quickType) {
+      const commands = {
+        'trap': 'create trap beat',
+        'lofi': 'create lo-fi music for studying',
+        'drill': 'create drill beat',
+        'house': 'create house music'
+      };
+      
+      const command = commands[quickType];
+      if (command) {
+        addLine(`🚀 Quick command: ${command}`, 'info-line');
+        setTimeout(() => executeCommand(command), 500);
+      }
+    }
+    
+    // Session management
+    function checkExistingSession() {
+      if (authSystem) {
+        const user = authSystem.restoreSession();
+        if (user) {
+          currentUser = user;
+          return;
+        }
+      }
+      
+      // Fallback to old session restore
+      const savedUser = localStorage.getItem('user');
+      if (savedUser) {
+        try {
+          currentUser = JSON.parse(savedUser);
+          updatePrompt();
+          addLine(`👋 Welcome back, ${currentUser.firstName || currentUser.email.split('@')[0]}!`, 'success-line');
+        } catch (error) {
+          console.error('Session restore error:', error);
+        }
+      }
+    }
+    
+    function showLogin() {
+      addLine('🔐 Login functionality coming soon!', 'info-line');
+      addLine('💡 For now, enjoy the terminal in guest mode', 'dim-line');
+      addLine('🎵 All music creation features are available!', 'success-line');
+    }
+    
+    function showRegister() {
+      startMusicalIdentityCreation();
+    }
+    
+    function startMusicalIdentityCreation() {
+      if (currentUser) {
+        addLine('✅ You already have a musical identity!', 'success-line');
+        addLine(`🎵 Welcome back, ${currentUser.artistName}`, 'info-line');
+        return;
+      }
+      
+      if (musicalIdentityCreator && !musicalIdentityCreator.isActive) {
+        musicalIdentityCreator.start();
+      } else if (!musicalIdentityCreator) {
+        addLine('❌ Musical identity system not ready. Please refresh the page.', 'error-line');
+      } else {
+        addLine('🎵 Musical identity creation already in progress!', 'info-line');
+      }
+    }
+    
+    function handleUserFeedback(feedbackType) {
+      const currentUser = authSystem ? authSystem.getCurrentUser() : null;
+      const userId = currentUser ? currentUser.id : 'guest';
+      
+      // Get the current pattern
+      const patterns = Array.from(activePatterns.keys());
+      const currentPatternId = patterns[patterns.length - 1];
+      
+      if (!currentPatternId) {
+        addLine('❌ No pattern to rate. Create one first!', 'error-line');
+        return;
+      }
+      
+      if (feedbackType === 'like') {
+        addLine('❤️ Thanks! Nala is learning that you like this style.', 'success-line');
+        if (currentUser) {
+          addLine('✨ This will help create better personalized patterns for you!', 'info-line');
+        }
+      } else if (feedbackType === 'dislike') {
+        addLine('📝 Got it! Nala will avoid this style in future recommendations.', 'info-line');
+        if (currentUser) {
+          addLine('🎯 Try: "suggest something" for better alternatives', 'dim-line');
+        }
+      }
+      
+      // Track the feedback
+      if (tasteTracker && userId !== 'guest') {
+        tasteTracker.trackInteraction(userId, currentPatternId, {
+          type: feedbackType,
+          explicit: true
+        });
+      }
+    }
+    
+    function showRecommendations() {
+      const currentUser = authSystem ? authSystem.getCurrentUser() : null;
+      const userId = currentUser ? currentUser.id : 'guest';
+      
+      if (userId === 'guest') {
+        addLine('💡 Create an account to get personalized recommendations!', 'info-line');
+        addLine('🎵 Try: "create trap beat", "make lo-fi music", "generate house pattern"', 'dim-line');
+        return;
+      }
+      
+      if (!tasteTracker) {
+        addLine('❌ Recommendation system not available', 'error-line');
+        return;
+      }
+      
+      const recommendations = tasteTracker.generateRecommendations(userId);
+      const analytics = tasteTracker.getAnalytics(userId);
+      
+      addLine('', 'output-line');
+      addLine('═══════════════════════════════════════════════', 'dim-line');
+      addLine('🎯 NALA\\'S RECOMMENDATIONS FOR YOU', 'highlight-line');
+      addLine('═══════════════════════════════════════════════', 'dim-line');
+      addLine('', 'output-line');
+      
+      addLine('🎵 SUGGESTED PATTERNS:', 'success-line');
+      recommendations.suggestedRequests.slice(0, 3).forEach((suggestion, index) => {
+        addLine(`  ${index + 1}. "${suggestion}"`, 'output-line');
+      });
+      addLine('', 'output-line');
+      
+      addLine('📊 YOUR MUSIC PROFILE:', 'info-line');
+      if (analytics.favoriteGenre) {
+        addLine(`  🎨 Favorite Genre: ${analytics.favoriteGenre}`, 'output-line');
+      }
+      if (analytics.favoriteMood) {
+        addLine(`  💫 Favorite Mood: ${analytics.favoriteMood}`, 'output-line');
+      }
+      addLine(`  📈 Learning Progress: ${Math.round(analytics.learningProgress * 100)}%`, 'output-line');
+      addLine('', 'output-line');
+      
+      addLine('💡 Try one of the suggestions above, or tell me what you\\'re feeling!', 'dim-line');
+    }
+    
+    function showUserMenu() {
+      if (currentUser) {
+        addLine(`👤 ${currentUser.firstName || currentUser.email.split('@')[0]} Menu:`, 'info-line');
+        addLine('  "my profile" - View profile and stats', 'dim-line');
+        addLine('  "my patterns" - Your saved patterns', 'dim-line');
+        addLine('  "show recommendations" - AI suggestions for you', 'dim-line');
+        addLine('  "logout" - Sign out', 'dim-line');
+      } else {
+        addLine('👤 Guest Menu:', 'info-line');
+        addLine('  "login" - Access your account', 'dim-line');
+        addLine('  "register" - Create new account', 'dim-line');
+      }
+    }
+    
+    // PWA setup
+    function setupPWA() {
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js')
+          .then(registration => {
+            console.log('SW registered:', registration);
+            addLine('📱 PWA features active', 'system-line');
+          })
+          .catch(error => {
+            console.log('SW registration failed:', error);
+          });
+      }
+      
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        showPWAInstallBanner();
+      });
+      
+      if (window.matchMedia('(display-mode: standalone)').matches) {
+        addLine('📱 Running as installed PWA', 'system-line');
+      }
+    }
+    
+    function showPWAInstallBanner() {
+      const banner = document.getElementById('pwaInstallBanner');
+      banner.classList.add('show');
+      
+      banner.addEventListener('click', async () => {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          const { outcome } = await deferredPrompt.userChoice;
+          
+          if (outcome === 'accepted') {
+            addLine('📱 Terminal installed successfully!', 'success-line');
+          }
+          
+          deferredPrompt = null;
+          banner.classList.remove('show');
+        }
+      });
+      
+      setTimeout(() => {
+        banner.classList.remove('show');
+      }, 10000);
+    }
+    
+    // Network monitoring
+    function setupNetworkMonitoring() {
+      function updateNetworkStatus() {
+        const dot = document.getElementById('networkDot');
+        const text = document.getElementById('networkText');
+        
+        if (navigator.onLine) {
+          dot.classList.remove('offline');
+          text.textContent = 'online';
+          if (isOffline) {
+            addLine('🌐 Back online - all features restored', 'success-line');
+            isOffline = false;
+          }
+        } else {
+          dot.classList.add('offline');
+          text.textContent = 'offline';
+          if (!isOffline) {
+            addLine('📡 Offline mode - cached patterns available', 'info-line');
+            isOffline = true;
+          }
+        }
+      }
+      
+      window.addEventListener('online', updateNetworkStatus);
+      window.addEventListener('offline', updateNetworkStatus);
+      updateNetworkStatus();
+    }
+    
+    // Audio setup
+    function setupAudio() {
+      document.addEventListener('click', initAudio, { once: true });
+    }
+    
+    async function initAudio() {
+      if (!isAudioInitialized) {
+        try {
+          audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          if (audioContext.state === 'suspended') {
+            await audioContext.resume();
+          }
+          isAudioInitialized = true;
+          addLine('🔊 Audio engine ready', 'system-line');
+        } catch (error) {
+          console.error('Audio init error:', error);
+        }
+      }
+    }
+    
+    // Clock
+    function startClock() {
+      function updateClock() {
+        const now = new Date();
+        const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        document.getElementById('timeStatus').textContent = timeString;
+      }
+      
+      updateClock();
+      setInterval(updateClock, 1000);
+    }
+    
+    // Make functions globally available
+    window.playPattern = playPattern;
+    window.stopPattern = stopPattern;
+    window.savePattern = savePattern;
+    window.sharePattern = sharePattern;
+    window.copyPatternId = copyPatternId;
+    window.showUserMenu = showUserMenu;
+  </script>
+</body>
+</html>

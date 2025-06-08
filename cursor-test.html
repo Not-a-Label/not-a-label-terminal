@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cursor Position Test</title>
+    <style>
+        body { font-family: 'Courier New', monospace; background: #000; color: #00ff00; padding: 20px; }
+        .input-wrapper {
+            position: relative;
+            display: inline-block;
+            border: 1px solid #00ff00;
+            padding: 10px;
+            margin: 20px 0;
+        }
+        .terminal-input {
+            background: transparent;
+            border: none;
+            color: #00ff00;
+            font-family: inherit;
+            font-size: 16px;
+            outline: none;
+            caret-color: transparent;
+            width: 400px;
+        }
+        .cursor {
+            color: #00ff00;
+            background: #00ff00;
+            width: 2px;
+            height: 20px;
+            display: inline-block;
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            animation: blink 1s infinite;
+            pointer-events: none;
+        }
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+        .debug { margin: 10px 0; padding: 10px; border: 1px solid #444; }
+    </style>
+</head>
+<body>
+    <h1>🎵 Cursor Position Test</h1>
+    
+    <div class="input-wrapper">
+        <input type="text" class="terminal-input" id="terminalInput" placeholder="Type here...">
+        <span class="cursor" id="terminalCursor">█</span>
+    </div>
+    
+    <div class="debug" id="debug">
+        <strong>Debug Info:</strong><br>
+        <span id="debugText"></span>
+    </div>
+    
+    <button onclick="testCursor()">Test Cursor Manually</button>
+    
+    <script>
+        function updateCursorPosition() {
+            try {
+                const input = document.getElementById('terminalInput');
+                const cursor = document.getElementById('terminalCursor');
+                
+                if (!input || !cursor) {
+                    console.warn('Missing elements:', { input: !!input, cursor: !!cursor });
+                    return;
+                }
+                
+                // Create a temporary span to measure text width
+                const tempSpan = document.createElement('span');
+                tempSpan.style.font = window.getComputedStyle(input).font;
+                tempSpan.style.visibility = 'hidden';
+                tempSpan.style.position = 'absolute';
+                tempSpan.style.whiteSpace = 'pre';
+                
+                // Get text up to cursor position
+                const textBeforeCursor = input.value.substring(0, input.selectionStart);
+                tempSpan.textContent = textBeforeCursor;
+                
+                document.body.appendChild(tempSpan);
+                const textWidth = tempSpan.offsetWidth;
+                document.body.removeChild(tempSpan);
+                
+                // Position cursor after the text (add padding offset)
+                cursor.style.left = (10 + textWidth) + 'px';
+                
+                // Update debug info
+                document.getElementById('debugText').innerHTML = `
+                    Text: "${textBeforeCursor}"<br>
+                    Selection Start: ${input.selectionStart}<br>
+                    Text Width: ${textWidth}px<br>
+                    Cursor Left: ${cursor.style.left}<br>
+                    Font: ${window.getComputedStyle(input).font}
+                `;
+                
+                console.log('Cursor updated:', { textWidth, textBeforeCursor, left: cursor.style.left });
+                
+            } catch (error) {
+                console.error('Cursor error:', error);
+                document.getElementById('debugText').innerHTML = 'Error: ' + error.message;
+            }
+        }
+        
+        function testCursor() {
+            console.log('Manual cursor test...');
+            updateCursorPosition();
+        }
+        
+        // Set up event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            const input = document.getElementById('terminalInput');
+            
+            input.addEventListener('input', updateCursorPosition);
+            input.addEventListener('keyup', updateCursorPosition);
+            input.addEventListener('keydown', updateCursorPosition);
+            input.addEventListener('click', updateCursorPosition);
+            input.addEventListener('focus', updateCursorPosition);
+            
+            input.focus();
+            setTimeout(updateCursorPosition, 100);
+            
+            console.log('Cursor test page loaded');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Enhanced Generator Test</title>
+    <style>
+        body { font-family: monospace; background: #000; color: #00ff00; padding: 20px; }
+        .result { margin: 10px 0; padding: 10px; border: 1px solid #00ff00; }
+        button { background: #001100; color: #00ff00; border: 1px solid #00ff00; padding: 10px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>🎵 Enhanced Generator Test</h1>
+    <button onclick="testTrapBeat()">Test Aggressive Trap Beat</button>
+    <button onclick="testLoFi()">Test Dreamy Lo-Fi</button>
+    <button onclick="testDrill()">Test UK Drill</button>
+    
+    <div id="results"></div>
+    
+    <script src="js/enhanced-pattern-generator.js"></script>
+    <script>
+        function log(message, isError = false) {
+            const div = document.createElement('div');
+            div.className = 'result';
+            if (isError) div.style.color = '#ff0066';
+            div.innerHTML = message;
+            document.getElementById('results').appendChild(div);
+            console.log(message);
+        }
+        
+        async function testTrapBeat() {
+            log('=== Testing Aggressive Trap Beat ===');
+            
+            try {
+                if (typeof EnhancedPatternGenerator === 'undefined') {
+                    log('❌ EnhancedPatternGenerator not found', true);
+                    return;
+                }
+                
+                const generator = new EnhancedPatternGenerator();
+                log('✅ Generator created');
+                
+                const request = {
+                    userInput: "create aggressive trap beat",
+                    musicDNA: { 
+                        primaryGenre: 'trap', 
+                        preferredMood: 'aggressive',
+                        energyLevel: 9,
+                        complexity: 7,
+                        keywords: ['aggressive', 'heavy']
+                    },
+                    context: {},
+                    userHistory: [],
+                    preferences: {}
+                };
+                
+                const pattern = await generator.generateCustomPattern(request);
+                
+                log('✅ Pattern Generated!');
+                log('🎯 Genre: ' + pattern.metadata.genre);
+                log('🎯 Mood: ' + pattern.metadata.mood);
+                log('🎯 Energy: ' + pattern.metadata.energy + '/10');
+                log('📝 Description: ' + pattern.description);
+                log('🎵 Code Length: ' + pattern.code.length + ' chars');
+                log('📋 Code Preview: ' + pattern.code.substring(0, 200) + '...');
+                
+                if (pattern.code.includes('stack(') && pattern.code.includes('trap')) {
+                    log('✅ Valid trap pattern structure detected');
+                } else {
+                    log('⚠️ Pattern may not be trap-specific');
+                }
+                
+            } catch (error) {
+                log('❌ Error: ' + error.message, true);
+                log('Stack: ' + error.stack, true);
+            }
+        }
+        
+        async function testLoFi() {
+            log('=== Testing Dreamy Lo-Fi ===');
+            
+            try {
+                const generator = new EnhancedPatternGenerator();
+                const request = {
+                    userInput: "make dreamy lo-fi for studying",
+                    musicDNA: { 
+                        primaryGenre: 'lo-fi', 
+                        preferredMood: 'dreamy',
+                        energyLevel: 3,
+                        complexity: 4,
+                        keywords: ['dreamy', 'chill', 'study']
+                    },
+                    context: { activity: 'studying' },
+                    userHistory: [],
+                    preferences: {}
+                };
+                
+                const pattern = await generator.generateCustomPattern(request);
+                
+                log('✅ Lo-Fi Pattern Generated!');
+                log('🎯 Genre: ' + pattern.metadata.genre);
+                log('🎯 Energy: ' + pattern.metadata.energy + '/10 (should be low)');
+                log('📋 Code Preview: ' + pattern.code.substring(0, 150) + '...');
+                
+            } catch (error) {
+                log('❌ Lo-Fi Error: ' + error.message, true);
+            }
+        }
+        
+        async function testDrill() {
+            log('=== Testing UK Drill ===');
+            
+            try {
+                const generator = new EnhancedPatternGenerator();
+                const request = {
+                    userInput: "generate dark drill pattern",
+                    musicDNA: { 
+                        primaryGenre: 'drill', 
+                        preferredMood: 'dark',
+                        energyLevel: 8,
+                        complexity: 6,
+                        keywords: ['dark', 'drill', 'uk']
+                    },
+                    context: {},
+                    userHistory: [],
+                    preferences: {}
+                };
+                
+                const pattern = await generator.generateCustomPattern(request);
+                
+                log('✅ Drill Pattern Generated!');
+                log('🎯 Genre: ' + pattern.metadata.genre);
+                log('📋 Code Preview: ' + pattern.code.substring(0, 150) + '...');
+                
+            } catch (error) {
+                log('❌ Drill Error: ' + error.message, true);
+            }
+        }
+        
+        // Auto-test on load
+        window.onload = function() {
+            log('🚀 Page loaded, enhanced generator available: ' + (typeof EnhancedPatternGenerator !== 'undefined'));
+        };
+    </script>
+</body>
+</html>

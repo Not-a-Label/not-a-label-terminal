@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Enter Key Test</title>
+    <style>
+        body { font-family: monospace; background: #000; color: #00ff00; padding: 20px; }
+        input { background: #001100; color: #00ff00; border: 1px solid #00ff00; padding: 10px; font-family: inherit; width: 400px; }
+        .output { margin: 10px 0; padding: 5px; border-left: 3px solid #00ff00; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Enter Key Test</h1>
+    <p>Type something and press Enter:</p>
+    <input type="text" id="testInput" placeholder="Type here and press Enter...">
+    
+    <div id="output"></div>
+    
+    <script>
+        function log(message) {
+            const div = document.createElement('div');
+            div.className = 'output';
+            div.textContent = new Date().toLocaleTimeString() + ': ' + message;
+            document.getElementById('output').appendChild(div);
+            console.log(message);
+        }
+        
+        function handleCommand(command) {
+            log('✅ Command received: "' + command + '"');
+            log('🎵 This would trigger music generation: ' + command);
+            document.getElementById('testInput').value = '';
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const input = document.getElementById('testInput');
+            
+            log('🚀 Page loaded, setting up event listeners...');
+            
+            input.addEventListener('keydown', function(event) {
+                log('🔑 Key pressed: ' + event.key);
+                
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    const command = input.value.trim();
+                    
+                    if (command) {
+                        handleCommand(command);
+                    } else {
+                        log('⚠️ Empty command, not processing');
+                    }
+                }
+            });
+            
+            input.addEventListener('input', function(event) {
+                log('📝 Input changed: "' + event.target.value + '"');
+            });
+            
+            input.focus();
+            log('🎯 Input focused, ready for typing');
+        });
+    </script>
+</body>
+</html>

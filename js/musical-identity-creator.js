@@ -18,7 +18,60 @@ class MusicalIdentityCreator {
     };
     
     this.isActive = false;
-    this.patternGenerator = new PersonalizedPatternGenerator();
+    this.patternGenerator = null; // Will be set to the enhanced pattern generator
+    
+    // Simple placeholder methods for core functionality
+    this.placeholderMethods = {
+      generateFromPreferences: async (preferences) => {
+        const genre = preferences.genres[0] || 'lo-fi';
+        const mood = preferences.moods[0] || 'chill';
+        
+        // Simple pattern generation based on genre
+        const patterns = {
+          'lo-fi': 'stack(sound("bd ~ ~ ~").gain(0.6), sound("~ ~ sd ~").gain(0.5), sound("hh*4").gain(0.3), note("c2 ~ f1 g1").sound("bass").lpf(400))',
+          'trap': 'stack(sound("bd*2 ~ bd ~").gain(0.8), sound("~ ~ sd ~").gain(0.7), sound("hh*8").gain(0.4), sound("808").note("c1 ~ f1 g1").lpf(80))',
+          'house': 'stack(sound("bd bd bd bd").gain(0.8), sound("~ ~ sd ~").gain(0.7), sound("~ hh ~ hh").gain(0.5), note("c2 f2 g2 f2").sound("bass"))',
+          'ambient': 'stack(sound("bd ~ ~ ~").gain(0.4), note("c4 eb4 g4").sound("pad").slow(4).room(0.7).gain(0.3))'
+        };
+        
+        return {
+          code: patterns[genre] || patterns['lo-fi'],
+          description: `${mood} ${genre} pattern`,
+          genre: genre,
+          mood: mood
+        };
+      },
+      
+      refinePattern: async (currentPattern, refinements) => {
+        // Simple refinement - just return a slightly modified version
+        let code = currentPattern.code || currentPattern.strudelCode;
+        let description = currentPattern.description;
+        
+        if (refinements.includes('more dreamy')) {
+          code += '.room(0.5).delay(0.3)';
+          description = 'dreamy ' + description;
+        }
+        if (refinements.includes('more aggressive')) {
+          code += '.distort(0.2).gain(1.2)';
+          description = 'aggressive ' + description;
+        }
+        if (refinements.includes('faster')) {
+          code += '.fast(1.5)';
+          description = 'faster ' + description;
+        }
+        if (refinements.includes('slower')) {
+          code += '.slow(1.5)';
+          description = 'slower ' + description;
+        }
+        
+        return {
+          code: code,
+          description: description,
+          genre: currentPattern.genre,
+          mood: currentPattern.mood
+        };
+      }
+    };
     
     // Enhanced NLP patterns for musical identity
     this.conversationPatterns = {
@@ -133,15 +186,17 @@ class MusicalIdentityCreator {
     this.sessionData.musicDNA = musicDNA;
     
     // Generate personalized pattern
-    const pattern = await this.patternGenerator.generateFromPreferences(preferences);
+    const pattern = this.patternGenerator 
+      ? await this.patternGenerator.generateFromPreferences(preferences)
+      : await this.placeholderMethods.generateFromPreferences(preferences);
     
     setTimeout(() => {
       this.addLine(`🎵 Perfect! I hear you love ${preferences.descriptors.join(' and ')} music.`, 'success-line');
       this.addLine('Creating your personalized pattern...', 'system-line');
       this.addLine('', 'output-line');
       
-      // Add the generated pattern
-      this.addStrudelPlayer(pattern.code, pattern.description, `discovery-${this.sessionData.sessionId}`);
+      // Add the generated pattern with a visual display
+      this.displayPattern(pattern, `discovery-${this.sessionData.sessionId}`);
       
       // Store the pattern
       this.sessionData.generatedPatterns.push({
@@ -184,14 +239,16 @@ class MusicalIdentityCreator {
       
       const refinements = this.extractRefinements(input);
       const currentPattern = this.sessionData.generatedPatterns[this.sessionData.generatedPatterns.length - 1];
-      const refinedPattern = await this.patternGenerator.refinePattern(currentPattern, refinements);
+      const refinedPattern = this.patternGenerator 
+        ? await this.patternGenerator.refinePattern(currentPattern, refinements)
+        : await this.placeholderMethods.refinePattern(currentPattern, refinements);
       
       setTimeout(() => {
         this.addLine(`🎵 ${this.generateRefinementResponse(refinements)}`, 'success-line');
         this.addLine('', 'output-line');
         
         // Update the existing player or add new one
-        this.addStrudelPlayer(refinedPattern.code, refinedPattern.description, `refinement-${this.sessionData.sessionId}`);
+        this.displayPattern(refinedPattern, `refinement-${this.sessionData.sessionId}`);
         
         // Store the refined pattern
         this.sessionData.generatedPatterns.push({
@@ -324,7 +381,7 @@ class MusicalIdentityCreator {
         };
         
         // Save through auth system
-        const user = this.authSystem.saveMusicalIdentity(identityData);
+        const user = (this.authSystem || window.SimpleAuthSystem).saveMusicalIdentity(identityData);
         
         this.addLine('', 'output-line');
         this.addLine('═══════════════════════════════════════════════', 'dim-line');
@@ -763,7 +820,166 @@ class PersonalizedPatternGenerator {
     const modifier = moodBPMModifier[mood] || 1;
     return Math.round(baseBPM * modifier);
   }
+  
+  // Missing helper methods needed for functionality
+  displayPattern(pattern, id) {
+    this.addLine('🎼 GENERATED PATTERN:', 'success-line');
+    this.addLine(`📝 ${pattern.description}`, 'info-line');
+    this.addLine('', 'output-line');
+    
+    // Display the code
+    const codeDisplay = document.createElement('div');
+    codeDisplay.className = 'terminal-line';
+    codeDisplay.style.cssText = `
+      background: rgba(0, 255, 0, 0.05);
+      border: 1px solid #00ff0033;
+      border-radius: 4px;
+      padding: 12px;
+      margin: 8px 0;
+      font-family: 'Courier New', monospace;
+      color: #00ff88;
+      overflow-x: auto;
+      white-space: pre;
+    `;
+    codeDisplay.textContent = pattern.code;
+    document.getElementById('terminalContent').appendChild(codeDisplay);
+    
+    // Add play controls
+    const controlsHTML = `
+      <div style="display: flex; gap: 10px; align-items: center; margin: 10px 0;">
+        <button onclick="playGeneratedPattern('${pattern.code.replace(/'/g, "\\'")}')" style="background: #00ff00; color: #000; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold;">
+          ▶️ PLAY
+        </button>
+        <span style="color: #888;">Pattern ID: ${id}</span>
+      </div>
+    `;
+    this.addHTML(controlsHTML);
+  }
+  
+  matchesPattern(input, patterns) {
+    const lowerInput = input.toLowerCase();
+    return patterns.some(pattern => pattern.test(lowerInput));
+  }
+  
+  extractRefinements(input) {
+    const refinements = [];
+    const lowerInput = input.toLowerCase();
+    
+    if (lowerInput.includes('more dreamy') || lowerInput.includes('dreamy')) refinements.push('more dreamy');
+    if (lowerInput.includes('more aggressive') || lowerInput.includes('aggressive')) refinements.push('more aggressive');
+    if (lowerInput.includes('faster') || lowerInput.includes('speed')) refinements.push('faster');
+    if (lowerInput.includes('slower') || lowerInput.includes('slow')) refinements.push('slower');
+    if (lowerInput.includes('more bass') || lowerInput.includes('bass')) refinements.push('more bass');
+    if (lowerInput.includes('more chill') || lowerInput.includes('chiller')) refinements.push('more chill');
+    
+    return refinements.length > 0 ? refinements : ['adjust'];
+  }
+  
+  generateRefinementResponse(refinements) {
+    const responses = {
+      'more dreamy': 'Added dreamy atmosphere with reverb and delay',
+      'more aggressive': 'Cranked up the intensity with distortion',
+      'faster': 'Increased the tempo for more energy',
+      'slower': 'Slowed it down for a more relaxed feel',
+      'more bass': 'Boosted the low-end frequencies',
+      'more chill': 'Made it more laid-back and smooth'
+    };
+    
+    return refinements.map(ref => responses[ref] || 'Applied your adjustment').join(' and ') + '!';
+  }
+  
+  extractArtistName(input) {
+    // Simple extraction - just clean up the input
+    return input.trim().replace(/[^a-zA-Z0-9_\-\s]/g, '').trim();
+  }
+  
+  async checkNameAvailability(name) {
+    // Simulate API call with random availability
+    await new Promise(resolve => setTimeout(resolve, 500));
+    return Math.random() > 0.3; // 70% chance available
+  }
+  
+  generateNameSuggestions(baseName) {
+    const suffixes = ['Music', 'Beats', 'Sound', 'Vibe', 'Wave', 'Labs', 'Studio'];
+    const prefixes = ['Digital', 'Neo', 'Sonic', 'Beat', 'Wave', 'Sound'];
+    const numbers = ['01', '02', '99', '2K', 'X'];
+    
+    return [
+      baseName + suffixes[Math.floor(Math.random() * suffixes.length)],
+      prefixes[Math.floor(Math.random() * prefixes.length)] + baseName,
+      baseName + numbers[Math.floor(Math.random() * numbers.length)],
+      baseName.replace(/[aeiou]/gi, '') + 'x'
+    ].slice(0, 3);
+  }
+  
+  showIdentitySummary(artistName) {
+    this.addLine('═══════════════════════════════════════════════', 'success-line');
+    this.addLine('🎵 YOUR MUSICAL IDENTITY SUMMARY', 'highlight-line');
+    this.addLine('═══════════════════════════════════════════════', 'success-line');
+    this.addLine('', 'output-line');
+    
+    const musicDNA = this.sessionData.musicDNA;
+    const latestPattern = this.sessionData.generatedPatterns[this.sessionData.generatedPatterns.length - 1];
+    
+    this.addLine(`🎭 Artist Name: ${artistName}`, 'info-line');
+    this.addLine(`🎼 Primary Genre: ${musicDNA.primaryGenre}`, 'output-line');
+    this.addLine(`🎭 Preferred Mood: ${musicDNA.preferredMood}`, 'output-line');
+    this.addLine(`⚡ Energy Level: ${musicDNA.energyLevel}/10`, 'output-line');
+    this.addLine(`🧩 Complexity: ${musicDNA.complexity}/10`, 'output-line');
+    this.addLine(`🏷️ Style Keywords: ${musicDNA.keywords.join(', ')}`, 'output-line');
+    this.addLine(`🎵 Signature Pattern: ${latestPattern.description}`, 'output-line');
+  }
 }
+
+// Global function for playing patterns from buttons
+window.playGeneratedPattern = function(code) {
+  if (window.playPattern) {
+    window.playPattern(code);
+  } else {
+    console.log('Playing pattern:', code);
+    const msg = 'Pattern: ' + code.substring(0, 80) + '...';
+    if (window.addLine) {
+      window.addLine('🎵 ' + msg, 'info-line');
+    } else {
+      alert(msg);
+    }
+  }
+};
+
+// Simple auth system placeholder
+window.SimpleAuthSystem = {
+  saveMusicalIdentity: function(identityData) {
+    // Store in localStorage for now
+    const user = {
+      id: 'user_' + Date.now(),
+      artistName: identityData.artistName,
+      musicDNA: identityData.musicDNA,
+      signaturePattern: identityData.signaturePattern,
+      createdAt: new Date().toISOString()
+    };
+    
+    localStorage.setItem('not_a_label_user', JSON.stringify(user));
+    
+    // Set global current user
+    if (window.currentUser !== undefined) {
+      window.currentUser = user;
+    }
+    
+    return user;
+  },
+  
+  getCurrentUser: function() {
+    const userData = localStorage.getItem('not_a_label_user');
+    return userData ? JSON.parse(userData) : null;
+  },
+  
+  logout: function() {
+    localStorage.removeItem('not_a_label_user');
+    if (window.currentUser !== undefined) {
+      window.currentUser = null;
+    }
+  }
+};
 
 // Make available globally
 window.MusicalIdentityCreator = MusicalIdentityCreator;

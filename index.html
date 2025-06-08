@@ -231,8 +231,14 @@
   <script src="/js/procedural-pattern-generator.js?v=2000000000"></script>
   <script src="/js/uniqueness-engine.js?v=2000000000"></script>
   
+  <!-- Phase 2 Advanced AI System -->
+  <script src="/js/pattern-dna-engine.js?v=2100000000"></script>
+  <script src="/js/context-aware-engine.js?v=2100000000"></script>
+  <script src="/js/advanced-personalization-engine.js?v=2100000000"></script>
+  <script src="/js/phase2-integration-engine.js?v=2100000000"></script>
+  
   <script>
-    console.log('🚀 Not a Label Terminal loading v2.1.1 - DeepSeek R1 AI Integration...');
+    console.log('🚀 Not a Label Terminal loading v2.2.0 - Phase 2 Advanced AI Integration...');
     
     // Initialize AI components
     let nalaAI, nlp, patternGenerator, musicalIdentityCreator, communitySystem, patternSharingSystem;
@@ -317,8 +323,33 @@
             console.log('🔄 Backend unavailable, using client-side Phase 1 system');
             addLine('🤖 Using client-side Phase 1 Procedural AI...', 'info-line');
             
-            // Use client-side Phase 1 Procedural System
-            if (window.ProceduralPatternGenerator && window.SemanticAnalysisEngine && window.UniquenessEngine) {
+            // Try Phase 2 Advanced AI System first
+            if (window.Phase2IntegrationEngine && window.PatternDNAEngine && window.ContextAwareEngine && window.AdvancedPersonalizationEngine) {
+              console.log('🚀 Using Phase 2 Advanced AI System');
+              addLine('🧬 Activating Phase 2: Multi-dimensional Pattern DNA...', 'success-line');
+              
+              const phase2Engine = new Phase2IntegrationEngine();
+              const phase2Context = {
+                musicDNA: musicDNA,
+                userContext: context,
+                sessionData: { interactions: 1 }
+              };
+              
+              const phase2Result = await phase2Engine.generateAdvancedPattern(command, phase2Context);
+              
+              result = {
+                success: true,
+                code: phase2Result.code,
+                description: phase2Result.description,
+                metadata: phase2Result.metadata
+              };
+              console.log('🚀 Phase 2 Advanced result:', result);
+              
+            } else if (window.ProceduralPatternGenerator && window.SemanticAnalysisEngine && window.UniquenessEngine) {
+              // Fallback to Phase 1 Procedural System
+              console.log('🔄 Phase 2 unavailable, using Phase 1 Procedural System');
+              addLine('🤖 Using Phase 1 Procedural AI...', 'info-line');
+              
               const proceduralGenerator = new ProceduralPatternGenerator();
               const uniquenessEngine = new UniquenessEngine();
               
@@ -340,7 +371,7 @@
               console.log('🤖 Client-side Phase 1 result:', result);
             } else {
               // Fallback to enhanced pattern generator
-              console.log('🔄 Phase 1 components not loaded, using enhanced fallback');
+              console.log('🔄 Advanced AI components not loaded, using enhanced fallback');
               result = patternGenerator.generatePattern(command, musicDNA);
               result.description += ' (Enhanced Fallback System)';
             }
@@ -1097,6 +1128,16 @@
             addLine('🤖 Nala AI offline - using fallback generation', 'info-line');
           }
         });
+        
+        // Check Phase 2 availability
+        if (window.Phase2IntegrationEngine && window.PatternDNAEngine && window.ContextAwareEngine && window.AdvancedPersonalizationEngine) {
+          addLine('🧬 Phase 2 Advanced AI System: Multi-dimensional Pattern DNA ready', 'success-line');
+          addLine('🎨 Context-aware generation and advanced personalization active', 'success-line');
+        } else if (window.ProceduralPatternGenerator && window.SemanticAnalysisEngine && window.UniquenessEngine) {
+          addLine('🤖 Phase 1 Procedural AI System ready', 'success-line');
+        } else {
+          addLine('🔄 Enhanced fallback generation system ready', 'info-line');
+        }
         
         addLine('🧠 AI music generation & community system initialized', 'system-line');
         addLine('🎸 Live jam rooms ready - type "jam help" to get started', 'system-line');

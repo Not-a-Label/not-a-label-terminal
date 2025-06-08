@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Enhanced Generator Test</title>
+</head>
+<body>
+    <h1>Enhanced Generator Test</h1>
+    <div id="output"></div>
+    <button onclick="testGenerator()">Test Enhanced Generator</button>
+    
+    <script src="js/enhanced-pattern-generator.js"></script>
+    <script src="js/user-taste-tracker.js"></script>
+    
+    <script>
+        function log(message) {
+            document.getElementById('output').innerHTML += '<div>' + message + '</div>';
+            console.log(message);
+        }
+        
+        async function testGenerator() {
+            log('=== Testing Enhanced Generator ===');
+            
+            try {
+                if (typeof EnhancedPatternGenerator === 'undefined') {
+                    log('❌ EnhancedPatternGenerator class not found');
+                    return;
+                }
+                
+                log('✅ EnhancedPatternGenerator class found');
+                
+                const generator = new EnhancedPatternGenerator();
+                log('✅ Generator instantiated');
+                
+                const request = {
+                    userInput: "create aggressive trap beat",
+                    musicDNA: { 
+                        primaryGenre: 'trap', 
+                        preferredMood: 'aggressive',
+                        energyLevel: 8,
+                        complexity: 6,
+                        keywords: ['aggressive']
+                    },
+                    context: {},
+                    userHistory: [],
+                    preferences: {}
+                };
+                
+                log('🎵 Generating pattern...');
+                const pattern = await generator.generateCustomPattern(request);
+                
+                log('✅ Pattern generated!');
+                log('Genre: ' + pattern.metadata.genre);
+                log('Mood: ' + pattern.metadata.mood);
+                log('Energy: ' + pattern.metadata.energy);
+                log('Code length: ' + pattern.code.length + ' characters');
+                log('Description: ' + pattern.description);
+                log('Code preview: ' + pattern.code.substring(0, 100) + '...');
+                
+            } catch (error) {
+                log('❌ Error: ' + error.message);
+                log('Stack: ' + error.stack);
+            }
+        }
+    </script>
+</body>
+</html>

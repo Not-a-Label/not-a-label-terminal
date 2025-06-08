@@ -30,39 +30,68 @@ class StrudelIntegration {
   async loadStrudelLibrary() {
     if (this.isStrudelLoaded) return;
 
-    // Create script element for Strudel
-    const script = document.createElement('script');
-    script.type = 'module';
-    
-    // Strudel CDN URL
-    script.innerHTML = `
-      import { repl, controls } from 'https://unpkg.com/@strudel.cycles/repl@latest';
-      import { getAudioContext, initAudioOnFirstClick } from 'https://unpkg.com/@strudel.cycles/webaudio@latest';
+    try {
+      // Try alternative CDN sources for Strudel
+      const cdnOptions = [
+        'https://cdn.skypack.dev/@strudel.cycles/core@latest',
+        'https://esm.sh/@strudel.cycles/core@latest',
+        'https://cdn.jsdelivr.net/npm/@strudel.cycles/core@latest/+esm'
+      ];
+
+      let loaded = false;
+      for (const cdn of cdnOptions) {
+        try {
+          const script = document.createElement('script');
+          script.type = 'module';
+          script.innerHTML = `
+            try {
+              const { Pattern, stack, sound, note } = await import('${cdn}');
+              window.strudelCore = { Pattern, stack, sound, note };
+              window.strudelLoaded = true;
+              console.log('Strudel core loaded from ${cdn}');
+            } catch (e) {
+              console.warn('Failed to load from ${cdn}:', e);
+            }
+          `;
+          
+          document.head.appendChild(script);
+          
+          // Wait for this attempt
+          await new Promise((resolve) => {
+            let checkCount = 0;
+            const checkInterval = setInterval(() => {
+              if (window.strudelLoaded) {
+                clearInterval(checkInterval);
+                loaded = true;
+                resolve();
+              }
+              checkCount++;
+              if (checkCount > 30) { // 3 seconds timeout per CDN
+                clearInterval(checkInterval);
+                resolve();
+              }
+            }, 100);
+          });
+          
+          if (loaded) break;
+        } catch (error) {
+          console.warn(`CDN ${cdn} failed:`, error);
+        }
+      }
+
+      if (!loaded) {
+        console.warn('All Strudel CDNs failed, using fallback');
+        // Mark as loaded anyway to use fallback audio
+        window.strudelLoaded = true;
+      }
       
-      window.strudelRepl = repl;
-      window.strudelControls = controls;
-      window.strudelAudio = { getAudioContext, initAudioOnFirstClick };
+      this.isStrudelLoaded = true;
+    } catch (error) {
+      console.error('Complete Strudel loading failure:', error);
+      // Still mark as loaded to use fallback
+      this.isStrudelLoaded = true;
       window.strudelLoaded = true;
-    `;
-
-    document.head.appendChild(script);
-
-    // Wait for Strudel to load
-    await new Promise((resolve, reject) => {
-      let checkCount = 0;
-      const checkInterval = setInterval(() => {
-        if (window.strudelLoaded) {
-          clearInterval(checkInterval);
-          this.isStrudelLoaded = true;
-          resolve();
-        }
-        checkCount++;
-        if (checkCount > 50) { // 5 seconds timeout
-          clearInterval(checkInterval);
-          reject(new Error('Strudel failed to load'));
-        }
-      }, 100);
-    });
+    }
   }
 
   async initializeStrudel() {
