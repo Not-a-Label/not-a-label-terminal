@@ -195,6 +195,72 @@ class NaturalLanguageProcessor {
           characteristics: ['polyrhythms', 'African percussion', 'call and response', 'danceable'],
           bpm: '100-130',
           origins: 'West Africa, 1960s-70s'
+        },
+        'jazz': {
+          description: 'American musical style with improvisation, swing rhythms, and complex harmonies',
+          characteristics: ['improvisation', 'swing rhythms', 'complex chords', 'blue notes'],
+          bpm: '60-200',
+          origins: 'New Orleans, early 1900s'
+        },
+        'ambient': {
+          description: 'Atmospheric music emphasizing tone and mood over structure',
+          characteristics: ['atmospheric', 'minimal rhythm', 'ethereal sounds', 'immersive'],
+          bpm: '60-90',
+          origins: 'UK, 1970s'
+        },
+        'experimental': {
+          description: 'Innovative music that pushes boundaries and explores new sounds',
+          characteristics: ['unconventional', 'innovative', 'abstract', 'avant-garde'],
+          bpm: 'variable',
+          origins: 'Global, 20th century'
+        },
+        'rock': {
+          description: 'Guitar-driven music with strong rhythms and powerful vocals',
+          characteristics: ['electric guitars', 'strong drums', 'powerful vocals', 'distortion'],
+          bpm: '100-160',
+          origins: 'United States, 1950s'
+        },
+        'synthwave': {
+          description: 'Retro-futuristic electronic music inspired by 1980s aesthetics',
+          characteristics: ['vintage synths', '80s aesthetics', 'neon vibes', 'nostalgic'],
+          bpm: '110-140',
+          origins: 'Internet, 2000s'
+        },
+        'funk': {
+          description: 'Groove-based music with strong bass lines and rhythmic emphasis',
+          characteristics: ['strong groove', 'bass emphasis', 'rhythmic', 'danceable'],
+          bpm: '90-120',
+          origins: 'United States, 1960s'
+        },
+        'techno': {
+          description: 'Electronic dance music with repetitive beats and futuristic sounds',
+          characteristics: ['repetitive beats', 'electronic', 'futuristic', 'mechanical'],
+          bpm: '120-150',
+          origins: 'Detroit, 1980s'
+        },
+        'classical': {
+          description: 'Traditional orchestral music with complex compositions and arrangements',
+          characteristics: ['orchestral', 'complex compositions', 'traditional', 'structured'],
+          bpm: 'variable',
+          origins: 'Europe, Classical period'
+        },
+        'reggae': {
+          description: 'Jamaican music with off-beat rhythms and social consciousness',
+          characteristics: ['off-beat rhythm', 'bass emphasis', 'social themes', 'relaxed'],
+          bpm: '60-90',
+          origins: 'Jamaica, 1960s'
+        },
+        'metal': {
+          description: 'Heavy, aggressive music with distorted guitars and powerful drums',
+          characteristics: ['heavy guitars', 'aggressive', 'distortion', 'powerful drums'],
+          bpm: '120-200',
+          origins: 'UK/US, 1970s'
+        },
+        'country': {
+          description: 'American folk music with storytelling and traditional instruments',
+          characteristics: ['storytelling', 'acoustic guitar', 'traditional', 'rural themes'],
+          bpm: '80-140',
+          origins: 'Southern US, 1920s'
         }
       },
       
@@ -400,20 +466,54 @@ class NaturalLanguageProcessor {
       'studying': 'lo-fi',
       'relax': 'lo-fi',
       'calm': 'ambient',
+      'atmospheric': 'ambient',
+      'ethereal': 'ambient',
+      'spacey': 'ambient',
+      'dark': 'ambient',
       'hard': 'drill',
       'aggressive': 'drill',
       'dance': 'house',
       'party': 'house',
       'electronic': 'house',
+      'club': 'house',
       'african': 'afrobeats',
       'percussion': 'afrobeats',
       'bass': 'trap',
-      'heavy': 'trap',
+      'heavy': 'metal',
       'workout': 'trap',
       'retro': 'synthwave',
       '80s': 'synthwave',
+      'neon': 'synthwave',
       'smooth': 'jazz',
-      'sophisticated': 'jazz'
+      'sophisticated': 'jazz',
+      'improvisation': 'jazz',
+      'swing': 'jazz',
+      'blue': 'jazz',
+      'experimental': 'experimental',
+      'avant-garde': 'experimental',
+      'innovative': 'experimental',
+      'unconventional': 'experimental',
+      'weird': 'experimental',
+      'strange': 'experimental',
+      'guitar': 'rock',
+      'distorted': 'rock',
+      'loud': 'rock',
+      'groovy': 'funk',
+      'groove': 'funk',
+      'funky': 'funk',
+      'repetitive': 'techno',
+      'mechanical': 'techno',
+      'futuristic': 'techno',
+      'orchestral': 'classical',
+      'symphony': 'classical',
+      'chamber': 'classical',
+      'offbeat': 'reggae',
+      'jamaica': 'reggae',
+      'rasta': 'reggae',
+      'storytelling': 'country',
+      'folk': 'country',
+      'acoustic': 'country',
+      'rural': 'country'
     };
     
     for (const [keyword, genre] of Object.entries(genreMap)) {
