@@ -256,6 +256,9 @@
   <!-- Beta Feedback System -->
   <script src="/js/beta-feedback.js?v=3200000000"></script>
   
+  <!-- Analytics System -->
+  <script src="/js/analytics.js?v=3200000000"></script>
+  
   <script>
     console.log('🚀 Not a Label Terminal loading v3.2.0 - Phase 3 AI Ensemble + Voice-First Onboarding...');
     
@@ -1222,6 +1225,17 @@
       if (lowerCommand.includes('feedback history') || lowerCommand.includes('my feedback')) {
         window.BetaFeedback.showFeedbackStats(addLine);
         return;
+      }
+      
+      // Analytics Commands  
+      if (lowerCommand === 'analytics' || lowerCommand === 'stats') {
+        if (window.analytics) {
+          window.analytics.displayAnalytics(addLine);
+          return;
+        } else {
+          addLine('❌ Analytics not available', 'error-line');
+          return;
+        }
       }
       
       if (lowerCommand.includes('my profile') || lowerCommand.includes('profile')) {
