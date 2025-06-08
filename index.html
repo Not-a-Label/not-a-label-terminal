@@ -174,8 +174,8 @@
       <div class="terminal-line highlight-line">🎵 Welcome to Not a Label - Where Music Meets AI</div>
       <div class="terminal-line output-line">Create, share, and discover music through natural language.</div>
       <div class="terminal-line output-line"></div>
-      <div class="terminal-line success-line">✨ NEW: Create your musical identity - no boring signups!</div>
-      <div class="terminal-line info-line">🎯 Quick Start: "create trap beat" or "create musical identity"</div>
+      <div class="terminal-line success-line">✨ NEW: Voice-first musical identity - speak your creativity!</div>
+      <div class="terminal-line info-line">🎯 Quick Start: "voice identity" or "create trap beat"</div>
       <div class="terminal-line dim-line">💡 Type "help" to see all features</div>
       <div class="terminal-line system-line"></div>
     </div>
@@ -247,8 +247,11 @@
   <script src="/js/dna-mutation-system.js?v=3100000000"></script>
   <script src="/js/cross-pattern-breeding.js?v=3100000000"></script>
   
+  <!-- Voice-First Onboarding System -->
+  <script src="/js/voice-first-onboarding.js?v=3200000000"></script>
+  
   <script>
-    console.log('🚀 Not a Label Terminal loading v3.1.0 - Phase 3 AI Ensemble + Pattern Evolution...');
+    console.log('🚀 Not a Label Terminal loading v3.2.0 - Phase 3 AI Ensemble + Voice-First Onboarding...');
     
     // Initialize AI components
     let nalaAI, nlp, patternGenerator, musicalIdentityCreator, communitySystem, patternSharingSystem;
@@ -259,6 +262,9 @@
     // Evolution system components
     let evolutionEngine, mutationSystem, breedingSystem;
     let patternLibrary = [];
+    
+    // Voice-First Onboarding
+    let voiceFirstOnboarding;
     
     function addLine(text, className = 'output-line') {
       const line = document.createElement('div');
@@ -1110,6 +1116,7 @@
         addLine('  create dark house music       - Dark electronic', 'output-line');
         addLine('', 'output-line');
         addLine('🎨 IDENTITY & PROFILE:', 'info-line');
+        addLine('  voice identity                - 🎤 Revolutionary voice-first signup', 'output-line');
         addLine('  create musical identity       - Start identity creation', 'output-line');
         addLine('  signup                        - Begin account creation', 'output-line');
         addLine('  login                         - Sign into existing account', 'output-line');
@@ -1144,6 +1151,21 @@
           return;
         } else {
           addLine('❌ Musical Identity Creator not available', 'error-line');
+          return;
+        }
+      }
+      
+      // Voice-First Onboarding Commands
+      if (lowerCommand.includes('voice identity') || lowerCommand.includes('voice signup') || lowerCommand.includes('voice onboarding') || lowerCommand === 'voice') {
+        if (voiceFirstOnboarding) {
+          voiceFirstOnboarding.startVoiceFirstOnboarding();
+          return;
+        } else {
+          addLine('❌ Voice-First Onboarding not available', 'error-line');
+          addLine('💡 Falling back to regular identity creation...', 'info-line');
+          if (musicalIdentityCreator) {
+            musicalIdentityCreator.start();
+          }
           return;
         }
       }
@@ -1408,6 +1430,17 @@
         if (window.CrossPatternBreedingSystem) {
           breedingSystem = new CrossPatternBreedingSystem();
           console.log('🧬 Cross-Pattern Breeding System initialized');
+        }
+        
+        // Initialize Voice-First Onboarding
+        if (window.VoiceFirstOnboarding) {
+          voiceFirstOnboarding = new VoiceFirstOnboarding({
+            addLine: addLine,
+            addHTML: addHTML,
+            focusInput: () => terminalInput.focus(),
+            musicalIdentityCreator: musicalIdentityCreator
+          });
+          console.log('🎤 Voice-First Onboarding initialized');
         }
         
         // Check AI health
