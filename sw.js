@@ -1,5 +1,5 @@
 // Not a Label Service Worker - PWA Offline Support
-const CACHE_NAME = 'not-a-label-v3.2.2-no-js-cache';
+const CACHE_NAME = 'not-a-label-v3.3.4-fixed-sw';
 const OFFLINE_URL = '/offline.html';
 
 // Core files to cache immediately
@@ -88,7 +88,8 @@ self.addEventListener('fetch', event => {
   // BYPASS ALL JAVASCRIPT FILES - NO CACHING
   if (url.pathname.endsWith('.js') || url.pathname.includes('js/')) {
     console.log('[SW] Bypassing cache for ALL JS files:', url.pathname);
-    return; // Let browser handle directly without service worker intervention
+    event.respondWith(fetch(request, { cache: 'no-cache' }));
+    return;
   }
   
   // Skip CDN requests completely - don't even handle them
@@ -98,6 +99,7 @@ self.addEventListener('fetch', event => {
       url.hostname.includes('cdn.jsdelivr.net') ||
       url.pathname.includes('@strudel')) {
     // Let the browser handle CDN requests directly
+    event.respondWith(fetch(request));
     return;
   }
   
@@ -110,18 +112,8 @@ async function handleFetchRequest(request) {
   const url = new URL(request.url);
   
   try {
-    // BYPASS ALL JAVASCRIPT FILES - NO SERVICE WORKER CACHING
-    if (url.pathname.endsWith('.js') || url.pathname.includes('js/')) {
-      console.log('[SW] Force bypassing cache for JS file:', url.pathname);
-      const response = await fetch(request, {
-        cache: 'no-cache',
-        headers: {
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache'
-        }
-      });
-      return response;
-    }
+    // JavaScript files should already be handled in the main fetch listener
+    // This function only handles non-JS files
     
     // Strategy 1: Core app files - Cache First
     if (isCoreFile(url.pathname)) {
@@ -541,23 +533,6 @@ self.addEventListener('notificationclick', event => {
   );
 });
 
-// Performance monitoring
-self.addEventListener('fetch', event => {
-  const start = performance.now();
-  
-  event.respondWith(
-    handleFetchRequest(event.request)
-      .then(response => {
-        const duration = performance.now() - start;
-        
-        // Log slow requests for debugging
-        if (duration > 1000) {
-          console.warn('[SW] Slow request:', event.request.url, `${duration.toFixed(2)}ms`);
-        }
-        
-        return response;
-      })
-  );
-});
+// Performance monitoring (removed duplicate fetch listener)
 
 console.log('[SW] Service Worker loaded successfully');
