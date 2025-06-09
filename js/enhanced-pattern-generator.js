@@ -1,12 +1,14 @@
-// 🎵 Enhanced Pattern Generator with AI-Powered Variations
-// Generates custom Strudel patterns based on user taste and input
+// 🎵 Enhanced Pattern Generator with Conversational AI Integration
+// Generates custom Strudel patterns based on natural language conversations
 
 class EnhancedPatternGenerator {
   constructor() {
     this.userProfiles = new Map(); // Store user taste profiles
     this.patternDatabase = new Map(); // Store successful patterns
+    this.conversationalMemory = new Map(); // Store conversation context
     this.musicalElements = this.initializeMusicalElements();
     this.contextualRules = this.initializeContextualRules();
+    this.conversationalPatterns = this.initializeConversationalPatterns();
   }
 
   initializeMusicalElements() {
@@ -150,6 +152,216 @@ class EnhancedPatternGenerator {
         timestamp: new Date().toISOString()
       }
     };
+  }
+
+  initializeConversationalPatterns() {
+    return {
+      // Natural language patterns for music creation
+      emotionalMapping: {
+        'excited': { energy: 8, mood: 'energetic', genre: 'house' },
+        'sad': { energy: 2, mood: 'melancholy', genre: 'lo-fi' },
+        'angry': { energy: 9, mood: 'aggressive', genre: 'trap' },
+        'peaceful': { energy: 1, mood: 'ambient', genre: 'ambient' },
+        'focused': { energy: 4, mood: 'chill', genre: 'lo-fi' },
+        'creative': { energy: 6, mood: 'flowing', genre: 'jazz' },
+        'nostalgic': { energy: 3, mood: 'dreamy', genre: 'lo-fi' }
+      },
+      
+      // Activity-based generation
+      activityMapping: {
+        'study': { energy: 3, mood: 'focused', tempo: 'slow' },
+        'workout': { energy: 9, mood: 'driving', tempo: 'fast' },
+        'sleep': { energy: 1, mood: 'ambient', tempo: 'very_slow' },
+        'party': { energy: 8, mood: 'bouncy', tempo: 'fast' },
+        'work': { energy: 5, mood: 'flowing', tempo: 'medium' },
+        'relax': { energy: 2, mood: 'chill', tempo: 'slow' },
+        'drive': { energy: 7, mood: 'groovy', tempo: 'medium' }
+      },
+      
+      // Conversational context patterns
+      responsePatterns: {
+        'first_interaction': 'Welcome! Let me create something special for you.',
+        'pattern_liked': 'Great! Let me build on that style.',
+        'pattern_disliked': 'No worries! Let me try a different approach.',
+        'modification_request': 'Absolutely! I can adjust that for you.',
+        'genre_exploration': 'Exploring new territory is exciting!',
+        'mood_change': 'I sense a shift in energy - let me adapt.'
+      }
+    };
+  }
+
+  processConversationalRequest(userInput, conversationHistory = []) {
+    // Analyze conversational context
+    const conversationalContext = this.analyzeConversationalContext(userInput, conversationHistory);
+    
+    // Extract enhanced musical intent
+    const musicalIntent = this.extractMusicalIntentFromConversation(userInput, conversationalContext);
+    
+    // Generate pattern with conversational awareness
+    return this.generatePatternWithConversationalContext(musicalIntent, conversationalContext);
+  }
+
+  analyzeConversationalContext(userInput, history) {
+    const context = {
+      isFirstInteraction: history.length === 0,
+      previousPatterns: history.filter(item => item.type === 'pattern'),
+      userFeedback: history.filter(item => item.type === 'feedback'),
+      conversationTone: this.detectConversationTone(userInput),
+      emotionalState: this.detectEmotionalState(userInput),
+      musicalJourney: this.trackMusicalJourney(history)
+    };
+    
+    return context;
+  }
+
+  extractMusicalIntentFromConversation(userInput, context) {
+    const lowerInput = userInput.toLowerCase();
+    const intent = {
+      primaryAction: null,
+      musicProperties: {},
+      modificationType: null,
+      emotionalTarget: null
+    };
+    
+    // Detect primary action
+    if (lowerInput.match(/create|make|generate|build/)) {
+      intent.primaryAction = 'create';
+    } else if (lowerInput.match(/modify|change|adjust|update/)) {
+      intent.primaryAction = 'modify';
+    } else if (lowerInput.match(/explore|try|experiment/)) {
+      intent.primaryAction = 'explore';
+    }
+    
+    // Extract emotional/activity context
+    const emotionalPatterns = this.conversationalPatterns.emotionalMapping;
+    const activityPatterns = this.conversationalPatterns.activityMapping;
+    
+    for (const [emotion, properties] of Object.entries(emotionalPatterns)) {
+      if (lowerInput.includes(emotion)) {
+        intent.emotionalTarget = emotion;
+        intent.musicProperties = { ...properties };
+        break;
+      }
+    }
+    
+    for (const [activity, properties] of Object.entries(activityPatterns)) {
+      if (lowerInput.includes(activity)) {
+        intent.activityContext = activity;
+        intent.musicProperties = { ...intent.musicProperties, ...properties };
+        break;
+      }
+    }
+    
+    return intent;
+  }
+
+  generatePatternWithConversationalContext(intent, context) {
+    // Use existing generatePattern method but with enhanced context
+    const enhancedAnalysis = {
+      genre: intent.musicProperties.genre || 'lo-fi',
+      mood: intent.musicProperties.mood || 'chill',
+      energy: intent.musicProperties.energy || 5,
+      complexity: 5,
+      conversationalContext: context,
+      intent: intent
+    };
+    
+    // Generate base pattern
+    const basePattern = this.generatePatternFromAnalysis(enhancedAnalysis);
+    
+    // Add conversational response
+    const conversationalResponse = this.generateConversationalResponse(intent, context);
+    
+    return {
+      ...basePattern,
+      conversationalResponse: conversationalResponse,
+      conversationalContext: context
+    };
+  }
+
+  generateConversationalResponse(intent, context) {
+    const responses = this.conversationalPatterns.responsePatterns;
+    
+    if (context.isFirstInteraction) {
+      return responses.first_interaction;
+    }
+    
+    if (context.userFeedback.some(f => f.sentiment === 'positive')) {
+      return responses.pattern_liked;
+    }
+    
+    if (context.userFeedback.some(f => f.sentiment === 'negative')) {
+      return responses.pattern_disliked;
+    }
+    
+    if (intent.primaryAction === 'modify') {
+      return responses.modification_request;
+    }
+    
+    if (intent.primaryAction === 'explore') {
+      return responses.genre_exploration;
+    }
+    
+    return 'Let me create something that matches your vibe.';
+  }
+
+  detectConversationTone(userInput) {
+    const lowerInput = userInput.toLowerCase();
+    
+    if (lowerInput.match(/love|amazing|perfect|awesome|great/)) {
+      return 'enthusiastic';
+    }
+    
+    if (lowerInput.match(/please|could you|would you/)) {
+      return 'polite';
+    }
+    
+    if (lowerInput.match(/!\s*$|!!/)) {
+      return 'excited';
+    }
+    
+    return 'neutral';
+  }
+
+  detectEmotionalState(userInput) {
+    const emotionalKeywords = {
+      happy: ['happy', 'joyful', 'excited', 'cheerful'],
+      sad: ['sad', 'down', 'blue', 'melancholy'],
+      energetic: ['energetic', 'pumped', 'ready', 'motivated'],
+      calm: ['calm', 'peaceful', 'relaxed', 'chill'],
+      creative: ['creative', 'inspired', 'artistic', 'expressive']
+    };
+    
+    const lowerInput = userInput.toLowerCase();
+    
+    for (const [emotion, keywords] of Object.entries(emotionalKeywords)) {
+      if (keywords.some(keyword => lowerInput.includes(keyword))) {
+        return emotion;
+      }
+    }
+    
+    return 'neutral';
+  }
+
+  trackMusicalJourney(history) {
+    // Analyze user's musical evolution through conversation
+    const journey = {
+      genresExplored: [],
+      energyProgression: [],
+      moodChanges: [],
+      complexityGrowth: []
+    };
+    
+    history.forEach(item => {
+      if (item.metadata) {
+        journey.genresExplored.push(item.metadata.genre);
+        journey.energyProgression.push(item.metadata.energy);
+        journey.moodChanges.push(item.metadata.mood);
+        journey.complexityGrowth.push(item.metadata.complexity);
+      }
+    });
+    
+    return journey;
   }
 
   analyzeUserRequest(userInput, musicDNA, context) {
