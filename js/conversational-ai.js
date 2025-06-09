@@ -559,3 +559,8 @@ What would you like to explore?`,
 if (typeof window !== 'undefined') {
   window.ConversationalAI = ConversationalAI;
 }
+
+// Export for Node.js
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { ConversationalAI };
+}
