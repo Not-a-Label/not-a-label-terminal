@@ -131,13 +131,36 @@ class MusicalIdentityCreator {
     this.addLine('🎵 Hey there! I\'m Nala, your AI music companion.', 'success-line');
     this.addLine('Instead of boring signup forms, let\'s create your identity through music!', 'output-line');
     this.addLine('', 'output-line');
-    this.addLine('🎨 Your musical choices will become your unique profile.', 'info-line');
-    this.addLine('This is way more fun than "enter email and password" 😉', 'dim-line');
+    
+    // Enhanced onboarding explanation
+    this.addHTML(`
+      <div style="background: rgba(0, 255, 0, 0.08); border-left: 3px solid #00ff00; padding: 12px; margin: 8px 0;">
+        <div style="color: #00ffaa; font-weight: bold; margin-bottom: 8px;">🧬 How Musical Identity Works:</div>
+        <div style="margin: 4px 0;">• Tell me your music preferences</div>
+        <div style="margin: 4px 0;">• I'll generate your unique signature pattern</div>
+        <div style="margin: 4px 0;">• This becomes your musical DNA & profile</div>
+        <div style="margin: 4px 0;">• Join the community with style!</div>
+      </div>
+    `);
+    
     this.addLine('', 'output-line');
     this.addLine('🎯 Ready to discover your sound?', 'success-line');
-    this.addLine('💡 Tell me: What kind of music gets you excited?', 'info-line');
+    this.addLine('💡 What kind of music gets you excited?', 'info-line');
     this.addLine('', 'output-line');
-    this.addLine('Examples: "chill lo-fi beats", "aggressive trap", "dreamy ambient"', 'dim-line');
+    
+    // Enhanced examples with more variety
+    this.addHTML(`
+      <div style="color: #666; font-style: italic; margin: 8px 0;">
+        <div>💡 Examples:</div>
+        <div style="margin-left: 16px;">
+          <div>• "chill lo-fi beats for studying"</div>
+          <div>• "aggressive trap with heavy 808s"</div>
+          <div>• "dreamy ambient soundscapes"</div>
+          <div>• "uplifting house music for dancing"</div>
+          <div>• "experimental electronic vibes"</div>
+        </div>
+      </div>
+    `);
     
     this.currentStep = 'discovery';
     this.focusInput();

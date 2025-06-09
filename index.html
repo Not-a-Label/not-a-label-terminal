@@ -1881,7 +1881,20 @@
         nalaAI.checkHealth().then(health => {
           console.log('🤖 Nala AI Health:', health);
           if (health.status === 'ok') {
-            addLine('🤖 Nala AI (DeepSeek R1) online & ready', 'system-line');
+            // Display status based on primary AI service
+            switch(health.ai_status) {
+              case 'online':
+                addLine(`🤖 Nala AI (${health.primary_ai}) online & ready`, 'system-line');
+                break;
+              case 'online_with_openai':
+                addLine('🤖 Nala AI online with OpenAI GPT-4', 'success-line');
+                break;
+              case 'online_with_fallback':
+                addLine('🤖 Nala AI online with Phase 2 Advanced System', 'success-line');
+                break;
+              default:
+                addLine('🤖 Nala AI online with enhanced fallback', 'info-line');
+            }
           } else {
             addLine('🤖 Nala AI offline - using fallback generation', 'info-line');
           }

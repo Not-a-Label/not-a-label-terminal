@@ -1377,11 +1377,25 @@ app.get('/api/health', (req, res) => {
   const hasOllamaEndpoint = RUNPOD_OLLAMA_ENDPOINT && RUNPOD_OLLAMA_ENDPOINT.includes('runpod');
   const hasOpenAI = OPENAI_API_KEY && OPENAI_API_KEY !== 'your_openai_key_here';
   
+  // Determine primary AI service status
+  let primaryAI = 'phase2_fallback';
+  let aiStatus = 'online_with_fallback';
+  
+  if (hasOllamaEndpoint) {
+    primaryAI = 'ollama_deepseek_r1';
+    aiStatus = 'online';
+  } else if (hasOpenAI) {
+    primaryAI = 'openai_gpt4';
+    aiStatus = 'online_with_openai';
+  }
+  
   res.json({ 
     status: 'ok', 
     timestamp: new Date().toISOString(),
-    ai: 'multi-tier-with-ollama',
+    ai: 'multi-tier-enhanced',
     service: 'nala-music-ai',
+    primary_ai: primaryAI,
+    ai_status: aiStatus,
     runpod: {
       configured: hasRunPodKey,
       endpoint: hasRunPodKey ? RUNPOD_ENDPOINT : 'not configured'
@@ -1394,7 +1408,7 @@ app.get('/api/health', (req, res) => {
     },
     openai: {
       configured: hasOpenAI,
-      enabled: process.env.OPENAI_ENABLED === 'true'
+      enabled: hasOpenAI
     },
     features: {
       phase1: true,
