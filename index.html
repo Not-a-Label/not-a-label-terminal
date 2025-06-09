@@ -33,96 +33,121 @@
       box-sizing: border-box;
     }
     
+    :root {
+      --terminal-bg: #000;
+      --terminal-green: #00ff00;
+      --terminal-green-dim: #00ff0055;
+      --terminal-green-bg: rgba(0, 255, 0, 0.1);
+      --header-height: 45px;
+      --input-height: 60px;
+      --panel-z-index: 1000;
+      --modal-z-index: 9999;
+    }
+    
     body { 
-      background: #000; 
-      color: #00ff00; 
+      background: var(--terminal-bg); 
+      color: var(--terminal-green); 
       font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
       overflow: hidden;
       height: 100vh;
+      width: 100vw;
       position: fixed;
-      width: 100%;
+      top: 0;
+      left: 0;
     }
     
     .terminal {
       height: 100vh;
+      width: 100vw;
       display: flex;
       flex-direction: column;
+      position: relative;
     }
     
     .terminal-header {
       background: linear-gradient(135deg, #111, #001100);
-      border-bottom: 1px solid #00ff0055;
+      border-bottom: 1px solid var(--terminal-green-dim);
       padding: 8px 15px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      min-height: 45px;
+      height: var(--header-height);
       flex-shrink: 0;
+      z-index: 100;
     }
     
     .terminal-title {
       display: flex;
       align-items: center;
       gap: 8px;
-      color: #00ff00;
-      font-size: 14px;
+      color: var(--terminal-green);
+      font-size: clamp(12px, 2.5vw, 14px);
       font-weight: bold;
+      white-space: nowrap;
     }
     
     .terminal-content {
       flex: 1;
       overflow-y: auto;
+      overflow-x: hidden;
       padding: 15px;
       scroll-behavior: smooth;
+      height: calc(100vh - var(--header-height) - var(--input-height));
+      word-wrap: break-word;
     }
     
     .terminal-line {
       margin: 2px 0;
       line-height: 1.4;
-      font-size: 13px;
+      font-size: clamp(11px, 2vw, 13px);
       word-wrap: break-word;
       white-space: pre-wrap;
+      overflow-wrap: break-word;
+      hyphens: auto;
     }
     
     .system-line { color: #00ffff; }
     .error-line { color: #ff0066; font-weight: bold; }
-    .input-line { color: #00ff00; font-weight: bold; }
+    .input-line { color: var(--terminal-green); font-weight: bold; }
     .output-line { color: #cccccc; }
     .success-line { color: #00ff88; font-weight: bold; }
     .info-line { color: #ffaa00; }
     .highlight-line { 
-      color: #00ff00; 
-      background: rgba(0, 255, 0, 0.1);
+      color: var(--terminal-green); 
+      background: var(--terminal-green-bg);
       padding: 4px 8px;
-      border-left: 3px solid #00ff00;
+      border-left: 3px solid var(--terminal-green);
       margin: 4px 0;
       border-radius: 0 4px 4px 0;
     }
     
     .terminal-input-container {
       background: linear-gradient(135deg, #111, #001100);
-      border-top: 1px solid #00ff0055;
+      border-top: 1px solid var(--terminal-green-dim);
       padding: 12px 15px;
       display: flex;
       align-items: center;
       gap: 10px;
+      height: var(--input-height);
       flex-shrink: 0;
+      z-index: 100;
     }
     
     .terminal-prompt {
-      color: #00ff00;
+      color: var(--terminal-green);
       font-weight: bold;
       white-space: nowrap;
       user-select: none;
       min-width: fit-content;
+      font-size: clamp(11px, 2vw, 13px);
     }
     
     .terminal-input {
       background: transparent;
       border: none;
-      color: #00ff00;
+      color: var(--terminal-green);
       font-family: inherit;
-      font-size: 13px;
+      font-size: clamp(11px, 2vw, 13px);
       outline: none;
       padding: 6px 0;
       width: 100%;
@@ -130,30 +155,33 @@
     }
     
     .terminal-input::placeholder {
-      color: #00ff0055;
+      color: var(--terminal-green-dim);
       font-style: italic;
     }
     
     /* Community table styling */
     .terminal-line table {
-      color: #00ff00;
+      color: var(--terminal-green);
       border-collapse: collapse;
       width: 100%;
       font-family: 'Courier New', monospace;
-      font-size: 12px;
+      font-size: clamp(10px, 1.8vw, 12px);
+      overflow-x: auto;
+      display: block;
+      white-space: nowrap;
     }
     
     .terminal-line table th {
       color: #00ffff;
-      border-bottom: 1px solid #00ff0055;
+      border-bottom: 1px solid var(--terminal-green-dim);
       text-align: left;
-      padding: 6px;
+      padding: 4px 6px;
       font-weight: bold;
     }
     
     .terminal-line table td {
       border-bottom: 1px solid #00ff0022;
-      padding: 6px;
+      padding: 4px 6px;
       cursor: pointer;
       transition: background-color 0.2s;
     }
@@ -165,6 +193,241 @@
     .dim-line {
       color: #666;
       font-style: italic;
+    }
+    
+    /* Responsive UI Components */
+    .responsive-panel {
+      position: fixed;
+      background: rgba(0, 0, 0, 0.95);
+      border: 1px solid var(--terminal-green);
+      border-radius: 8px;
+      padding: 15px;
+      color: var(--terminal-green);
+      font-family: 'Courier New', monospace;
+      z-index: var(--panel-z-index);
+      box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+      max-height: 80vh;
+      overflow-y: auto;
+      word-wrap: break-word;
+    }
+    
+    .responsive-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: var(--modal-z-index);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    
+    .modal-content {
+      background: var(--terminal-bg);
+      border: 2px solid var(--terminal-green);
+      border-radius: 8px;
+      padding: 20px;
+      max-width: 90vw;
+      max-height: 80vh;
+      overflow-y: auto;
+      color: var(--terminal-green);
+      font-family: 'Courier New', monospace;
+    }
+    
+    /* Mobile Responsive Design */
+    @media screen and (max-width: 768px) {
+      :root {
+        --header-height: 50px;
+        --input-height: 70px;
+      }
+      
+      .terminal-header {
+        padding: 10px 15px;
+        flex-wrap: wrap;
+      }
+      
+      .terminal-title {
+        font-size: 12px;
+      }
+      
+      .terminal-content {
+        padding: 10px;
+        font-size: 12px;
+      }
+      
+      .terminal-input-container {
+        padding: 15px;
+        flex-wrap: wrap;
+      }
+      
+      .terminal-prompt {
+        font-size: 12px;
+        margin-bottom: 5px;
+        width: 100%;
+      }
+      
+      .terminal-input {
+        font-size: 14px;
+        padding: 8px 0;
+      }
+      
+      .responsive-panel {
+        position: fixed;
+        bottom: 80px;
+        left: 10px;
+        right: 10px;
+        width: auto;
+        max-width: none;
+        padding: 10px;
+        font-size: 11px;
+      }
+      
+      .modal-content {
+        padding: 15px;
+        margin: 10px;
+        max-width: calc(100vw - 20px);
+        font-size: 12px;
+      }
+      
+      /* Mobile-specific AI Insights panel positioning */
+      #enhancement-panel {
+        position: fixed !important;
+        top: auto !important;
+        bottom: 80px !important;
+        left: 10px !important;
+        right: 10px !important;
+        width: auto !important;
+        max-width: none !important;
+        min-width: auto !important;
+        font-size: 10px !important;
+        z-index: 500 !important;
+      }
+      
+      /* Hide AI panel by default on mobile to prevent overlap */
+      #enhancement-panel {
+        display: none;
+      }
+      
+      /* Show panel only when analytics are requested */
+      #enhancement-panel.mobile-visible {
+        display: block;
+      }
+    }
+    
+    @media screen and (max-width: 480px) {
+      :root {
+        --header-height: 55px;
+        --input-height: 80px;
+      }
+      
+      .terminal-content {
+        padding: 8px;
+      }
+      
+      .terminal-line {
+        font-size: 11px;
+        line-height: 1.3;
+      }
+      
+      .terminal-input-container {
+        padding: 12px;
+      }
+      
+      .terminal-input {
+        font-size: 16px; /* Prevent zoom on iOS */
+      }
+      
+      .responsive-panel {
+        bottom: 90px;
+        left: 5px;
+        right: 5px;
+        padding: 8px;
+        font-size: 10px;
+      }
+    }
+    
+    /* Tablet Landscape */
+    @media screen and (min-width: 769px) and (max-width: 1024px) {
+      .responsive-panel {
+        max-width: 350px;
+      }
+    }
+    
+    /* Large Screens */
+    @media screen and (min-width: 1440px) {
+      .terminal-content {
+        padding: 20px;
+      }
+      
+      .terminal-line {
+        font-size: 14px;
+      }
+      
+      .terminal-input {
+        font-size: 14px;
+      }
+    }
+    
+    /* Ensure proper stacking and prevent overlaps */
+    .enhancement-panel {
+      z-index: 500 !important;
+    }
+    
+    .lesson-interface {
+      z-index: 1001 !important;
+    }
+    
+    .practice-overlay {
+      z-index: 1002 !important;
+    }
+    
+    .contextual-help {
+      z-index: 1003 !important;
+    }
+    
+    .ascii-visualizer {
+      z-index: 450 !important;
+    }
+    
+    /* Terminal content stays below floating panels */
+    .terminal-content {
+      z-index: 1;
+      position: relative;
+    }
+    
+    .terminal-header, .terminal-input-container {
+      z-index: 100;
+      position: relative;
+    }
+    
+    /* Prevent panel overlap with terminal */
+    #enhancement-panel {
+      pointer-events: auto;
+    }
+    
+    #enhancement-panel.minimized {
+      height: auto;
+      max-height: 50px;
+    }
+    
+    /* Smooth transitions for responsive changes */
+    .terminal, .terminal-content, .responsive-panel, .modal-content {
+      transition: all 0.3s ease;
+    }
+    
+    /* Hide elements that might cause horizontal scroll */
+    body, html {
+      overflow-x: hidden;
+    }
+    
+    /* Ensure code blocks don't break layout */
+    pre, code {
+      overflow-x: auto;
+      word-wrap: break-word;
+      white-space: pre-wrap;
     }
   </style>
 </head>
@@ -311,8 +574,18 @@
   <!-- Analytics System -->
   <script src="/js/analytics.js?v=3200000002&nc=" data-no-cache></script>
   
+  <!-- Platform Enhancement Features -->
+  <script src="/js/enhanced-audio-visualizer.js?v=3300000001&nc=" data-no-cache></script>
+  <script src="/js/pattern-analytics-engine.js?v=3300000001&nc=" data-no-cache></script>
+  <script src="/js/smart-recommendation-engine.js?v=3300000001&nc=" data-no-cache></script>
+  <script src="/js/platform-enhancements-integration.js?v=3300000001&nc=" data-no-cache></script>
+  
+  <!-- Advanced Platform Features -->
+  <script src="/js/intelligent-music-tutor.js?v=3300000002&nc=" data-no-cache></script>
+  <script src="/js/advanced-performance-optimizer.js?v=3300000002&nc=" data-no-cache></script>
+  
   <script>
-    const VERSION = 'v3.2.3';
+    const VERSION = 'v3.3.0-enhancements';
     const CACHE_BUSTER = Date.now();
     console.log(`🚀 Not a Label Terminal loading ${VERSION} - NUCLEAR CACHE FIX + OpenAI Integration...`);
     console.log(`🔄 Cache buster: ${CACHE_BUSTER}`);
@@ -541,14 +814,14 @@
           // Add playback controls with unique IDs
           const patternId = `pattern_${Date.now()}`;
           const controlsHTML = `
-            <div style="display: flex; gap: 10px; align-items: center; margin: 10px 0;">
-              <button id="playBtn_${patternId}" style="background: #00ff00; color: #000; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold;">
+            <div style="display: flex; gap: clamp(5px, 2vw, 10px); align-items: center; margin: 10px 0; flex-wrap: wrap; justify-content: center;">
+              <button id="playBtn_${patternId}" style="background: #00ff00; color: #000; border: none; padding: clamp(6px, 1.5vw, 8px) clamp(12px, 3vw, 16px); border-radius: 4px; cursor: pointer; font-weight: bold; font-size: clamp(11px, 2vw, 13px); touch-action: manipulation;">
                 ▶️ PLAY
               </button>
-              <button id="stopBtn_${patternId}" style="background: #ff0066; color: #fff; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold;">
+              <button id="stopBtn_${patternId}" style="background: #ff0066; color: #fff; border: none; padding: clamp(6px, 1.5vw, 8px) clamp(12px, 3vw, 16px); border-radius: 4px; cursor: pointer; font-weight: bold; font-size: clamp(11px, 2vw, 13px); touch-action: manipulation;">
                 ⏹️ STOP
               </button>
-              <button id="saveBtn_${patternId}" style="background: #0066ff; color: #fff; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold;">
+              <button id="saveBtn_${patternId}" style="background: #0066ff; color: #fff; border: none; padding: clamp(6px, 1.5vw, 8px) clamp(12px, 3vw, 16px); border-radius: 4px; cursor: pointer; font-weight: bold; font-size: clamp(11px, 2vw, 13px); touch-action: manipulation;">
                 💾 SAVE
               </button>
             </div>
@@ -583,6 +856,11 @@
               console.log('✅ Save button listener added');
             }
           }, 100);
+          
+          // Integrate with platform enhancements
+          if (window.platformEnhancementsController && window.platformEnhancementsController.isInitialized) {
+            window.platformEnhancementsController.onPatternGenerated(result.code, result.metadata);
+          }
           
           addLine('🎯 Pattern ready! Use controls above to play, stop, or save.', 'success-line');
           
@@ -1128,14 +1406,14 @@
     function addPlaybackControls(pattern) {
       const patternId = `pattern_${Date.now()}`;
       const controlsHTML = `
-        <div style="display: flex; gap: 10px; align-items: center; margin: 10px 0;">
-          <button id="playBtn_${patternId}" style="background: #00ff00; color: #000; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold;">
+        <div style="display: flex; gap: clamp(5px, 2vw, 10px); align-items: center; margin: 10px 0; flex-wrap: wrap; justify-content: center;">
+          <button id="playBtn_${patternId}" style="background: #00ff00; color: #000; border: none; padding: clamp(6px, 1.5vw, 8px) clamp(12px, 3vw, 16px); border-radius: 4px; cursor: pointer; font-weight: bold; font-size: clamp(11px, 2vw, 13px); touch-action: manipulation;">
             ▶️ PLAY
           </button>
-          <button id="stopBtn_${patternId}" style="background: #ff0066; color: #fff; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold;">
+          <button id="stopBtn_${patternId}" style="background: #ff0066; color: #fff; border: none; padding: clamp(6px, 1.5vw, 8px) clamp(12px, 3vw, 16px); border-radius: 4px; cursor: pointer; font-weight: bold; font-size: clamp(11px, 2vw, 13px); touch-action: manipulation;">
             ⏹️ STOP
           </button>
-          <button id="saveBtn_${patternId}" style="background: #0066ff; color: #fff; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold;">
+          <button id="saveBtn_${patternId}" style="background: #0066ff; color: #fff; border: none; padding: clamp(6px, 1.5vw, 8px) clamp(12px, 3vw, 16px); border-radius: 4px; cursor: pointer; font-weight: bold; font-size: clamp(11px, 2vw, 13px); touch-action: manipulation;">
             💾 SAVE
           </button>
         </div>
@@ -1210,11 +1488,18 @@
         addLine('  remix [pattern]               - Remix a shared pattern', 'output-line');
         addLine('  collab with [artist]          - Start collaboration', 'output-line');
         addLine('', 'output-line');
+        addLine('🎓 LEARNING & TUTORIALS:', 'info-line');
+        addLine('  learn rhythm                  - Interactive rhythm lessons', 'output-line');
+        addLine('  learn music theory            - Theory fundamentals', 'output-line');
+        addLine('  learn sound design            - Audio production tutorials', 'output-line');
+        addLine('  tutorial composition          - Song structure lessons', 'output-line');
+        addLine('  tutor stats                   - View learning progress', 'output-line');
+        addLine('', 'output-line');
         addLine('🛠️ SYSTEM COMMANDS:', 'info-line');
         addLine('  clear                         - Clear terminal', 'output-line');
         addLine('  help                          - Show this help', 'output-line');
         addLine('', 'output-line');
-        addLine('✅ AI-powered music generation & identity system active!', 'success-line');
+        addLine('✅ AI-powered music generation & intelligent tutoring system active!', 'success-line');
         return;
       }
       
@@ -1642,7 +1927,7 @@
         addLine('⚠️ AI system loading... some features may be limited', 'info-line');
       }
       
-      // Add Enter key handler
+      // Add responsive input handlers
       terminalInput.addEventListener('keydown', function(event) {
         if (event.key === 'Enter') {
           event.preventDefault();
@@ -1655,6 +1940,33 @@
             });
             terminalInput.value = '';
           }
+        }
+      });
+      
+      // Add touch/mobile support
+      if ('ontouchstart' in window) {
+        // Mobile-specific optimizations
+        terminalInput.addEventListener('focus', function() {
+          // Prevent zoom on iOS
+          document.querySelector('meta[name=viewport]').setAttribute('content', 
+            'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
+        });
+        
+        terminalInput.addEventListener('blur', function() {
+          // Restore normal viewport
+          document.querySelector('meta[name=viewport]').setAttribute('content', 
+            'width=device-width, initial-scale=1.0');
+        });
+      }
+      
+      // Handle window resize for responsive updates
+      window.addEventListener('resize', function() {
+        // Update visualizer canvas size if active
+        if (window.enhancedAudioVisualizer && window.enhancedAudioVisualizer.canvas) {
+          const canvas = window.enhancedAudioVisualizer.canvas;
+          const isMobile = window.innerWidth < 768;
+          canvas.width = isMobile ? Math.min(350, window.innerWidth - 40) : 800;
+          canvas.height = isMobile ? 150 : 200;
         }
       });
       
@@ -1679,6 +1991,12 @@
       
       // Override executeCommand to add visualizer support
       setupVisualizerCommands();
+      
+      // Setup tutor command integration
+      if (window.setupTutorCommands) {
+        executeCommand = window.setupTutorCommands(executeCommand);
+        console.log('🎓 Music tutor commands integrated');
+      }
     });
     
     // Register service worker for PWA features
