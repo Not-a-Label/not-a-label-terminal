@@ -112,6 +112,16 @@
     .output-line { color: #cccccc; }
     .success-line { color: #00ff88; font-weight: bold; }
     .info-line { color: #ffaa00; }
+    .nala-response { 
+      color: #ff69b4; 
+      font-weight: bold; 
+      margin: 5px 0;
+      padding: 5px 8px;
+      border-left: 3px solid #ff69b4;
+      background: rgba(255, 105, 180, 0.1);
+      border-radius: 0 4px 4px 0;
+      text-shadow: 0 0 3px rgba(255, 105, 180, 0.3);
+    }
     .highlight-line { 
       color: var(--terminal-green); 
       background: var(--terminal-green-bg);
@@ -585,10 +595,11 @@
   <script src="/js/advanced-performance-optimizer.js?v=3300000002&nc=" data-no-cache></script>
   
   <!-- Conversational AI System -->
-  <script src="/js/conversational-ai.js?v=3300000003&nc=" data-no-cache></script>
+  <script src="/js/conversational-ai.js?v=3400000001&nc=" data-no-cache></script>
+  <script src="/js/conversational-integrations.js?v=3400000001&nc=" data-no-cache></script>
   
   <script>
-    const VERSION = 'v3.3.0-enhancements';
+    const VERSION = 'v3.4.0-conversational-optimized';
     const CACHE_BUSTER = Date.now();
     console.log(`🚀 Not a Label Terminal loading ${VERSION} - NUCLEAR CACHE FIX + OpenAI Integration...`);
     console.log(`🔄 Cache buster: ${CACHE_BUSTER}`);
@@ -1447,7 +1458,30 @@
       // Display user input
       addLine(`nal@music:~$ ${command}`, 'input-line');
       
-      // Use conversational AI to respond to ALL inputs
+      // Use enhanced conversational AI with integrations
+      if (window.conversationalIntegrations) {
+        try {
+          console.log('🤖 Processing with conversational integrations...');
+          const response = await window.conversationalIntegrations.processConversationalInput(command);
+          
+          // Display primary response
+          if (response.primaryResponse) {
+            addLine('🤖 Nala: ' + response.primaryResponse, 'nala-response');
+          }
+          
+          // Show what actions were taken
+          if (response.actions.length > 0) {
+            console.log('🛠️ Actions taken:', response.actions);
+          }
+          
+          return; // Exit early - enhanced conversational AI handled everything
+        } catch (error) {
+          console.error('Enhanced conversational AI error:', error);
+          addLine('🤖 Let me try the basic conversational mode...', 'info-line');
+        }
+      }
+      
+      // Fallback to basic conversational AI
       if (conversationalAI) {
         try {
           const response = await conversationalAI.processConversation(command);
@@ -1458,7 +1492,7 @@
             await generateMusic(command);
           }
           
-          return;
+          return; // Exit early - conversational AI handled everything
         } catch (error) {
           console.error('Conversational AI error:', error);
           addLine('🤖 Having a moment - let me fall back to command mode...', 'info-line');
@@ -1852,14 +1886,33 @@
           playPattern: playPattern
         });
         
-        // Initialize Conversational AI System
+        // Initialize Enhanced Conversational AI System
         if (window.ConversationalAI) {
+          console.log('🤖 Initializing Conversational AI with enhanced features...');
+          
           conversationalAI = new ConversationalAI({
             addLine: addLine,
             addHTML: addHTML,
             generateMusic: generateMusic,
             patternGenerator: patternGenerator
           });
+          
+          // Initialize conversational integrations
+          if (window.conversationalIntegrations) {
+            window.conversationalIntegrations.initializeFeatures({
+              conversationalAI: conversationalAI,
+              patternGenerator: window.enhancedPatternGenerator || patternGenerator,
+              audioVisualizer: window.enhancedAudioVisualizer
+            });
+            
+            console.log('🤖 Conversational integrations connected');
+          }
+          
+          // Enable conversational mode for audio visualizer
+          if (window.enhancedAudioVisualizer) {
+            window.enhancedAudioVisualizer.enableConversationalMode('emotional');
+            console.log('🎨 Audio visualizer set to conversational mode');
+          }
           console.log('🤖 Conversational AI System initialized');
         }
         
