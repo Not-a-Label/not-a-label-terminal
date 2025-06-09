@@ -441,15 +441,15 @@
     
     <div class="terminal-content" id="terminalContent">
       <div class="terminal-line system-line">[SYSTEM] ✅ AI Music Generation Engine Active</div>
-      <div class="terminal-line system-line">[SYSTEM] ✅ Community System Online</div>
-      <div class="terminal-line system-line">[SYSTEM] ✅ Pattern Sharing Enabled</div>
+      <div class="terminal-line system-line">[SYSTEM] ✅ Conversational AI Online</div>
+      <div class="terminal-line system-line">[SYSTEM] ✅ Music Tools & Community Ready</div>
       <div class="terminal-line system-line"></div>
-      <div class="terminal-line highlight-line">🎵 Welcome to Not a Label - Where Music Meets AI</div>
-      <div class="terminal-line output-line">Create, share, and discover music through natural language.</div>
+      <div class="terminal-line highlight-line">🎵 Hey! I'm Nala, your AI music companion</div>
+      <div class="terminal-line output-line">Just talk to me naturally - I understand what you want to create!</div>
       <div class="terminal-line output-line"></div>
-      <div class="terminal-line success-line">👑 BETA: Founding Artist Program - 100 exclusive spots!</div>
-      <div class="terminal-line info-line">🎯 Quick Start: "beta" for founding artist or "voice identity"</div>
-      <div class="terminal-line dim-line">💡 Type "help" to see all features</div>
+      <div class="terminal-line success-line">💬 Try saying: "create a chill beat" or "what is music?"</div>
+      <div class="terminal-line info-line">🎯 I can chat, create music, answer questions, and help you learn</div>
+      <div class="terminal-line dim-line">💡 No commands needed - just talk to me like a friend!</div>
       <div class="terminal-line system-line"></div>
     </div>
     
@@ -584,6 +584,9 @@
   <script src="/js/intelligent-music-tutor.js?v=3300000002&nc=" data-no-cache></script>
   <script src="/js/advanced-performance-optimizer.js?v=3300000002&nc=" data-no-cache></script>
   
+  <!-- Conversational AI System -->
+  <script src="/js/conversational-ai.js?v=3300000003&nc=" data-no-cache></script>
+  
   <script>
     const VERSION = 'v3.3.0-enhancements';
     const CACHE_BUSTER = Date.now();
@@ -593,6 +596,7 @@
     
     // Initialize AI components
     let nalaAI, nlp, patternGenerator, musicalIdentityCreator, communitySystem, patternSharingSystem;
+    let conversationalAI; // New conversational AI system
     let currentPattern = null;
     let audioContext = null;
     let currentUser = null;
@@ -1440,10 +1444,28 @@
     async function executeCommand(command) {
       if (!command.trim()) return;
       
-      // Display command
+      // Display user input
       addLine(`nal@music:~$ ${command}`, 'input-line');
       
-      // Simple command processing
+      // Use conversational AI to respond to ALL inputs
+      if (conversationalAI) {
+        try {
+          const response = await conversationalAI.processConversation(command);
+          await conversationalAI.displayResponse(response);
+          
+          // If music was requested, generate it using the tools
+          if (response.actions && response.actions.includes('generate_music')) {
+            await generateMusic(command);
+          }
+          
+          return;
+        } catch (error) {
+          console.error('Conversational AI error:', error);
+          addLine('🤖 Having a moment - let me fall back to command mode...', 'info-line');
+        }
+      }
+      
+      // Fallback to command processing if conversational AI fails
       const lowerCommand = command.toLowerCase();
       
       if (lowerCommand === 'clear') {
@@ -1829,6 +1851,17 @@
           addHTML: addHTML,
           playPattern: playPattern
         });
+        
+        // Initialize Conversational AI System
+        if (window.ConversationalAI) {
+          conversationalAI = new ConversationalAI({
+            addLine: addLine,
+            addHTML: addHTML,
+            generateMusic: generateMusic,
+            patternGenerator: patternGenerator
+          });
+          console.log('🤖 Conversational AI System initialized');
+        }
         
         // Initialize Evolution Systems
         if (window.PatternEvolutionEngine) {
