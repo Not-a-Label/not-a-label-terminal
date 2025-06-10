@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MIDI Fix Test - Not a Label</title>
+    <style>
+        body {
+            background: #000;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            padding: 20px;
+        }
+        .test-section {
+            border: 1px solid #00ff00;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        button {
+            background: #003300;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+        }
+        button:hover { background: #004400; }
+        .active-notes {
+            min-height: 50px;
+            border: 1px dashed #00ff00;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        .note-bar {
+            display: inline-block;
+            width: 20px;
+            background: #00ff00;
+            margin: 2px;
+            transition: all 0.1s;
+            vertical-align: bottom;
+        }
+        #log {
+            background: #001100;
+            padding: 10px;
+            height: 200px;
+            overflow-y: auto;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎹 MIDI Integration Fix Test</h1>
+    <p>Testing the fixed note-off functionality and enhanced synthesis</p>
+
+    <div class="test-section">
+        <h2>🎵 Virtual Keyboard Test</h2>
+        <p>Click to play notes - they should stop properly when released!</p>
+        <div id="keyboard"></div>
+        <div class="active-notes" id="active-notes">Active notes will appear here...</div>
+    </div>
+
+    <div class="test-section">
+        <h2>🎛️ Controller Test</h2>
+        <button onclick="testSustainPedal()">Test Sustain Pedal</button>
+        <button onclick="testPitchBend()">Test Pitch Bend</button>
+        <button onclick="testModWheel()">Test Mod Wheel</button>
+        <button onclick="testVelocity()">Test Velocity Layers</button>
+    </div>
+
+    <div class="test-section">
+        <h2>🎸 Creative Features</h2>
+        <button onclick="testArpeggiator()">Arpeggiator</button>
+        <button onclick="testEcho()">Echo Effect</button>
+        <button onclick="testHarmonizer()">Harmonizer</button>
+        <button onclick="testChordDetection()">Chord Detection</button>
+    </div>
+
+    <div class="test-section">
+        <h2>📊 Test Log</h2>
+        <div id="log"></div>
+    </div>
+
+    <!-- Load required systems -->
+    <script>
+        // Mock audioContext if not available
+        window.audioContext = window.audioContext || new (window.AudioContext || window.webkitAudioContext)();
+        
+        // Mock addLine for terminal output
+        window.addLine = function(text, className) {
+            const log = document.getElementById('log');
+            const line = document.createElement('div');
+            line.textContent = `[${new Date().toTimeString().split(' ')[0]}] ${text}`;
+            line.className = className;
+            log.appendChild(line);
+            log.scrollTop = log.scrollHeight;
+        };
+    </script>
+    
+    <!-- Load MIDI Integration -->
+    <script src="js/midi-integration.js"></script>
+
+    <script>
+        // Create virtual keyboard
+        function createKeyboard() {
+            const keyboard = document.getElementById('keyboard');
+            const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+            
+            for (let octave = 3; octave <= 5; octave++) {
+                for (let i = 0; i < 12; i++) {
+                    const note = octave * 12 + i;
+                    const button = document.createElement('button');
+                    button.textContent = noteNames[i] + octave;
+                    button.dataset.note = note;
+                    
+                    // Mouse events
+                    button.addEventListener('mousedown', () => startNote(note));
+                    button.addEventListener('mouseup', () => stopNote(note));
+                    button.addEventListener('mouseleave', () => stopNote(note));
+                    
+                    // Touch events
+                    button.addEventListener('touchstart', (e) => {
+                        e.preventDefault();
+                        startNote(note);
+                    });
+                    button.addEventListener('touchend', (e) => {
+                        e.preventDefault();
+                        stopNote(note);
+                    });
+                    
+                    keyboard.appendChild(button);
+                }
+            }
+        }
+
+        const activeNotes = new Set();
+        const noteVisuals = new Map();
+
+        function startNote(note) {
+            if (activeNotes.has(note)) return;
+            
+            activeNotes.add(note);
+            window.midiIntegration.handleNoteOn(note, 100, 1, Date.now());
+            
+            // Visual feedback
+            const bar = document.createElement('div');
+            bar.className = 'note-bar';
+            bar.style.height = `${(note - 36) * 2}px`;
+            bar.id = `note-${note}`;
+            document.getElementById('active-notes').appendChild(bar);
+            noteVisuals.set(note, bar);
+            
+            window.addLine(`Note ON: ${window.midiIntegration.midiNoteToName(note)}`, 'note-on');
+        }
+
+        function stopNote(note) {
+            if (!activeNotes.has(note)) return;
+            
+            activeNotes.delete(note);
+            window.midiIntegration.handleNoteOff(note, 0, 1, Date.now());
+            
+            // Remove visual
+            const bar = noteVisuals.get(note);
+            if (bar) {
+                bar.style.opacity = '0.3';
+                setTimeout(() => bar.remove(), 300);
+                noteVisuals.delete(note);
+            }
+            
+            window.addLine(`Note OFF: ${window.midiIntegration.midiNoteToName(note)}`, 'note-off');
+        }
+
+        // Test functions
+        function testSustainPedal() {
+            window.addLine('Testing sustain pedal...', 'test');
+            
+            // Press sustain
+            window.midiIntegration.handleControlChange(64, 127, 1, Date.now());
+            window.addLine('Sustain ON - notes should have longer release', 'info');
+            
+            // Play test note
+            window.midiIntegration.playVirtualNote(60, 100, 100);
+            
+            setTimeout(() => {
+                // Release sustain
+                window.midiIntegration.handleControlChange(64, 0, 1, Date.now());
+                window.addLine('Sustain OFF', 'info');
+            }, 2000);
+        }
+
+        function testPitchBend() {
+            window.addLine('Testing pitch bend...', 'test');
+            
+            // Start note
+            window.midiIntegration.handleNoteOn(60, 100, 1, Date.now());
+            
+            // Bend up
+            let bend = 0;
+            const interval = setInterval(() => {
+                bend += 1000;
+                if (bend > 8192) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        window.midiIntegration.handleNoteOff(60, 0, 1, Date.now());
+                    }, 500);
+                    return;
+                }
+                window.midiIntegration.handlePitchBend(bend & 0x7F, (bend >> 7) & 0x7F, 1, Date.now());
+            }, 50);
+        }
+
+        function testModWheel() {
+            window.addLine('Testing mod wheel vibrato...', 'test');
+            
+            // Start note
+            window.midiIntegration.handleNoteOn(64, 100, 1, Date.now());
+            
+            // Increase mod wheel
+            let modValue = 0;
+            const interval = setInterval(() => {
+                modValue += 10;
+                if (modValue > 127) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        window.midiIntegration.handleNoteOff(64, 0, 1, Date.now());
+                    }, 1000);
+                    return;
+                }
+                window.midiIntegration.handleControlChange(1, modValue, 1, Date.now());
+                window.addLine(`Mod wheel: ${modValue}`, 'mod');
+            }, 100);
+        }
+
+        function testVelocity() {
+            window.addLine('Testing velocity layers...', 'test');
+            
+            const velocities = [30, 60, 90, 127];
+            velocities.forEach((vel, i) => {
+                setTimeout(() => {
+                    window.addLine(`Playing with velocity ${vel}`, 'velocity');
+                    window.midiIntegration.playVirtualNote(60 + i * 4, vel, 400);
+                }, i * 500);
+            });
+        }
+
+        function testArpeggiator() {
+            window.addLine('Testing arpeggiator...', 'test');
+            window.midiIntegration.activeEffect = 'arpeggiator';
+            window.midiIntegration.createArpeggio({ note: 60, velocity: 0.8 });
+            
+            setTimeout(() => {
+                window.midiIntegration.activeEffect = null;
+            }, 2000);
+        }
+
+        function testEcho() {
+            window.addLine('Testing echo effect...', 'test');
+            window.midiIntegration.activeEffect = 'echo';
+            window.midiIntegration.playVirtualNote(67, 100, 200);
+            window.midiIntegration.createEcho({ note: 67, velocity: 0.8 });
+            
+            setTimeout(() => {
+                window.midiIntegration.activeEffect = null;
+            }, 2000);
+        }
+
+        function testHarmonizer() {
+            window.addLine('Testing harmonizer...', 'test');
+            window.midiIntegration.activeEffect = 'harmonizer';
+            window.midiIntegration.playVirtualNote(60, 100, 1000);
+            window.midiIntegration.createHarmony({ note: 60, velocity: 0.8 });
+            
+            setTimeout(() => {
+                window.midiIntegration.activeEffect = null;
+            }, 2000);
+        }
+
+        function testChordDetection() {
+            window.addLine('Testing chord detection...', 'test');
+            
+            // Play C major chord
+            const chord = [60, 64, 67]; // C E G
+            chord.forEach(note => {
+                window.midiIntegration.handleNoteOn(note, 100, 1, Date.now());
+            });
+            
+            // Detect chord
+            const activeNoteObjs = chord.map(note => ({ note }));
+            const detectedChord = window.midiIntegration.detectChord(activeNoteObjs);
+            window.addLine(`Detected chord: ${detectedChord || 'Unknown'}`, 'chord');
+            
+            // Release notes
+            setTimeout(() => {
+                chord.forEach(note => {
+                    window.midiIntegration.handleNoteOff(note, 0, 1, Date.now());
+                });
+            }, 1000);
+        }
+
+        // Initialize on load
+        window.addEventListener('load', async () => {
+            createKeyboard();
+            
+            // Initialize MIDI
+            if (window.midiIntegration) {
+                await window.midiIntegration.initialize();
+                window.addLine('MIDI Integration loaded and ready!', 'success');
+                window.addLine('Click the piano keys or use test buttons', 'info');
+            } else {
+                window.addLine('Error: MIDI Integration not loaded', 'error');
+            }
+        });
+    </script>
+</body>
+</html>

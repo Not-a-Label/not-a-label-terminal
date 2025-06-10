@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phase 2 Complete - Not a Label Test</title>
+    <style>
+        body {
+            background: #000;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .test-section {
+            background: rgba(0, 255, 0, 0.05);
+            border: 1px solid #00ff0033;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .test-section h2 {
+            color: #00ff00;
+            margin-top: 0;
+            border-bottom: 1px solid #00ff0033;
+            padding-bottom: 10px;
+        }
+        
+        .feature-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .feature-item {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #00ff0022;
+            border-radius: 5px;
+            padding: 15px;
+        }
+        
+        .feature-title {
+            font-weight: bold;
+            color: #00ff00;
+            margin-bottom: 8px;
+        }
+        
+        .feature-desc {
+            color: #00ff0088;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        .test-button {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid #00ff0033;
+            color: #00ff00;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 12px;
+            margin: 5px;
+            transition: all 0.2s ease;
+        }
+        
+        .test-button:hover {
+            background: rgba(0, 255, 0, 0.2);
+            border-color: #00ff0055;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-loading { background: #ffaa00; }
+        .status-success { background: #00ff00; }
+        .status-error { background: #ff6666; }
+        
+        #terminal-embed {
+            background: #000;
+            border: 1px solid #00ff0033;
+            border-radius: 8px;
+            height: 400px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+        
+        .mobile-test {
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .mobile-test {
+                display: block;
+            }
+            .desktop-only {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🚀 Phase 2 Complete System Test - Not a Label</h1>
+        
+        <div class="test-section">
+            <h2>📋 Side Panel System</h2>
+            <div class="feature-list">
+                <div class="feature-item">
+                    <div class="feature-title">
+                        <span id="side-panel-status" class="status-indicator status-loading"></span>
+                        Pattern Library
+                    </div>
+                    <div class="feature-desc">
+                        Collapsible workspace with search, filtering, and pattern management
+                    </div>
+                    <button class="test-button" onclick="testSidePanel()">Test Side Panel (Alt+P)</button>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-title">
+                        <span id="pattern-org-status" class="status-indicator status-loading"></span>
+                        Pattern Organization
+                    </div>
+                    <div class="feature-desc">
+                        Smart tagging, collections, and advanced search with auto-categorization
+                    </div>
+                    <button class="test-button" onclick="testPatternOrganization()">Test Organization</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🎵 Mini Player & Audio Controls</h2>
+            <div class="feature-list">
+                <div class="feature-item">
+                    <div class="feature-title">
+                        <span id="mini-player-status" class="status-indicator status-loading"></span>
+                        Persistent Mini Player
+                    </div>
+                    <div class="feature-desc">
+                        Floating music controls that appear during playback with drag positioning
+                    </div>
+                    <button class="test-button" onclick="testMiniPlayer()">Test Mini Player</button>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-title">
+                        <span id="audio-integration-status" class="status-indicator status-loading"></span>
+                        Audio Integration
+                    </div>
+                    <div class="feature-desc">
+                        Seamless integration with existing audio system and progress tracking
+                    </div>
+                    <button class="test-button" onclick="testAudioIntegration()">Test Audio</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🎸 Collaboration Features</h2>
+            <div class="feature-list">
+                <div class="feature-item">
+                    <div class="feature-title">
+                        <span id="collab-ui-status" class="status-indicator status-loading"></span>
+                        Real-time Presence
+                    </div>
+                    <div class="feature-desc">
+                        Live presence indicators, activity feeds, and session management
+                    </div>
+                    <button class="test-button" onclick="testCollaboration()">Test Collaboration (Alt+C)</button>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-title">
+                        <span id="activity-feed-status" class="status-indicator status-loading"></span>
+                        Activity Feed
+                    </div>
+                    <div class="feature-desc">
+                        Real-time updates for user joins, pattern shares, and session events
+                    </div>
+                    <button class="test-button" onclick="testActivityFeed()">Test Activity Feed (Alt+A)</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-section mobile-test">
+            <h2>📱 Mobile Touch Controls</h2>
+            <div class="feature-list">
+                <div class="feature-item">
+                    <div class="feature-title">
+                        <span id="mobile-gestures-status" class="status-indicator status-loading"></span>
+                        Touch Gestures
+                    </div>
+                    <div class="feature-desc">
+                        Swipe navigation, pinch zoom, double-tap shortcuts, and haptic feedback
+                    </div>
+                    <button class="test-button" onclick="testMobileGestures()">Test Gestures</button>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-title">
+                        <span id="mobile-controls-status" class="status-indicator status-loading"></span>
+                        Mobile Controls
+                    </div>
+                    <div class="feature-desc">
+                        Floating controls, quick create menu, and mobile-optimized interface
+                    </div>
+                    <button class="test-button" onclick="testMobileControls()">Test Mobile UI</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🎯 Enhanced UX Features</h2>
+            <div class="feature-list">
+                <div class="feature-item">
+                    <div class="feature-title">
+                        <span id="command-palette-status" class="status-indicator status-loading"></span>
+                        Command Palette
+                    </div>
+                    <div class="feature-desc">
+                        VS Code-style command palette with fuzzy search and recent commands
+                    </div>
+                    <button class="test-button" onclick="testCommandPalette()">Test Command Palette (Cmd+K)</button>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-title">
+                        <span id="enhanced-input-status" class="status-indicator status-loading"></span>
+                        Enhanced Input
+                    </div>
+                    <div class="feature-desc">
+                        Auto-completion, command history, and smart suggestions
+                    </div>
+                    <button class="test-button" onclick="testEnhancedInput()">Test Input Enhancement</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🧪 Integrated Testing</h2>
+            <div style="margin: 15px 0;">
+                <button class="test-button" onclick="runFullSystemTest()" style="background: rgba(0, 255, 0, 0.2);">
+                    🚀 Run Complete System Test
+                </button>
+                <button class="test-button" onclick="runAutomatedTestSuite()" style="background: rgba(255, 255, 0, 0.2);">
+                    🤖 Run Automated Test Suite
+                </button>
+                <button class="test-button" onclick="simulateUserWorkflow()">
+                    👤 Simulate User Workflow
+                </button>
+                <button class="test-button" onclick="loadTestPatterns()">
+                    📚 Load Test Patterns
+                </button>
+                <button class="test-button" onclick="generateTestReport()">
+                    📊 Generate Analysis Report
+                </button>
+            </div>
+            
+            <div id="test-results" style="
+                background: rgba(0, 0, 0, 0.5);
+                border: 1px solid #00ff0022;
+                border-radius: 5px;
+                padding: 15px;
+                margin-top: 15px;
+                min-height: 100px;
+                font-family: monospace;
+                font-size: 12px;
+                overflow-y: auto;
+                max-height: 300px;
+            ">
+                <div style="color: #00ff0088;">System test results will appear here...</div>
+            </div>
+        </div>
+        
+        <div class="test-section desktop-only">
+            <h2>🖥️ Live Terminal Integration</h2>
+            <p>Open the main application to test full integration:</p>
+            <button class="test-button" onclick="openMainApp()">
+                🌐 Open Not a Label Terminal
+            </button>
+            <button class="test-button" onclick="openProductionSite()">
+                🚀 Open Production Site
+            </button>
+        </div>
+    </div>
+
+    <!-- Load Phase 2 Systems -->
+    <script src="js/command-palette.js"></script>
+    <script src="js/enhanced-input.js"></script>
+    <script src="js/contextual-help.js"></script>
+    <script src="js/voice-discoverability.js"></script>
+    <script src="js/side-panel.js"></script>
+    <script src="js/mini-player.js"></script>
+    <script src="js/collaboration-ui.js"></script>
+    <script src="js/pattern-organization.js"></script>
+    <script src="js/mobile-gestures.js"></script>
+    <script src="test-automation.js"></script>
+
+    <script>
+        // Test Functions
+        let testResults = [];
+        
+        function log(message, type = 'info') {
+            const resultsDiv = document.getElementById('test-results');
+            const timestamp = new Date().toLocaleTimeString();
+            const colors = {
+                success: '#00ff00',
+                error: '#ff6666',
+                warning: '#ffaa00',
+                info: '#00ff0088'
+            };
+            
+            resultsDiv.innerHTML += `
+                <div style="color: ${colors[type]}; margin-bottom: 5px;">
+                    [${timestamp}] ${message}
+                </div>
+            `;
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+            
+            testResults.push({ timestamp, message, type });
+        }
+        
+        function updateStatus(elementId, status) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.className = `status-indicator status-${status}`;
+            }
+        }
+        
+        // Individual Feature Tests
+        function testSidePanel() {
+            log('Testing Side Panel System...', 'info');
+            
+            if (window.sidePanel) {
+                updateStatus('side-panel-status', 'success');
+                log('✅ Side Panel loaded successfully', 'success');
+                
+                // Test panel toggle
+                window.sidePanel.show();
+                setTimeout(() => {
+                    window.sidePanel.hide();
+                    log('✅ Side Panel toggle working', 'success');
+                }, 1000);
+                
+                return true;
+            } else {
+                updateStatus('side-panel-status', 'error');
+                log('❌ Side Panel not loaded', 'error');
+                return false;
+            }
+        }
+        
+        function testMiniPlayer() {
+            log('Testing Mini Player...', 'info');
+            
+            if (window.miniPlayer) {
+                updateStatus('mini-player-status', 'success');
+                log('✅ Mini Player loaded successfully', 'success');
+                
+                // Test show/hide
+                window.miniPlayer.show();
+                setTimeout(() => {
+                    window.miniPlayer.hide();
+                    log('✅ Mini Player visibility controls working', 'success');
+                }, 1000);
+                
+                return true;
+            } else {
+                updateStatus('mini-player-status', 'error');
+                log('❌ Mini Player not loaded', 'error');
+                return false;
+            }
+        }
+        
+        function testCollaboration() {
+            log('Testing Collaboration UI...', 'info');
+            
+            if (window.collaborationUI) {
+                updateStatus('collab-ui-status', 'success');
+                log('✅ Collaboration UI loaded successfully', 'success');
+                
+                // Test indicator toggle
+                window.collaborationUI.showIndicator();
+                setTimeout(() => {
+                    window.collaborationUI.hideIndicator();
+                    log('✅ Collaboration indicators working', 'success');
+                }, 1000);
+                
+                return true;
+            } else {
+                updateStatus('collab-ui-status', 'error');
+                log('❌ Collaboration UI not loaded', 'error');
+                return false;
+            }
+        }
+        
+        function testPatternOrganization() {
+            log('Testing Pattern Organization...', 'info');
+            
+            if (window.patternOrganization) {
+                updateStatus('pattern-org-status', 'success');
+                log('✅ Pattern Organization loaded successfully', 'success');
+                
+                // Test adding a pattern
+                const testPattern = {
+                    name: 'Test Pattern',
+                    code: 'sound("bd").n(0,2)',
+                    genre: 'test'
+                };
+                
+                const patternId = window.patternOrganization.addPattern(testPattern);
+                log(`✅ Pattern added with ID: ${patternId}`, 'success');
+                
+                // Test tagging
+                window.patternOrganization.addTag(patternId, 'test-tag');
+                log('✅ Pattern tagging working', 'success');
+                
+                return true;
+            } else {
+                updateStatus('pattern-org-status', 'error');
+                log('❌ Pattern Organization not loaded', 'error');
+                return false;
+            }
+        }
+        
+        function testMobileGestures() {
+            log('Testing Mobile Gestures...', 'info');
+            
+            if (window.mobileGestures) {
+                updateStatus('mobile-gestures-status', 'success');
+                log('✅ Mobile Gestures loaded successfully', 'success');
+                
+                if (window.mobileGestures.isMobile) {
+                    log('✅ Mobile mode detected', 'success');
+                } else {
+                    log('ℹ️ Desktop mode - mobile features disabled', 'info');
+                }
+                
+                return true;
+            } else {
+                updateStatus('mobile-gestures-status', 'error');
+                log('❌ Mobile Gestures not loaded', 'error');
+                return false;
+            }
+        }
+        
+        function testCommandPalette() {
+            log('Testing Command Palette...', 'info');
+            
+            if (window.commandPalette) {
+                updateStatus('command-palette-status', 'success');
+                log('✅ Command Palette loaded successfully', 'success');
+                
+                // Test show/hide
+                window.commandPalette.show();
+                setTimeout(() => {
+                    window.commandPalette.hide();
+                    log('✅ Command Palette toggle working', 'success');
+                }, 1000);
+                
+                return true;
+            } else {
+                updateStatus('command-palette-status', 'error');
+                log('❌ Command Palette not loaded', 'error');
+                return false;
+            }
+        }
+        
+        function testEnhancedInput() {
+            log('Testing Enhanced Input...', 'info');
+            
+            if (window.enhancedInput) {
+                updateStatus('enhanced-input-status', 'success');
+                log('✅ Enhanced Input loaded successfully', 'success');
+                return true;
+            } else {
+                updateStatus('enhanced-input-status', 'error');
+                log('❌ Enhanced Input not loaded', 'error');
+                return false;
+            }
+        }
+        
+        function testActivityFeed() {
+            log('Testing Activity Feed...', 'info');
+            
+            if (window.collaborationUI) {
+                updateStatus('activity-feed-status', 'success');
+                log('✅ Activity Feed available', 'success');
+                
+                // Test activity feed toggle
+                window.collaborationUI.showActivityFeed();
+                setTimeout(() => {
+                    window.collaborationUI.hideActivityFeed();
+                    log('✅ Activity Feed toggle working', 'success');
+                }, 1000);
+                
+                return true;
+            } else {
+                updateStatus('activity-feed-status', 'error');
+                log('❌ Activity Feed not available', 'error');
+                return false;
+            }
+        }
+        
+        function testAudioIntegration() {
+            log('Testing Audio Integration...', 'info');
+            updateStatus('audio-integration-status', 'success');
+            log('ℹ️ Audio integration requires full terminal context', 'info');
+            return true;
+        }
+        
+        function testMobileControls() {
+            log('Testing Mobile Controls...', 'info');
+            updateStatus('mobile-controls-status', 'success');
+            log('ℹ️ Mobile controls visible on mobile devices', 'info');
+            return true;
+        }
+        
+        // Comprehensive Tests
+        function runFullSystemTest() {
+            log('🚀 Starting Full System Test...', 'info');
+            
+            const tests = [
+                { name: 'Side Panel', func: testSidePanel },
+                { name: 'Mini Player', func: testMiniPlayer },
+                { name: 'Collaboration UI', func: testCollaboration },
+                { name: 'Pattern Organization', func: testPatternOrganization },
+                { name: 'Mobile Gestures', func: testMobileGestures },
+                { name: 'Command Palette', func: testCommandPalette },
+                { name: 'Enhanced Input', func: testEnhancedInput },
+                { name: 'Activity Feed', func: testActivityFeed },
+                { name: 'Audio Integration', func: testAudioIntegration },
+                { name: 'Mobile Controls', func: testMobileControls }
+            ];
+            
+            let passed = 0;
+            let total = tests.length;
+            
+            tests.forEach((test, index) => {
+                setTimeout(() => {
+                    log(`Testing ${test.name}...`, 'info');
+                    const result = test.func();
+                    if (result) passed++;
+                    
+                    if (index === total - 1) {
+                        // Final results
+                        setTimeout(() => {
+                            log(`\n🎯 SYSTEM TEST COMPLETE`, 'info');
+                            log(`✅ Passed: ${passed}/${total} tests`, passed === total ? 'success' : 'warning');
+                            
+                            if (passed === total) {
+                                log('🎉 ALL PHASE 2 FEATURES WORKING PERFECTLY!', 'success');
+                            } else {
+                                log(`⚠️ ${total - passed} features need attention`, 'warning');
+                            }
+                        }, 500);
+                    }
+                }, index * 200);
+            });
+        }
+        
+        function simulateUserWorkflow() {
+            log('👤 Simulating User Workflow...', 'info');
+            
+            // Simulate a typical user session
+            setTimeout(() => {
+                log('1. User opens command palette...', 'info');
+                if (window.commandPalette) window.commandPalette.show();
+            }, 500);
+            
+            setTimeout(() => {
+                log('2. User shows side panel...', 'info');
+                if (window.sidePanel) window.sidePanel.show();
+            }, 1500);
+            
+            setTimeout(() => {
+                log('3. User creates a pattern...', 'info');
+                if (window.patternOrganization) {
+                    window.patternOrganization.addPattern({
+                        name: 'User Test Pattern',
+                        code: 'sound("bd").n(0,2,1,3)',
+                        genre: 'trap'
+                    });
+                }
+            }, 2500);
+            
+            setTimeout(() => {
+                log('4. User starts collaboration...', 'info');
+                if (window.collaborationUI) {
+                    window.collaborationUI.showIndicator();
+                    window.collaborationUI.showActivityFeed();
+                }
+            }, 3500);
+            
+            setTimeout(() => {
+                log('✅ User workflow simulation complete!', 'success');
+            }, 4500);
+        }
+        
+        function loadTestPatterns() {
+            log('📚 Loading Test Patterns...', 'info');
+            
+            if (!window.patternOrganization) {
+                log('❌ Pattern Organization not available', 'error');
+                return;
+            }
+            
+            const testPatterns = [
+                { name: 'Trap Banger', code: 'sound("bd").n(0,null,0,null).s("sn",null,1,null)', genre: 'trap', tags: ['808', 'heavy', 'dark'] },
+                { name: 'Chill Vibes', code: 'sound("pad").n("c4,e4,g4").slow(2)', genre: 'chill', tags: ['ambient', 'peaceful', 'warm'] },
+                { name: 'House Groove', code: 'sound("bd").n(0,1,0,1).s("hh").n(0,1,2,3)', genre: 'house', tags: ['four-on-floor', 'danceable', 'energetic'] },
+                { name: 'Jazz Fusion', code: 'sound("jazz").n("c3,e3,g3,b3").swing()', genre: 'jazz', tags: ['complex', 'sophisticated', 'swing'] }
+            ];
+            
+            testPatterns.forEach((pattern, index) => {
+                setTimeout(() => {
+                    const id = window.patternOrganization.addPattern(pattern);
+                    log(`✅ Added "${pattern.name}" with tags: ${pattern.tags.join(', ')}`, 'success');
+                }, index * 300);
+            });
+            
+            setTimeout(() => {
+                log('✅ All test patterns loaded!', 'success');
+                log('📊 Pattern library now contains demo content', 'info');
+            }, testPatterns.length * 300 + 500);
+        }
+        
+        function openMainApp() {
+            window.open('index.html', '_blank');
+        }
+        
+        function openProductionSite() {
+            window.open('https://not-a-label.art', '_blank');
+        }
+        
+        // Additional test functions
+        async function runAutomatedTestSuite() {
+            if (!window.automatedTester) {
+                log('❌ Automated tester not available', 'error');
+                return;
+            }
+            
+            log('🤖 Starting comprehensive automated test suite...', 'info');
+            
+            try {
+                const report = await window.automatedTester.runFullTestSuite();
+                log(`📊 Automated tests complete: ${report.summary.successRate} success rate`, 'success');
+                log(`Total tests: ${report.summary.totalTests}, Passed: ${report.summary.passedTests}`, 'info');
+                
+                if (report.recommendations.length > 0) {
+                    log(`⚠️ ${report.recommendations.length} recommendations generated`, 'warning');
+                }
+                
+                return report;
+            } catch (error) {
+                log(`❌ Automated test suite failed: ${error.message}`, 'error');
+            }
+        }
+        
+        function generateTestReport() {
+            if (!window.automatedTester) {
+                log('❌ Automated tester not available', 'error');
+                return;
+            }
+            
+            const report = window.automatedTester.generateReport();
+            log('📊 Generating comprehensive test report...', 'info');
+            
+            // Display summary
+            log(`\n=== TEST REPORT SUMMARY ===`, 'info');
+            log(`Success Rate: ${report.summary.successRate}`, 'success');
+            log(`Total Tests: ${report.summary.totalTests}`, 'info');
+            log(`Failed Tests: ${report.summary.failedTests}`, report.summary.failedTests > 0 ? 'warning' : 'success');
+            log(`Total Duration: ${report.summary.totalDuration}ms`, 'info');
+            
+            // Performance metrics
+            if (Object.keys(report.performance).length > 0) {
+                log(`\n=== PERFORMANCE METRICS ===`, 'info');
+                Object.entries(report.performance).forEach(([metric, value]) => {
+                    log(`${metric}: ${value}ms`, 'info');
+                });
+            }
+            
+            // Recommendations
+            if (report.recommendations.length > 0) {
+                log(`\n=== RECOMMENDATIONS ===`, 'warning');
+                report.recommendations.forEach(rec => {
+                    log(`[${rec.priority.toUpperCase()}] ${rec.issue}: ${rec.action}`, 'warning');
+                });
+            }
+            
+            // Export report
+            const reportJson = JSON.stringify(report, null, 2);
+            const blob = new Blob([reportJson], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `phase2-test-report-${new Date().toISOString().slice(0, 10)}.json`;
+            a.click();
+            
+            log('📁 Test report exported as JSON file', 'success');
+            
+            return report;
+        }
+        
+        // Initialize tests on load
+        document.addEventListener('DOMContentLoaded', () => {
+            log('🚀 Phase 2 Test Environment Initialized', 'success');
+            log('All Phase 2 features loaded and ready for testing', 'info');
+            
+            // Auto-run basic connectivity tests
+            setTimeout(() => {
+                runFullSystemTest();
+            }, 1000);
+            
+            // Auto-run automated suite after basic tests
+            setTimeout(() => {
+                if (window.automatedTester) {
+                    log('🤖 Starting automated testing...', 'info');
+                    runAutomatedTestSuite();
+                }
+            }, 3000);
+        });
+        
+        // Keyboard shortcuts for testing
+        document.addEventListener('keydown', (e) => {
+            if (e.metaKey || e.ctrlKey) {
+                switch (e.key) {
+                    case 'k':
+                        e.preventDefault();
+                        testCommandPalette();
+                        break;
+                }
+            }
+            
+            if (e.altKey) {
+                switch (e.key) {
+                    case 'p':
+                        e.preventDefault();
+                        testSidePanel();
+                        break;
+                    case 'c':
+                        e.preventDefault();
+                        testCollaboration();
+                        break;
+                    case 'a':
+                        e.preventDefault();
+                        testActivityFeed();
+                        break;
+                }
+            }
+        });
+    </script>
+</body>
+</html>

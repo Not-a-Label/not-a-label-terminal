@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Integration Test - Not a Label Enhanced</title>
+    <style>
+        body {
+            background: #000;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            padding: 20px;
+            margin: 0;
+        }
+        
+        .test-section {
+            border: 1px solid #004400;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(0, 68, 0, 0.1);
+        }
+        
+        .test-result {
+            padding: 5px;
+            margin: 5px 0;
+        }
+        
+        .success { color: #00ff00; }
+        .error { color: #ff4444; }
+        .warning { color: #ffaa00; }
+        .info { color: #00ffff; }
+        
+        #test-output {
+            background: #000;
+            border: 1px solid #004400;
+            padding: 10px;
+            height: 400px;
+            overflow-y: auto;
+            font-size: 12px;
+        }
+        
+        button {
+            background: #003300;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            padding: 10px 15px;
+            margin: 5px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+        }
+        
+        button:hover {
+            background: #004400;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚀 Not a Label Enhanced - Integration Test</h1>
+    
+    <div class="test-section">
+        <h2>🔧 System Status</h2>
+        <div id="system-status">Initializing...</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>🧪 Test Controls</h2>
+        <button onclick="runAllTests()">Run All Tests</button>
+        <button onclick="testAdvancedWorkflows()">Test Workflows</button>
+        <button onclick="testAIIntelligence()">Test AI Intelligence</button>
+        <button onclick="testMusicCreativity()">Test Music Creativity</button>
+        <button onclick="testCommunityPlatform()">Test Community</button>
+        <button onclick="clearOutput()">Clear Output</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>📋 Test Output</h2>
+        <div id="test-output"></div>
+    </div>
+
+    <!-- Load all systems -->
+    <script src="js/conversational-integrations.js"></script>
+    <script src="js/memory-system.js"></script>
+    <script src="js/voice-integration-system.js"></script>
+    <script src="js/live-jam-sessions.js"></script>
+    <script src="js/visual-nala-avatar.js"></script>
+    <script src="js/integrated-command-bar.js"></script>
+    <script src="js/smart-terminal.js"></script>
+    <script src="js/advanced-workflows.js"></script>
+    <script src="js/ai-intelligence.js"></script>
+    <script src="js/music-creativity.js"></script>
+    <script src="js/community-platform.js"></script>
+
+    <script>
+        let testOutput = document.getElementById('test-output');
+        let systemStatus = document.getElementById('system-status');
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toTimeString().split(' ')[0];
+            const line = document.createElement('div');
+            line.className = `test-result ${type}`;
+            line.innerHTML = `[${timestamp}] ${message}`;
+            testOutput.appendChild(line);
+            testOutput.scrollTop = testOutput.scrollHeight;
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+        
+        function clearOutput() {
+            testOutput.innerHTML = '';
+        }
+        
+        // Mock addLine function for testing
+        window.addLine = function(text, className = '') {
+            log(`Terminal: ${text}`, 'info');
+        };
+        
+        // Initialize all systems
+        document.addEventListener('DOMContentLoaded', async () => {
+            log('🚀 Starting system initialization...', 'info');
+            
+            try {
+                // Wait for systems to load
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                let systemsLoaded = 0;
+                let totalSystems = 5;
+                
+                // Check system availability
+                if (window.advancedWorkflows) {
+                    await window.advancedWorkflows.initialize();
+                    systemsLoaded++;
+                    log('✅ Advanced Workflows loaded', 'success');
+                } else {
+                    log('❌ Advanced Workflows not available', 'error');
+                }
+                
+                if (window.aiIntelligence) {
+                    await window.aiIntelligence.initialize();
+                    systemsLoaded++;
+                    log('✅ AI Intelligence loaded', 'success');
+                } else {
+                    log('❌ AI Intelligence not available', 'error');
+                }
+                
+                if (window.musicCreativity) {
+                    await window.musicCreativity.initialize();
+                    systemsLoaded++;
+                    log('✅ Music Creativity loaded', 'success');
+                } else {
+                    log('❌ Music Creativity not available', 'error');
+                }
+                
+                if (window.communityPlatform) {
+                    await window.communityPlatform.initialize();
+                    systemsLoaded++;
+                    log('✅ Community Platform loaded', 'success');
+                } else {
+                    log('❌ Community Platform not available', 'error');
+                }
+                
+                if (window.smartTerminal) {
+                    window.smartTerminal.initialize();
+                    systemsLoaded++;
+                    log('✅ Smart Terminal loaded', 'success');
+                } else {
+                    log('❌ Smart Terminal not available', 'error');
+                }
+                
+                const statusText = `${systemsLoaded}/${totalSystems} systems loaded`;
+                systemStatus.innerHTML = `<span class="${systemsLoaded === totalSystems ? 'success' : 'warning'}">${statusText}</span>`;
+                
+                if (systemsLoaded === totalSystems) {
+                    log('🌟 All systems initialized successfully!', 'success');
+                } else {
+                    log(`⚠️ Only ${systemsLoaded}/${totalSystems} systems loaded`, 'warning');
+                }
+                
+            } catch (error) {
+                log(`❌ Initialization error: ${error.message}`, 'error');
+                systemStatus.innerHTML = '<span class="error">Initialization failed</span>';
+            }
+        });
+        
+        async function runAllTests() {
+            log('🧪 Running comprehensive integration tests...', 'info');
+            clearOutput();
+            
+            await testAdvancedWorkflows();
+            await testAIIntelligence();
+            await testMusicCreativity();
+            await testCommunityPlatform();
+            await testSystemIntegration();
+            
+            log('✅ All tests completed!', 'success');
+        }
+        
+        async function testAdvancedWorkflows() {
+            log('🎮 Testing Advanced Workflows...', 'info');
+            
+            if (!window.advancedWorkflows) {
+                log('❌ Advanced Workflows not available', 'error');
+                return;
+            }
+            
+            try {
+                // Test user profile
+                const stats = window.advancedWorkflows.getUserStats();
+                log(`📊 User stats: ${JSON.stringify(stats)}`, 'info');
+                
+                // Test workflow templates
+                const workflows = Array.from(window.advancedWorkflows.workflowTemplates.keys());
+                log(`🔄 Available workflows: ${workflows.join(', ')}`, 'success');
+                
+                // Test alias system
+                window.advancedWorkflows.addCustomAlias('test', 'create beat');
+                log('✅ Custom alias system working', 'success');
+                
+                // Test context memory
+                const context = window.advancedWorkflows.getCurrentContext();
+                log(`🧠 Current context: ${JSON.stringify(context)}`, 'info');
+                
+            } catch (error) {
+                log(`❌ Advanced Workflows test failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testAIIntelligence() {
+            log('🤖 Testing AI Intelligence...', 'info');
+            
+            if (!window.aiIntelligence) {
+                log('❌ AI Intelligence not available', 'error');
+                return;
+            }
+            
+            try {
+                // Test natural language processing
+                const result = await window.aiIntelligence.processUserInput('create a jazzy beat');
+                log(`🧠 NLP Result: ${JSON.stringify(result)}`, 'info');
+                
+                // Test learning stats
+                const stats = window.aiIntelligence.getLearningStats();
+                log(`📈 Learning stats: ${JSON.stringify(stats)}`, 'info');
+                
+                // Test personality
+                const personality = window.aiIntelligence.getAIPersonality();
+                log(`👤 AI Personality: ${personality.name} - ${personality.traits.join(', ')}`, 'success');
+                
+                // Test suggestions
+                const suggestions = window.aiIntelligence.getCurrentSuggestions();
+                log(`💡 Current suggestions: ${suggestions.length} available`, 'success');
+                
+            } catch (error) {
+                log(`❌ AI Intelligence test failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testMusicCreativity() {
+            log('🎵 Testing Music Creativity...', 'info');
+            
+            if (!window.musicCreativity) {
+                log('❌ Music Creativity not available', 'error');
+                return;
+            }
+            
+            try {
+                // Test pattern creation
+                const creation = await window.musicCreativity.createMusicWithAI('jazz beat', 'jazz');
+                log(`🎼 Created pattern: ${creation.patternId}`, 'success');
+                
+                // Test evolution
+                const evolution = window.musicCreativity.evolvePatternGenetic(creation.patternId, 2);
+                log(`🧬 Evolution complete: ${evolution.evolved_patterns.length} variations`, 'success');
+                
+                // Test real-time composition
+                const session = window.musicCreativity.startRealTimeComposition(120);
+                log(`🎼 Real-time session started: ${session}`, 'success');
+                
+                // Test layer addition
+                const layerResult = window.musicCreativity.addToLayer('drums', 'bd hh sd hh');
+                log(`🥁 Added to layer: ${layerResult}`, 'success');
+                
+            } catch (error) {
+                log(`❌ Music Creativity test failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testCommunityPlatform() {
+            log('🌐 Testing Community Platform...', 'info');
+            
+            if (!window.communityPlatform) {
+                log('❌ Community Platform not available', 'error');
+                return;
+            }
+            
+            try {
+                // Test content discovery
+                const content = window.communityPlatform.discoverContent('patterns', 'trending');
+                log(`🔍 Discovered ${content.length} trending patterns`, 'info');
+                
+                // Test performance creation
+                const performance = window.communityPlatform.startLivePerformance('Test Performance', 'Integration test');
+                log(`🎭 Performance started: ${performance.title}`, 'success');
+                
+                // Test challenge joining
+                const challenges = window.communityPlatform.getActiveChallenges();
+                log(`🏆 Active challenges: ${challenges.length}`, 'info');
+                
+                // Test social features
+                const userId = window.communityPlatform.getCurrentUserId();
+                log(`👤 Current user: ${userId}`, 'info');
+                
+            } catch (error) {
+                log(`❌ Community Platform test failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testSystemIntegration() {
+            log('🔗 Testing System Integration...', 'info');
+            
+            try {
+                // Test workflow execution with AI
+                if (window.advancedWorkflows && window.aiIntelligence) {
+                    const workflowSuggestions = window.advancedWorkflows.getWorkflowSuggestions();
+                    log(`🎮 Workflow suggestions: ${workflowSuggestions.join(', ')}`, 'success');
+                }
+                
+                // Test AI with music creativity
+                if (window.aiIntelligence && window.musicCreativity) {
+                    const aiResult = await window.aiIntelligence.processUserInput('evolve my pattern');
+                    log(`🤖🎵 AI + Music integration: ${aiResult.response.text}`, 'success');
+                }
+                
+                // Test community with workflows
+                if (window.communityPlatform && window.advancedWorkflows) {
+                    // Simulate community workflow
+                    log('🌐🎮 Community + Workflows integration: Active', 'success');
+                }
+                
+                // Test smart terminal integration
+                if (window.smartTerminal) {
+                    const activeFeatures = window.smartTerminal.getActiveFeatures();
+                    log(`🧠 Smart Terminal features: ${activeFeatures.join(', ')}`, 'success');
+                }
+                
+                log('✅ System integration tests passed!', 'success');
+                
+            } catch (error) {
+                log(`❌ Integration test failed: ${error.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

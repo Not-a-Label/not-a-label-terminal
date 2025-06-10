@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Terminal Test</title>
+    <style>
+        body {
+            background: #000;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        #terminal {
+            background: #000;
+            border: 1px solid #004400;
+            padding: 20px;
+            height: 400px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+        
+        .input-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #004400;
+        }
+        
+        .status {
+            margin: 20px 0;
+            padding: 10px;
+            border: 1px solid #004400;
+            background: rgba(0, 68, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="status">
+        <h2>🧠 Smart Terminal Test Environment</h2>
+        <p>Testing the hybrid terminal interface with all features integrated</p>
+    </div>
+    
+    <div id="terminal">
+        <div>🧠 Smart Terminal Test Mode</div>
+        <div>💡 Try commands: voice on, jam create, expand features, create beat</div>
+        <div>🎯 Use tab completion and type ahead</div>
+        <div>> _</div>
+    </div>
+    
+    <div class="input-container">
+        <span style="color: #00ff00;">> </span>
+        <input type="text" id="terminal-input" placeholder="Type commands here...">
+    </div>
+    
+    <div class="status">
+        <div id="system-status">Initializing...</div>
+    </div>
+
+    <!-- Mock systems for testing -->
+    <script>
+        // Mock window.addLine function
+        window.addLine = function(text, className = '') {
+            const terminal = document.getElementById('terminal');
+            const line = document.createElement('div');
+            line.textContent = text;
+            line.className = className;
+            terminal.appendChild(line);
+            terminal.scrollTop = terminal.scrollHeight;
+        };
+        
+        // Mock voice system
+        window.voiceIntegrationSystem = {
+            startListening: () => {
+                window.addLine('🎤 Voice recognition started', 'voice-active');
+            },
+            stopListening: () => {
+                window.addLine('🎤 Voice recognition stopped', 'voice-inactive');
+            }
+        };
+        
+        // Mock jam system
+        window.liveJamSessions = {
+            createSession: () => {
+                window.addLine('🎸 Jam session created: session_123', 'jam-active');
+            },
+            isInSession: () => false,
+            getParticipants: () => []
+        };
+        
+        // Mock avatar system
+        window.visualNalaAvatar = {
+            show: () => {
+                window.addLine('👩‍🎤 Nala avatar is now visible', 'avatar-active');
+            },
+            hide: () => {
+                window.addLine('👩‍🎤 Nala avatar is now hidden', 'avatar-inactive');
+            }
+        };
+        
+        // Mock memory system
+        window.memorySystem = {
+            memory: {
+                conversations: Array(42).fill({}),
+                patterns: Array(15).fill({})
+            },
+            calculateEngagementScore: () => 78
+        };
+        
+        // Mock conversational AI
+        window.conversationalIntegrations = {
+            processConversationalInput: async (input) => {
+                window.addLine(`🤖 Processing: ${input}`, 'ai-processing');
+                setTimeout(() => {
+                    window.addLine('🎵 Generated: sound("bd hh sd hh")', 'music-result');
+                }, 1000);
+                return { primaryResponse: 'Music generated successfully!' };
+            }
+        };
+        
+        // Update status
+        document.getElementById('system-status').textContent = 'Mock systems ready - Smart Terminal will initialize';
+    </script>
+
+    <!-- Load Smart Terminal -->
+    <script src="js/smart-terminal.js"></script>
+    
+    <script>
+        // Initialize after a short delay
+        setTimeout(() => {
+            if (window.SmartTerminal) {
+                window.smartTerminal = new SmartTerminal();
+                window.smartTerminal.initialize();
+                document.getElementById('system-status').textContent = '✅ Smart Terminal initialized and ready';
+            } else {
+                document.getElementById('system-status').textContent = '❌ Smart Terminal failed to load';
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

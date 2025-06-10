@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local MIDI Test - Audio Fix Verification</title>
+    <style>
+        body {
+            background: #000;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .status {
+            border: 1px solid #00ff00;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .success { border-color: #00ff00; background: #002200; }
+        .error { border-color: #ff0000; background: #220000; color: #ff0000; }
+        .warning { border-color: #ffaa00; background: #221100; color: #ffaa00; }
+        
+        button {
+            background: #003300;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            border-radius: 3px;
+        }
+        button:hover { background: #004400; }
+        button:active { background: #005500; }
+        
+        .piano {
+            display: flex;
+            gap: 2px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .key {
+            width: 40px;
+            height: 120px;
+            border: 1px solid #00ff00;
+            background: #001100;
+            color: #00ff00;
+            font-size: 12px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding: 5px;
+            cursor: pointer;
+            user-select: none;
+        }
+        .key:hover { background: #002200; }
+        .key.playing { background: #004400; }
+        
+        #log {
+            background: #001100;
+            padding: 10px;
+            height: 200px;
+            overflow-y: auto;
+            font-size: 12px;
+            border: 1px solid #004400;
+        }
+        .log-line {
+            margin: 2px 0;
+            padding: 2px 5px;
+        }
+        .log-success { color: #00ff00; }
+        .log-error { color: #ff0000; }
+        .log-info { color: #00aaff; }
+    </style>
+</head>
+<body>
+    <h1>🎹 MIDI Audio Fix Test</h1>
+    <p>This page tests the fixed MIDI note-off functionality locally</p>
+
+    <div class="status success" id="status">
+        ✅ Page loaded - Testing audio systems...
+    </div>
+
+    <h2>🎵 Audio Context Test</h2>
+    <button onclick="testAudioContext()">Initialize Audio</button>
+    <button onclick="testBasicOscillator()">Test Basic Oscillator</button>
+    <button onclick="testEnvelopeRelease()">Test Envelope Release</button>
+
+    <h2>🎹 Virtual Piano</h2>
+    <p>Click and hold keys to test note-off functionality</p>
+    <div class="piano" id="piano"></div>
+
+    <h2>🎛️ Advanced Tests</h2>
+    <button onclick="testSustainPedal()">Test Sustain Pedal</button>
+    <button onclick="testVelocityLayers()">Test Velocity Layers</button>
+    <button onclick="testPitchBend()">Test Pitch Bend</button>
+    <button onclick="stopAllNotes()">Stop All Notes</button>
+
+    <h2>📊 Log Output</h2>
+    <div id="log"></div>
+
+    <script>
+        let audioContext;
+        let activeNotes = new Map();
+        let sustainPedal = false;
+
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const line = document.createElement('div');
+            line.className = `log-line log-${type}`;
+            line.textContent = `[${new Date().toTimeString().split(' ')[0]}] ${message}`;
+            logDiv.appendChild(line);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function updateStatus(message, type = 'success') {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+        }
+
+        async function testAudioContext() {
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioContext.state === 'suspended') {
+                    await audioContext.resume();
+                }
+                log(`Audio context created: ${audioContext.state}`, 'success');
+                updateStatus('✅ Audio context ready');
+                return true;
+            } catch (error) {
+                log(`Audio context error: ${error.message}`, 'error');
+                updateStatus('❌ Audio context failed', 'error');
+                return false;
+            }
+        }
+
+        function testBasicOscillator() {
+            if (!audioContext) {
+                log('Initialize audio context first', 'error');
+                return;
+            }
+
+            log('Testing basic oscillator...', 'info');
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.frequency.setValueAtTime(440, audioContext.currentTime);
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.start();
+            
+            setTimeout(() => {
+                oscillator.stop();
+                log('Basic oscillator test completed', 'success');
+            }, 500);
+        }
+
+        function testEnvelopeRelease() {
+            if (!audioContext) {
+                log('Initialize audio context first', 'error');
+                return;
+            }
+
+            log('Testing envelope release (the fix)...', 'info');
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.frequency.setValueAtTime(880, audioContext.currentTime);
+            oscillator.type = 'sawtooth';
+            
+            const currentTime = audioContext.currentTime;
+            
+            // Attack
+            gainNode.gain.setValueAtTime(0, currentTime);
+            gainNode.gain.linearRampToValueAtTime(0.2, currentTime + 0.01);
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.start();
+            
+            // Test the fixed release after 1 second
+            setTimeout(() => {
+                log('Triggering release envelope...', 'info');
+                const releaseTime = 0.3;
+                const currentTime = audioContext.currentTime;
+                
+                // This is the key fix - proper envelope release
+                gainNode.gain.cancelScheduledValues(currentTime);
+                gainNode.gain.setValueAtTime(gainNode.gain.value, currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, currentTime + releaseTime);
+                
+                oscillator.stop(currentTime + releaseTime + 0.1);
+                log('✅ Release envelope applied - note should fade out cleanly', 'success');
+            }, 1000);
+        }
+
+        function midiNoteToFrequency(note) {
+            return 440 * Math.pow(2, (note - 69) / 12);
+        }
+
+        function startNote(midiNote, velocity = 100) {
+            if (!audioContext) {
+                log('Initialize audio context first', 'error');
+                return;
+            }
+
+            if (activeNotes.has(midiNote)) {
+                log(`Note ${midiNote} already playing`, 'warning');
+                return;
+            }
+
+            const frequency = midiNoteToFrequency(midiNote);
+            const normalizedVelocity = velocity / 127;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            const filter = audioContext.createBiquadFilter();
+            
+            // Waveform based on range
+            if (midiNote < 36) {
+                oscillator.type = 'sine';
+            } else if (midiNote < 60) {
+                oscillator.type = 'sawtooth';
+            } else {
+                oscillator.type = 'square';
+            }
+            
+            oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+            
+            // Filter
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(1000 + (normalizedVelocity * 3000), audioContext.currentTime);
+            filter.Q.setValueAtTime(1, audioContext.currentTime);
+            
+            // ADSR envelope
+            const attackTime = 0.005 + (0.05 * (1 - normalizedVelocity));
+            const currentTime = audioContext.currentTime;
+            
+            gainNode.gain.setValueAtTime(0, currentTime);
+            gainNode.gain.linearRampToValueAtTime(normalizedVelocity * 0.3, currentTime + attackTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.4 * normalizedVelocity * 0.3, currentTime + attackTime + 0.1);
+            
+            // Connect chain
+            oscillator.connect(filter);
+            filter.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.start();
+            
+            // Store for note off
+            activeNotes.set(midiNote, {
+                oscillator,
+                gainNode,
+                filter,
+                velocity: normalizedVelocity,
+                startTime: currentTime
+            });
+            
+            log(`Note ON: ${midiNote} (${Math.round(frequency)}Hz, vel: ${velocity})`, 'success');
+            
+            // Visual feedback
+            const key = document.querySelector(`[data-note="${midiNote}"]`);
+            if (key) key.classList.add('playing');
+        }
+
+        function stopNote(midiNote) {
+            const noteData = activeNotes.get(midiNote);
+            if (!noteData) return;
+            
+            const { oscillator, gainNode } = noteData;
+            const releaseTime = sustainPedal ? 2.0 : 0.3;
+            const currentTime = audioContext.currentTime;
+            
+            // THE KEY FIX: Proper release envelope
+            gainNode.gain.cancelScheduledValues(currentTime);
+            gainNode.gain.setValueAtTime(gainNode.gain.value, currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, currentTime + releaseTime);
+            
+            oscillator.stop(currentTime + releaseTime + 0.1);
+            
+            // Cleanup
+            setTimeout(() => {
+                oscillator.disconnect();
+                gainNode.disconnect();
+                activeNotes.delete(midiNote);
+            }, (releaseTime + 0.2) * 1000);
+            
+            log(`Note OFF: ${midiNote} (release: ${releaseTime}s)`, 'info');
+            
+            // Visual feedback
+            const key = document.querySelector(`[data-note="${midiNote}"]`);
+            if (key) {
+                key.classList.remove('playing');
+            }
+        }
+
+        function testSustainPedal() {
+            sustainPedal = !sustainPedal;
+            log(`Sustain pedal: ${sustainPedal ? 'ON' : 'OFF'}`, sustainPedal ? 'success' : 'info');
+            
+            // Play test note to demonstrate sustain
+            startNote(60, 80);
+            setTimeout(() => stopNote(60), 500);
+        }
+
+        function testVelocityLayers() {
+            log('Testing velocity layers...', 'info');
+            const velocities = [30, 60, 90, 127];
+            velocities.forEach((vel, i) => {
+                setTimeout(() => {
+                    startNote(60 + i * 4, vel);
+                    setTimeout(() => stopNote(60 + i * 4), 400);
+                }, i * 500);
+            });
+        }
+
+        function testPitchBend() {
+            log('Testing pitch bend...', 'info');
+            startNote(64, 100);
+            
+            // Bend pitch up over time
+            const noteData = activeNotes.get(64);
+            if (noteData) {
+                let bend = 0;
+                const interval = setInterval(() => {
+                    bend += 50;
+                    if (bend > 200) {
+                        clearInterval(interval);
+                        setTimeout(() => stopNote(64), 500);
+                        return;
+                    }
+                    const frequency = midiNoteToFrequency(64);
+                    const bentFrequency = frequency * Math.pow(2, bend / 1200);
+                    noteData.oscillator.frequency.setValueAtTime(bentFrequency, audioContext.currentTime);
+                }, 50);
+            }
+        }
+
+        function stopAllNotes() {
+            log('Stopping all active notes...', 'info');
+            for (const midiNote of activeNotes.keys()) {
+                stopNote(midiNote);
+            }
+        }
+
+        // Create virtual piano
+        function createPiano() {
+            const piano = document.getElementById('piano');
+            const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+            
+            for (let octave = 3; octave <= 5; octave++) {
+                for (let i = 0; i < 12; i++) {
+                    const note = octave * 12 + i;
+                    const key = document.createElement('div');
+                    key.className = 'key';
+                    key.textContent = noteNames[i] + octave;
+                    key.dataset.note = note;
+                    
+                    // Mouse events
+                    key.addEventListener('mousedown', () => startNote(note, 100));
+                    key.addEventListener('mouseup', () => stopNote(note));
+                    key.addEventListener('mouseleave', () => stopNote(note));
+                    
+                    // Touch events
+                    key.addEventListener('touchstart', (e) => {
+                        e.preventDefault();
+                        startNote(note, 100);
+                    });
+                    key.addEventListener('touchend', (e) => {
+                        e.preventDefault();
+                        stopNote(note);
+                    });
+                    
+                    piano.appendChild(key);
+                }
+            }
+        }
+
+        // Initialize
+        window.addEventListener('load', () => {
+            createPiano();
+            log('Virtual piano created', 'success');
+            log('Click "Initialize Audio" to start testing', 'info');
+            updateStatus('🎹 Ready for testing - Click Initialize Audio', 'warning');
+        });
+
+        // Keyboard controls
+        document.addEventListener('keydown', (e) => {
+            const keyMap = {
+                'q': 60, 'w': 61, 'e': 62, 'r': 63, 't': 64, 'y': 65, 'u': 66,
+                'a': 67, 's': 68, 'd': 69, 'f': 70, 'g': 71, 'h': 72, 'j': 73
+            };
+            
+            const note = keyMap[e.key.toLowerCase()];
+            if (note && !e.repeat) {
+                startNote(note, 100);
+            }
+            
+            if (e.key === ' ') {
+                e.preventDefault();
+                testSustainPedal();
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            const keyMap = {
+                'q': 60, 'w': 61, 'e': 62, 'r': 63, 't': 64, 'y': 65, 'u': 66,
+                'a': 67, 's': 68, 'd': 69, 'f': 70, 'g': 71, 'h': 72, 'j': 73
+            };
+            
+            const note = keyMap[e.key.toLowerCase()];
+            if (note) {
+                stopNote(note);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+      announceChallengeToAll: (challenge) => {
+        try {
+          // Broadcast challenge to all connected users
+          if (window.liveJamSessions && window.liveJamSessions.broadcastToAll) {
+            window.liveJamSessions.broadcastToAll({
+              type: "new_challenge",
+              challenge: {
+                id: challenge.id,
+                title: challenge.title,
+                description: challenge.description,
+                type: challenge.type,
+                category: challenge.category,
+                end_date: challenge.end_date
+              }
+            });
+          }
+          
+          console.log(`🏆 Challenge announced: ${challenge.title}`);
+        } catch (error) {
+          console.error("Challenge announcement error:", error);
+        }
+      },

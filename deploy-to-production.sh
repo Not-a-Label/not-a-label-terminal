@@ -51,11 +51,13 @@ EOF
     echo "📋 Copying deployment files..."
     mkdir -p dist/
     cp -r js/ dist/
-    cp -r css/ dist/
     cp index.html dist/
     cp server.js dist/
     cp package*.json dist/
     cp sw.js dist/
+    cp manifest.json dist/
+    cp offline.html dist/
+    cp -r *.png *.ico dist/ 2>/dev/null || true
     cp .env.production dist/.env
     
     echo "✅ Local preparation complete!"

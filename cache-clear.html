@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clear Cache - Not a Label</title>
+    <style>
+        body {
+            background: #000;
+            color: #00ff00;
+            font-family: monospace;
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .button-container {
+            text-align: center;
+            margin: 30px 0;
+        }
+        button {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 10px;
+            text-transform: uppercase;
+            transition: all 0.3s;
+        }
+        button:hover {
+            background: #00cc00;
+            transform: scale(1.05);
+        }
+        .status {
+            background: #001100;
+            border: 1px solid #00ff00;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .success {
+            border-color: #00ff00;
+            color: #00ff00;
+        }
+        .error {
+            border-color: #ff0000;
+            color: #ff0000;
+        }
+        .info {
+            font-size: 14px;
+            opacity: 0.8;
+            margin: 20px 0;
+        }
+        #log {
+            background: #001100;
+            padding: 15px;
+            border-radius: 5px;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px;
+            border-left: 3px solid #00ff00;
+            padding-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎵 Not a Label - Cache Management</h1>
+    
+    <div class="status" id="status">
+        Service Worker Status: Checking...
+    </div>
+    
+    <div class="button-container">
+        <button onclick="clearAllCaches()">Clear All Caches</button>
+        <button onclick="updateServiceWorker()">Update Service Worker</button>
+        <button onclick="unregisterServiceWorker()">Unregister Service Worker</button>
+    </div>
+    
+    <div class="info">
+        <h3>Instructions:</h3>
+        <ol>
+            <li>Click "Clear All Caches" to remove cached files</li>
+            <li>Click "Update Service Worker" to force an update</li>
+            <li>If issues persist, click "Unregister Service Worker"</li>
+            <li>After clearing, refresh the page with Ctrl+Shift+R (Cmd+Shift+R on Mac)</li>
+        </ol>
+    </div>
+    
+    <div id="log"></div>
+    
+    <script>
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.style.borderColor = type === 'error' ? '#ff0000' : '#00ff00';
+            entry.textContent = `[${new Date().toTimeString().split(' ')[0]}] ${message}`;
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        function updateStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+        }
+        
+        async function checkServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                try {
+                    const registration = await navigator.serviceWorker.getRegistration();
+                    if (registration) {
+                        updateStatus(`Service Worker Active: v${registration.scope}`, 'success');
+                        log('Service Worker is registered and active');
+                        
+                        // Check for updates
+                        registration.update();
+                    } else {
+                        updateStatus('No Service Worker registered', 'error');
+                        log('No Service Worker found');
+                    }
+                } catch (error) {
+                    updateStatus('Error checking Service Worker', 'error');
+                    log(`Error: ${error.message}`, 'error');
+                }
+            } else {
+                updateStatus('Service Workers not supported', 'error');
+                log('This browser does not support Service Workers', 'error');
+            }
+        }
+        
+        async function clearAllCaches() {
+            log('Starting cache clear process...');
+            
+            try {
+                // Clear all caches
+                const cacheNames = await caches.keys();
+                log(`Found ${cacheNames.length} cache(s) to clear`);
+                
+                for (const cacheName of cacheNames) {
+                    await caches.delete(cacheName);
+                    log(`Deleted cache: ${cacheName}`);
+                }
+                
+                // Clear browser cache via service worker
+                if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                    navigator.serviceWorker.controller.postMessage({
+                        type: 'CLEAR_CACHE'
+                    });
+                }
+                
+                updateStatus('All caches cleared successfully!', 'success');
+                log('Cache clear completed successfully');
+                
+                // Clear local storage
+                localStorage.clear();
+                sessionStorage.clear();
+                log('Local and session storage cleared');
+                
+            } catch (error) {
+                updateStatus('Error clearing caches', 'error');
+                log(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function updateServiceWorker() {
+            log('Attempting to update Service Worker...');
+            
+            try {
+                const registration = await navigator.serviceWorker.getRegistration();
+                
+                if (registration) {
+                    await registration.update();
+                    log('Service Worker update triggered');
+                    
+                    // Skip waiting on new service worker
+                    if (registration.waiting) {
+                        registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+                        log('Activating new Service Worker');
+                    }
+                    
+                    updateStatus('Service Worker updated!', 'success');
+                    
+                    // Reload after a short delay
+                    setTimeout(() => {
+                        log('Reloading page...');
+                        window.location.reload(true);
+                    }, 1000);
+                    
+                } else {
+                    updateStatus('No Service Worker to update', 'error');
+                    log('No Service Worker registration found', 'error');
+                }
+            } catch (error) {
+                updateStatus('Error updating Service Worker', 'error');
+                log(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function unregisterServiceWorker() {
+            log('Unregistering Service Worker...');
+            
+            if (confirm('This will completely remove the Service Worker. Are you sure?')) {
+                try {
+                    const registration = await navigator.serviceWorker.getRegistration();
+                    
+                    if (registration) {
+                        await registration.unregister();
+                        updateStatus('Service Worker unregistered', 'success');
+                        log('Service Worker successfully unregistered');
+                        
+                        // Clear all caches
+                        await clearAllCaches();
+                        
+                        // Reload after a short delay
+                        setTimeout(() => {
+                            log('Reloading page...');
+                            window.location.reload(true);
+                        }, 1000);
+                        
+                    } else {
+                        updateStatus('No Service Worker to unregister', 'error');
+                        log('No Service Worker registration found', 'error');
+                    }
+                } catch (error) {
+                    updateStatus('Error unregistering Service Worker', 'error');
+                    log(`Error: ${error.message}`, 'error');
+                }
+            }
+        }
+        
+        // Check service worker status on load
+        window.addEventListener('load', () => {
+            checkServiceWorker();
+            log('Cache management tool loaded');
+        });
+        
+        // Listen for service worker updates
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                log('Service Worker controller changed');
+                updateStatus('New Service Worker activated!', 'success');
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Side Panel - Not a Label</title>
+    <style>
+        body {
+            background: #000;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .debug-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .debug-section {
+            background: rgba(0, 255, 0, 0.05);
+            border: 1px solid #00ff0033;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .debug-button {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid #00ff0033;
+            color: #00ff00;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            margin: 5px;
+            transition: all 0.2s ease;
+        }
+        
+        .debug-button:hover {
+            background: rgba(0, 255, 0, 0.2);
+            border-color: #00ff0055;
+        }
+        
+        .terminal {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00ff0033;
+            border-radius: 4px;
+            padding: 15px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .error { color: #ff6666; }
+        .success { color: #00ff00; }
+        .warning { color: #ffaa00; }
+        .info { color: #00ff0088; }
+    </style>
+</head>
+<body>
+    <div class="debug-container">
+        <h1>🔧 Side Panel Debug Console</h1>
+        
+        <div class="debug-section">
+            <h2>📋 Side Panel Status</h2>
+            <div class="terminal" id="status-output">
+                Checking side panel status...
+            </div>
+            <button class="debug-button" onclick="checkSidePanelStatus()">🔍 Check Status</button>
+            <button class="debug-button" onclick="initializeSidePanel()">🚀 Initialize Side Panel</button>
+            <button class="debug-button" onclick="toggleSidePanel()">🔄 Toggle Panel (Alt+P)</button>
+        </div>
+        
+        <div class="debug-section">
+            <h2>🎛️ Manual Controls</h2>
+            <div class="terminal" id="control-output">
+                Ready for manual testing...
+            </div>
+            <button class="debug-button" onclick="showSidePanel()">👀 Show Panel</button>
+            <button class="debug-button" onclick="hideSidePanel()">🙈 Hide Panel</button>
+            <button class="debug-button" onclick="switchToPatterns()">🎵 Switch to Patterns</button>
+            <button class="debug-button" onclick="switchToControls()">🎛️ Switch to Controls</button>
+            <button class="debug-button" onclick="switchToCollab()">🎸 Switch to Collaboration</button>
+        </div>
+        
+        <div class="debug-section">
+            <h2>🧪 Integration Tests</h2>
+            <div class="terminal" id="test-output">
+                Ready to run integration tests...
+            </div>
+            <button class="debug-button" onclick="testPanelIntegration()">🔗 Test Integration</button>
+            <button class="debug-button" onclick="testPatternOrganization()">🏷️ Test Pattern Organization</button>
+            <button class="debug-button" onclick="testMiniPlayer()">🎵 Test Mini Player</button>
+        </div>
+        
+        <div class="debug-section">
+            <h2>🚨 Error Console</h2>
+            <div class="terminal" id="error-output">
+                No errors detected...
+            </div>
+            <button class="debug-button" onclick="clearErrors()">🧹 Clear Errors</button>
+            <button class="debug-button" onclick="showConsoleErrors()">📋 Show Console Errors</button>
+        </div>
+    </div>
+
+    <!-- Load side panel and dependencies -->
+    <script src="js/pattern-organization.js"></script>
+    <script src="js/side-panel.js"></script>
+    <script src="js/mini-player.js"></script>
+
+    <script>
+        let errorLog = [];
+        
+        // Capture console errors
+        const originalError = console.error;
+        console.error = function(...args) {
+            errorLog.push({
+                timestamp: new Date().toISOString(),
+                message: args.join(' ')
+            });
+            originalError.apply(console, args);
+            updateErrorOutput();
+        };
+        
+        // Capture unhandled errors
+        window.addEventListener('error', (e) => {
+            errorLog.push({
+                timestamp: new Date().toISOString(),
+                message: `${e.filename}:${e.lineno} - ${e.message}`
+            });
+            updateErrorOutput();
+        });
+        
+        function log(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            const timestamp = new Date().toLocaleTimeString();
+            const colorClass = type;
+            
+            element.innerHTML += `<span class="${colorClass}">[${timestamp}] ${message}</span>\n`;
+            element.scrollTop = element.scrollHeight;
+        }
+        
+        function clearLog(elementId) {
+            document.getElementById(elementId).innerHTML = '';
+        }
+        
+        function checkSidePanelStatus() {
+            clearLog('status-output');
+            log('status-output', '🔍 Checking side panel status...', 'info');
+            
+            // Check if side panel script loaded
+            if (typeof window.sidePanel !== 'undefined') {
+                log('status-output', '✅ Side panel object exists', 'success');
+                
+                // Check if panel DOM element exists
+                if (window.sidePanel.panel) {
+                    log('status-output', '✅ Side panel DOM element created', 'success');
+                    
+                    // Check visibility
+                    const isVisible = window.sidePanel.isVisible;
+                    log('status-output', `📋 Panel visibility: ${isVisible}`, isVisible ? 'success' : 'warning');
+                    
+                    // Check position
+                    const transform = window.sidePanel.panel.style.transform;
+                    log('status-output', `📐 Panel transform: ${transform}`, 'info');
+                    
+                    // Check current tab
+                    const currentTab = window.sidePanel.currentTab;
+                    log('status-output', `📑 Current tab: ${currentTab}`, 'info');
+                    
+                } else {
+                    log('status-output', '❌ Side panel DOM element not found', 'error');
+                }
+            } else {
+                log('status-output', '❌ Side panel not loaded', 'error');
+                log('status-output', '💡 Try clicking "Initialize Side Panel"', 'warning');
+            }
+            
+            // Check dependencies
+            if (typeof window.patternOrganization !== 'undefined') {
+                log('status-output', '✅ Pattern organization loaded', 'success');
+            } else {
+                log('status-output', '❌ Pattern organization not loaded', 'error');
+            }
+        }
+        
+        function initializeSidePanel() {
+            clearLog('status-output');
+            log('status-output', '🚀 Initializing side panel...', 'info');
+            
+            try {
+                // Check if already initialized
+                if (window.sidePanel) {
+                    log('status-output', '⚠️ Side panel already exists', 'warning');
+                    return;
+                }
+                
+                // Try to create new instance
+                window.sidePanel = new SidePanel();
+                log('status-output', '✅ Side panel initialized', 'success');
+                
+                // Show the panel
+                setTimeout(() => {
+                    window.sidePanel.show();
+                    log('status-output', '👀 Panel shown', 'success');
+                }, 500);
+                
+            } catch (error) {
+                log('status-output', `❌ Initialization failed: ${error.message}`, 'error');
+                console.error('Side panel initialization error:', error);
+            }
+        }
+        
+        function toggleSidePanel() {
+            clearLog('control-output');
+            log('control-output', '🔄 Toggling side panel...', 'info');
+            
+            if (window.sidePanel) {
+                window.sidePanel.toggle();
+                log('control-output', `✅ Panel toggled - Now ${window.sidePanel.isVisible ? 'visible' : 'hidden'}`, 'success');
+            } else {
+                log('control-output', '❌ Side panel not available', 'error');
+            }
+        }
+        
+        function showSidePanel() {
+            clearLog('control-output');
+            log('control-output', '👀 Showing side panel...', 'info');
+            
+            if (window.sidePanel) {
+                window.sidePanel.show();
+                log('control-output', '✅ Panel shown', 'success');
+            } else {
+                log('control-output', '❌ Side panel not available', 'error');
+            }
+        }
+        
+        function hideSidePanel() {
+            clearLog('control-output');
+            log('control-output', '🙈 Hiding side panel...', 'info');
+            
+            if (window.sidePanel) {
+                window.sidePanel.hide();
+                log('control-output', '✅ Panel hidden', 'success');
+            } else {
+                log('control-output', '❌ Side panel not available', 'error');
+            }
+        }
+        
+        function switchToPatterns() {
+            clearLog('control-output');
+            log('control-output', '🎵 Switching to patterns tab...', 'info');
+            
+            if (window.sidePanel) {
+                window.sidePanel.switchTab('patterns');
+                log('control-output', '✅ Switched to patterns tab', 'success');
+            } else {
+                log('control-output', '❌ Side panel not available', 'error');
+            }
+        }
+        
+        function switchToControls() {
+            clearLog('control-output');
+            log('control-output', '🎛️ Switching to controls tab...', 'info');
+            
+            if (window.sidePanel) {
+                window.sidePanel.switchTab('controls');
+                log('control-output', '✅ Switched to controls tab', 'success');
+            } else {
+                log('control-output', '❌ Side panel not available', 'error');
+            }
+        }
+        
+        function switchToCollab() {
+            clearLog('control-output');
+            log('control-output', '🎸 Switching to collaboration tab...', 'info');
+            
+            if (window.sidePanel) {
+                window.sidePanel.switchTab('collab');
+                log('control-output', '✅ Switched to collaboration tab', 'success');
+            } else {
+                log('control-output', '❌ Side panel not available', 'error');
+            }
+        }
+        
+        function testPanelIntegration() {
+            clearLog('test-output');
+            log('test-output', '🔗 Testing panel integration...', 'info');
+            
+            const tests = [
+                () => window.sidePanel !== undefined,
+                () => window.sidePanel.panel !== undefined,
+                () => typeof window.sidePanel.toggle === 'function',
+                () => typeof window.sidePanel.switchTab === 'function',
+                () => window.patternOrganization !== undefined
+            ];
+            
+            const testNames = [
+                'Side panel object exists',
+                'Panel DOM element exists',
+                'Toggle method exists',
+                'Switch tab method exists',
+                'Pattern organization loaded'
+            ];
+            
+            tests.forEach((test, index) => {
+                try {
+                    const result = test();
+                    log('test-output', `${result ? '✅' : '❌'} ${testNames[index]}`, result ? 'success' : 'error');
+                } catch (error) {
+                    log('test-output', `❌ ${testNames[index]} - Error: ${error.message}`, 'error');
+                }
+            });
+        }
+        
+        function testPatternOrganization() {
+            clearLog('test-output');
+            log('test-output', '🏷️ Testing pattern organization...', 'info');
+            
+            if (window.patternOrganization) {
+                try {
+                    // Add a test pattern
+                    const testPattern = {
+                        name: 'Debug Test Pattern',
+                        code: 'sound("debug").n(0,1,2,3)',
+                        genre: 'test'
+                    };
+                    
+                    const patternId = window.patternOrganization.addPattern(testPattern);
+                    log('test-output', `✅ Pattern added with ID: ${patternId}`, 'success');
+                    
+                    // Test retrieval
+                    const retrieved = window.patternOrganization.getPattern(patternId);
+                    if (retrieved) {
+                        log('test-output', `✅ Pattern retrieved: ${retrieved.name}`, 'success');
+                    } else {
+                        log('test-output', '❌ Pattern retrieval failed', 'error');
+                    }
+                    
+                    // Test tagging
+                    window.patternOrganization.addTag(patternId, 'debug-tag');
+                    log('test-output', '✅ Tag added successfully', 'success');
+                    
+                } catch (error) {
+                    log('test-output', `❌ Pattern organization test failed: ${error.message}`, 'error');
+                }
+            } else {
+                log('test-output', '❌ Pattern organization not loaded', 'error');
+            }
+        }
+        
+        function testMiniPlayer() {
+            clearLog('test-output');
+            log('test-output', '🎵 Testing mini player...', 'info');
+            
+            if (window.miniPlayer) {
+                try {
+                    // Test show/hide
+                    window.miniPlayer.show();
+                    log('test-output', '✅ Mini player shown', 'success');
+                    
+                    setTimeout(() => {
+                        window.miniPlayer.hide();
+                        log('test-output', '✅ Mini player hidden', 'success');
+                    }, 1000);
+                    
+                } catch (error) {
+                    log('test-output', `❌ Mini player test failed: ${error.message}`, 'error');
+                }
+            } else {
+                log('test-output', '❌ Mini player not loaded', 'error');
+            }
+        }
+        
+        function clearErrors() {
+            errorLog = [];
+            updateErrorOutput();
+        }
+        
+        function showConsoleErrors() {
+            updateErrorOutput();
+        }
+        
+        function updateErrorOutput() {
+            const element = document.getElementById('error-output');
+            if (errorLog.length === 0) {
+                element.innerHTML = '<span class="success">No errors detected...</span>';
+            } else {
+                element.innerHTML = errorLog.map(error => 
+                    `<span class="error">[${error.timestamp}] ${error.message}</span>`
+                ).join('\n');
+            }
+            element.scrollTop = element.scrollHeight;
+        }
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.altKey && e.key === 'p') {
+                e.preventDefault();
+                toggleSidePanel();
+            }
+        });
+        
+        // Auto-run status check on load
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                checkSidePanelStatus();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

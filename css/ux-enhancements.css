@@ -1,0 +1,267 @@
+/* 🎨 UX Enhancement Styles */
+
+/* Command Palette Styles */
+.command-palette-overlay {
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.command-palette-container {
+  animation: slideInDown 0.3s ease;
+}
+
+@keyframes slideInDown {
+  from {
+    transform: translateX(-50%) translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+}
+
+.command-palette-search:focus {
+  outline: none;
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+}
+
+.command-palette-item:hover {
+  background: rgba(0, 255, 0, 0.05) !important;
+}
+
+/* Enhanced Input Styles */
+.completion-menu {
+  font-size: 13px;
+  scrollbar-width: thin;
+  scrollbar-color: #00ff0033 transparent;
+}
+
+.completion-menu::-webkit-scrollbar {
+  width: 6px;
+}
+
+.completion-menu::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.completion-menu::-webkit-scrollbar-thumb {
+  background: #00ff0033;
+  border-radius: 3px;
+}
+
+.completion-item {
+  font-family: 'Courier New', monospace;
+}
+
+.completion-item:hover {
+  transition: all 0.1s ease;
+}
+
+/* Contextual Help Styles */
+.contextual-tip {
+  animation: slideInRight 0.3s ease;
+  font-size: 13px;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.contextual-tip button:hover {
+  transform: scale(1.05);
+  transition: transform 0.2s ease;
+}
+
+/* Voice Discoverability Styles */
+.voice-status-indicator {
+  animation: breathe 3s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+.voice-status-indicator:hover {
+  animation: none;
+}
+
+.voice-tooltip {
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+/* Enhanced Terminal Styles */
+.terminal-input:focus {
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.terminal-input-container {
+  position: relative;
+}
+
+/* Voice tip styling */
+.voice-tip {
+  background: rgba(0, 255, 0, 0.05);
+  border-left: 3px solid #00ff0055;
+  padding: 8px 12px;
+  margin: 4px 0;
+  border-radius: 4px;
+  animation: slideInLeft 0.5s ease;
+}
+
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Keyboard shortcut styling */
+kbd {
+  background: rgba(0, 255, 0, 0.1);
+  border: 1px solid #00ff0033;
+  border-radius: 3px;
+  padding: 2px 6px;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  font-weight: bold;
+  color: #00ff00;
+  margin: 0 2px;
+}
+
+/* Mobile enhancements */
+@media (max-width: 768px) {
+  .command-palette-container {
+    width: 95vw;
+    top: 10%;
+  }
+  
+  .contextual-tip {
+    right: 10px;
+    left: 10px;
+    max-width: none;
+  }
+  
+  .voice-status-indicator {
+    top: 10px;
+    right: 10px;
+    width: 35px;
+    height: 35px;
+  }
+  
+  .completion-menu {
+    max-height: 150px;
+  }
+}
+
+/* Touch device enhancements */
+@media (pointer: coarse) {
+  .command-palette-item {
+    padding: 15px 20px;
+    font-size: 14px;
+  }
+  
+  .completion-item {
+    padding: 12px 15px;
+  }
+  
+  .voice-status-indicator {
+    width: 45px;
+    height: 45px;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .command-palette-container {
+    border-width: 3px;
+  }
+  
+  .contextual-tip {
+    border-width: 2px;
+  }
+  
+  kbd {
+    border-width: 2px;
+    background: rgba(0, 255, 0, 0.2);
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .command-palette-overlay,
+  .command-palette-container,
+  .contextual-tip,
+  .voice-tip {
+    animation: none;
+  }
+  
+  .voice-status-indicator {
+    animation: none;
+  }
+  
+  * {
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Focus styles for accessibility */
+.command-palette-item:focus,
+.completion-item:focus {
+  outline: 2px solid #00ff00;
+  outline-offset: 2px;
+}
+
+button:focus {
+  outline: 2px solid #00ff00;
+  outline-offset: 2px;
+}
+
+/* Loading states */
+.loading-pulse {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Success/error states */
+.success-flash {
+  animation: successFlash 0.5s ease;
+}
+
+@keyframes successFlash {
+  0% { background: transparent; }
+  50% { background: rgba(0, 255, 0, 0.2); }
+  100% { background: transparent; }
+}
+
+.error-flash {
+  animation: errorFlash 0.5s ease;
+}
+
+@keyframes errorFlash {
+  0% { background: transparent; }
+  50% { background: rgba(255, 0, 0, 0.2); }
+  100% { background: transparent; }
+}
