@@ -1,865 +1,2046 @@
 /**
- * Advanced Pattern Evolution Engine
- * Enables patterns to evolve, mutate, and breed over time
+ * Comprehensive Pattern Evolution and Breeding System
+ * Advanced genetic algorithm-based music pattern evolution with DNA-like representation
+ * Combines scientific rigor with creative exploration for the Not a Label platform
  */
 
 class PatternEvolutionEngine {
   constructor() {
-    this.populationSize = 50;
-    this.mutationRate = 0.1;
-    this.crossoverRate = 0.7;
-    this.elitismRate = 0.1;
-    this.generationHistory = [];
+    this.version = '4.0.0';
+    this.populationSize = 32;
+    this.maxGenerations = 50;
+    this.elitismRate = 0.15;
+    this.mutationRate = 0.12;
+    this.crossoverRate = 0.75;
+    this.diversityThreshold = 0.3;
+    
+    // Evolution history and family tree tracking
+    this.evolutionHistory = [];
+    this.familyTree = new Map();
+    this.specimenRegistry = new Map();
+    this.generationCounter = 0;
+    
+    // Pattern genome system
+    this.patternGenome = new PatternGenomeSystem();
     this.fitnessEvaluator = new PatternFitnessEvaluator();
-    this.version = '3.1.0';
+    this.breedingChamber = new BreedingChamber();
+    this.mutationEngine = new MutationEngine();
     
     // Evolution strategies
     this.evolutionStrategies = {
-      'natural': this.naturalEvolution.bind(this),
-      'guided': this.guidedEvolution.bind(this),
-      'experimental': this.experimentalEvolution.bind(this),
-      'user_directed': this.userDirectedEvolution.bind(this)
+      'natural_selection': this.naturalSelection.bind(this),
+      'guided_evolution': this.guidedEvolution.bind(this),
+      'experimental_drift': this.experimentalDrift.bind(this),
+      'hybrid_breeding': this.hybridBreeding.bind(this),
+      'pressure_evolution': this.pressureEvolution.bind(this),
+      'creative_explosion': this.creativeExplosion.bind(this)
     };
     
-    console.log('🧬 Pattern Evolution Engine initialized');
-  }
-  
-  // Main evolution method
-  async evolvePattern(originalPattern, evolutionConfig = {}) {
-    console.log('🧬 Starting pattern evolution...');
+    // AI-powered breeding suggestions
+    this.breedingSuggestions = new AIBreedingSuggestionEngine();
     
-    const config = {
-      strategy: 'natural',
-      generations: 5,
-      targetFitness: 0.8,
+    console.log('🧬 Pattern Evolution Engine v4.0 initialized - Ready for scientific creativity');
+  }
+
+  /**
+   * Main evolution interface - Evolve a pattern through generations
+   */
+  async evolvePattern(originalPattern, config = {}) {
+    const evolutionConfig = {
+      strategy: 'natural_selection',
+      generations: 10,
+      targetFitness: 0.85,
+      mutationIntensity: 0.3,
+      diversityPressure: 0.4,
+      creativityBoost: 0.2,
       userPreferences: {},
       constraints: {},
-      ...evolutionConfig
+      preserveOriginalDNA: true,
+      enableHybridization: true,
+      ...config
     };
+
+    console.log(`🧬 Starting evolution: ${evolutionConfig.strategy} strategy`);
+    console.log(`🎯 Target fitness: ${evolutionConfig.targetFitness}`);
     
-    // Initialize population with variations of the original pattern
-    let population = this.initializePopulation(originalPattern, config);
+    // Initialize evolution session
+    const sessionId = this.initializeEvolutionSession(originalPattern, evolutionConfig);
     
-    // Evolution loop
-    for (let generation = 0; generation < config.generations; generation++) {
-      console.log(`🧬 Generation ${generation + 1}/${config.generations}`);
+    try {
+      // Create pattern genome from original
+      const originalGenome = await this.patternGenome.analyzePattern(originalPattern);
       
-      // Evaluate fitness for all patterns in population
-      const fitnessScores = await this.evaluatePopulation(population, config);
+      // Initialize population with diverse variations
+      let population = await this.initializePopulation(originalGenome, evolutionConfig);
       
-      // Check if target fitness reached
-      const bestFitness = Math.max(...fitnessScores);
-      if (bestFitness >= config.targetFitness) {
-        console.log(`🎯 Target fitness ${config.targetFitness} reached at generation ${generation + 1}`);
-        break;
+      // Evolution loop
+      const evolutionResults = [];
+      for (let generation = 0; generation < evolutionConfig.generations; generation++) {
+        console.log(`🧬 Generation ${generation + 1}/${evolutionConfig.generations}`);
+        
+        // Evaluate fitness for entire population
+        const fitnessScores = await this.evaluatePopulationFitness(population, evolutionConfig);
+        
+        // Track best specimen
+        const bestIndex = fitnessScores.indexOf(Math.max(...fitnessScores));
+        const bestSpecimen = population[bestIndex];
+        const bestFitness = fitnessScores[bestIndex];
+        
+        console.log(`📊 Best fitness: ${bestFitness.toFixed(3)}, Population diversity: ${this.calculateDiversity(population).toFixed(3)}`);
+        
+        // Check convergence criteria
+        if (bestFitness >= evolutionConfig.targetFitness) {
+          console.log(`🎯 Target fitness achieved at generation ${generation + 1}`);
+          break;
+        }
+        
+        // Apply evolution strategy
+        population = await this.evolutionStrategies[evolutionConfig.strategy](
+          population, fitnessScores, evolutionConfig, generation
+        );
+        
+        // Track generation
+        const generationData = this.trackGeneration(
+          generation, population, fitnessScores, evolutionConfig, sessionId
+        );
+        evolutionResults.push(generationData);
+        
+        // Maintain genetic diversity
+        if (generation % 5 === 0) {
+          population = this.ensureGeneticDiversity(population, evolutionConfig);
+        }
       }
       
-      // Apply evolution strategy
-      population = await this.evolutionStrategies[config.strategy](
-        population, 
-        fitnessScores, 
-        config, 
-        generation
+      // Final evaluation and selection
+      const finalFitnessScores = await this.evaluatePopulationFitness(population, evolutionConfig);
+      const finalBestIndex = finalFitnessScores.indexOf(Math.max(...finalFitnessScores));
+      const evolvedPattern = population[finalBestIndex];
+      
+      return this.formatEvolutionResult(
+        evolvedPattern, originalPattern, evolutionResults, evolutionConfig, sessionId
       );
       
-      // Track generation
-      this.trackGeneration(generation, population, fitnessScores, config);
+    } catch (error) {
+      console.error('🚨 Evolution error:', error);
+      throw new Error(`Evolution failed: ${error.message}`);
     }
-    
-    // Return best evolved pattern
-    const finalFitnessScores = await this.evaluatePopulation(population, config);
-    const bestIndex = finalFitnessScores.indexOf(Math.max(...finalFitnessScores));
-    const bestPattern = population[bestIndex];
-    
-    console.log('🧬 Pattern evolution complete');
-    return this.formatEvolutionResult(bestPattern, originalPattern, config);
   }
-  
-  // Initialize population with variations
-  initializePopulation(originalPattern, config) {
-    const population = [originalPattern]; // Include original
+
+  /**
+   * Initialize population with genetic diversity
+   */
+  async initializePopulation(originalGenome, config) {
+    const population = [originalGenome.clone()]; // Include original
     
-    // Generate variations
-    for (let i = 1; i < this.populationSize; i++) {
-      const variation = this.createVariation(originalPattern, {
-        mutationIntensity: Math.random() * 0.5 + 0.1,
-        preserveStructure: Math.random() > 0.3
-      });
-      population.push(variation);
+    // Generate diverse variations using different mutation strategies
+    const variationStrategies = [
+      'rhythmic_shift', 'melodic_drift', 'harmonic_substitution',
+      'textural_change', 'structural_variation', 'timbral_mutation'
+    ];
+    
+    while (population.length < this.populationSize) {
+      const strategy = variationStrategies[population.length % variationStrategies.length];
+      const variation = await this.mutationEngine.createVariation(
+        originalGenome, 
+        { strategy, intensity: Math.random() * 0.5 + 0.1 }
+      );
+      
+      // Ensure genetic diversity
+      if (this.isGeneticallyDiverse(variation, population)) {
+        population.push(variation);
+      }
     }
     
-    console.log(`🧬 Initialized population of ${population.length} patterns`);
+    console.log(`🧬 Initialized population: ${population.length} specimens`);
     return population;
   }
-  
-  // Create variation of a pattern
-  createVariation(pattern, variationConfig = {}) {
-    const config = {
-      mutationIntensity: 0.2,
-      preserveStructure: true,
-      allowGenreShift: false,
-      ...variationConfig
-    };
-    
-    let variationCode = pattern.code;
-    let variationMetadata = { ...pattern.metadata };
-    
-    // Apply various mutation types
-    if (Math.random() < this.mutationRate) {
-      variationCode = this.mutateRhythm(variationCode, config);
-    }
-    
-    if (Math.random() < this.mutationRate) {
-      variationCode = this.mutateMelody(variationCode, config);
-    }
-    
-    if (Math.random() < this.mutationRate) {
-      variationCode = this.mutateHarmony(variationCode, config);
-    }
-    
-    if (Math.random() < this.mutationRate) {
-      variationCode = this.mutateEffects(variationCode, config);
-    }
-    
-    if (Math.random() < this.mutationRate) {
-      variationCode = this.mutateStructure(variationCode, config);
-    }
-    
-    // Update metadata
-    variationMetadata.generation = (pattern.metadata.generation || 0) + 1;
-    variationMetadata.parentId = pattern.metadata.id || 'unknown';
-    variationMetadata.mutationIntensity = config.mutationIntensity;
-    variationMetadata.id = 'evolved_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-    
-    return {
-      code: variationCode,
-      description: this.generateVariationDescription(pattern, config),
-      metadata: variationMetadata,
-      parentPattern: pattern
-    };
-  }
-  
-  // Rhythm mutation
-  mutateRhythm(code, config) {
-    const rhythmPatterns = {
-      'bd*2': ['bd*4', 'bd ~ bd', 'bd*3'],
-      'bd*4': ['bd*2', 'bd ~ ~ bd', 'bd*8'],
-      'sd ~': ['sd sd', '~ sd', 'sd*2'],
-      'hh*8': ['hh*16', 'hh*4', 'hh ~ hh ~']
-    };
-    
-    let mutatedCode = code;
-    
-    // Mutate drum patterns
-    for (const [original, alternatives] of Object.entries(rhythmPatterns)) {
-      if (mutatedCode.includes(original) && Math.random() < config.mutationIntensity) {
-        const replacement = alternatives[Math.floor(Math.random() * alternatives.length)];
-        mutatedCode = mutatedCode.replace(original, replacement);
-      }
-    }
-    
-    // Mutate timing
-    if (Math.random() < config.mutationIntensity * 0.5) {
-      mutatedCode = this.mutateSlowFast(mutatedCode);
-    }
-    
-    return mutatedCode;
-  }
-  
-  // Melody mutation
-  mutateMelody(code, config) {
-    const noteRegex = /note\("([^"]+)"\)/g;
-    let mutatedCode = code;
-    
-    mutatedCode = mutatedCode.replace(noteRegex, (match, notes) => {
-      if (Math.random() < config.mutationIntensity) {
-        const noteArray = notes.split(' ');
-        const mutatedNotes = noteArray.map(note => {
-          if (note === '~' || Math.random() > 0.3) return note;
-          
-          // Transpose notes
-          if (Math.random() < 0.5) {
-            return this.transposeNote(note, Math.random() > 0.5 ? 1 : -1);
-          }
-          
-          // Change octave
-          if (Math.random() < 0.3) {
-            return this.changeOctave(note, Math.random() > 0.5 ? 1 : -1);
-          }
-          
-          return note;
-        });
-        
-        return `note("${mutatedNotes.join(' ')}")`;
-      }
-      return match;
-    });
-    
-    return mutatedCode;
-  }
-  
-  // Harmony mutation
-  mutateHarmony(code, config) {
-    const chordMutations = {
-      'c4': ['f4', 'g4', 'am4'],
-      'f4': ['c4', 'dm4', 'bb4'],
-      'g4': ['c4', 'em4', 'd4'],
-      'am4': ['f4', 'c4', 'dm4']
-    };
-    
-    let mutatedCode = code;
-    
-    for (const [original, alternatives] of Object.entries(chordMutations)) {
-      if (mutatedCode.includes(original) && Math.random() < config.mutationIntensity) {
-        const replacement = alternatives[Math.floor(Math.random() * alternatives.length)];
-        mutatedCode = mutatedCode.replace(new RegExp(original, 'g'), replacement);
-      }
-    }
-    
-    return mutatedCode;
-  }
-  
-  // Effects mutation
-  mutateEffects(code, config) {
-    const effectMutations = {
-      'reverb': (value) => {
-        const current = parseFloat(value) || 0.4;
-        return Math.max(0, Math.min(1, current + (Math.random() - 0.5) * 0.3)).toFixed(2);
-      },
-      'delay': (value) => {
-        const current = parseFloat(value) || 0.125;
-        const options = [0.125, 0.25, 0.5, 0.75];
-        return options[Math.floor(Math.random() * options.length)];
-      },
-      'gain': (value) => {
-        const current = parseFloat(value) || 0.7;
-        return Math.max(0.1, Math.min(1.5, current + (Math.random() - 0.5) * 0.2)).toFixed(2);
-      }
-    };
-    
-    let mutatedCode = code;
-    
-    for (const [effect, mutationFn] of Object.entries(effectMutations)) {
-      const effectRegex = new RegExp(`${effect}\\(([^)]+)\\)`, 'g');
-      mutatedCode = mutatedCode.replace(effectRegex, (match, value) => {
-        if (Math.random() < config.mutationIntensity) {
-          const newValue = mutationFn(value);
-          return `${effect}(${newValue})`;
-        }
-        return match;
-      });
-    }
-    
-    // Add new effects occasionally
-    if (Math.random() < config.mutationIntensity * 0.3) {
-      const newEffects = ['.distortion(0.1)', '.chorus(0.3)', '.lpf(800)', '.hpf(200)'];
-      const newEffect = newEffects[Math.floor(Math.random() * newEffects.length)];
-      if (!mutatedCode.includes(newEffect.split('(')[0])) {
-        mutatedCode += newEffect;
-      }
-    }
-    
-    return mutatedCode;
-  }
-  
-  // Structure mutation
-  mutateStructure(code, config) {
-    if (!config.preserveStructure && Math.random() < config.mutationIntensity * 0.5) {
-      // More radical structural changes
-      if (code.includes('stack(')) {
-        // Convert to sequential layers occasionally
-        return code.replace('stack(', 'seq(');
-      }
-      
-      if (code.includes('seq(')) {
-        // Convert to parallel layers occasionally
-        return code.replace('seq(', 'stack(');
-      }
-    }
-    
-    return code;
-  }
-  
-  // Helper methods for mutations
-  transposeNote(note, semitones) {
-    const noteMap = {
-      'c': 0, 'd': 2, 'e': 4, 'f': 5, 'g': 7, 'a': 9, 'b': 11
-    };
-    const reverseMap = ['c', 'c#', 'd', 'd#', 'e', 'f', 'f#', 'g', 'g#', 'a', 'a#', 'b'];
-    
-    if (!note || note === '~') return note;
-    
-    const noteName = note.charAt(0).toLowerCase();
-    const octave = note.slice(1) || '4';
-    
-    if (!noteMap[noteName]) return note;
-    
-    let midiNote = noteMap[noteName] + parseInt(octave) * 12;
-    midiNote += semitones;
-    
-    const newOctave = Math.floor(midiNote / 12);
-    const newNoteIndex = midiNote % 12;
-    
-    return reverseMap[newNoteIndex] + newOctave;
-  }
-  
-  changeOctave(note, octaveChange) {
-    if (!note || note === '~') return note;
-    
-    const noteName = note.replace(/\d+$/, '');
-    const currentOctave = parseInt(note.match(/\d+$/)?.[0] || '4');
-    const newOctave = Math.max(1, Math.min(8, currentOctave + octaveChange));
-    
-    return noteName + newOctave;
-  }
-  
-  mutateSlowFast(code) {
-    const slowFastRegex = /\.(slow|fast)\(([^)]+)\)/g;
-    
-    return code.replace(slowFastRegex, (match, method, value) => {
-      const currentValue = parseFloat(value) || 2;
-      const newValue = Math.max(0.25, Math.min(8, currentValue * (Math.random() * 0.6 + 0.7)));
-      return `.${method}(${newValue.toFixed(2)})`;
-    });
-  }
-  
-  // Evaluate population fitness
-  async evaluatePopulation(population, config) {
-    const fitnessScores = [];
-    
-    for (let i = 0; i < population.length; i++) {
-      const pattern = population[i];
-      const fitness = await this.fitnessEvaluator.evaluatePattern(pattern, config);
-      fitnessScores.push(fitness);
-    }
-    
-    return fitnessScores;
-  }
-  
-  // Evolution strategies
-  async naturalEvolution(population, fitnessScores, config, generation) {
-    // Natural selection with crossover and mutation
+
+  /**
+   * Natural selection evolution strategy
+   */
+  async naturalSelection(population, fitnessScores, config, generation) {
     const newPopulation = [];
     const sortedIndices = this.getSortedIndices(fitnessScores);
     
-    // Elitism - keep best patterns
+    // Elitism - preserve the fittest
     const eliteCount = Math.floor(this.populationSize * this.elitismRate);
     for (let i = 0; i < eliteCount; i++) {
-      newPopulation.push(population[sortedIndices[i]]);
+      const elite = population[sortedIndices[i]].clone();
+      elite.metadata.status = 'elite';
+      newPopulation.push(elite);
     }
     
-    // Crossover and mutation
+    // Selection and reproduction
     while (newPopulation.length < this.populationSize) {
       if (Math.random() < this.crossoverRate) {
-        // Crossover
-        const parent1 = this.selectParent(population, fitnessScores);
-        const parent2 = this.selectParent(population, fitnessScores);
-        const offspring = this.crossover(parent1, parent2);
+        // Sexual reproduction (crossover)
+        const parent1 = this.selectParent(population, fitnessScores, 'tournament');
+        const parent2 = this.selectParent(population, fitnessScores, 'tournament');
+        const offspring = await this.breedingChamber.crossover(parent1, parent2, config);
         newPopulation.push(offspring);
       } else {
-        // Mutation only
-        const parent = this.selectParent(population, fitnessScores);
-        const mutant = this.createVariation(parent, { mutationIntensity: 0.3 });
+        // Asexual reproduction (mutation only)
+        const parent = this.selectParent(population, fitnessScores, 'roulette');
+        const mutant = await this.mutationEngine.mutate(parent, config);
         newPopulation.push(mutant);
       }
     }
     
     return newPopulation.slice(0, this.populationSize);
   }
-  
+
+  /**
+   * Guided evolution with user preferences and AI assistance
+   */
   async guidedEvolution(population, fitnessScores, config, generation) {
-    // Evolution guided by user preferences and musical theory
     const newPopulation = [];
     
-    // Analyze current population for musical qualities
-    const populationAnalysis = this.analyzePopulation(population, fitnessScores);
+    // Analyze population trends
+    const populationAnalysis = this.analyzePopulationTrends(population, fitnessScores);
     
-    // Generate new population with bias toward desired qualities
-    for (let i = 0; i < this.populationSize; i++) {
-      if (i < Math.floor(this.populationSize * 0.2)) {
-        // Keep top performers
-        const sortedIndices = this.getSortedIndices(fitnessScores);
-        newPopulation.push(population[sortedIndices[i]]);
-      } else {
-        // Generate guided variations
-        const basePattern = this.selectParent(population, fitnessScores);
-        const guidedVariation = this.createGuidedVariation(basePattern, populationAnalysis, config);
-        newPopulation.push(guidedVariation);
+    // Get AI breeding suggestions
+    const suggestions = await this.breedingSuggestions.getSuggestions(
+      population, populationAnalysis, config.userPreferences
+    );
+    
+    // Preserve top performers
+    const eliteCount = Math.floor(this.populationSize * 0.2);
+    const sortedIndices = this.getSortedIndices(fitnessScores);
+    for (let i = 0; i < eliteCount; i++) {
+      newPopulation.push(population[sortedIndices[i]].clone());
+    }
+    
+    // Apply AI-guided breeding
+    while (newPopulation.length < this.populationSize) {
+      const suggestion = suggestions[Math.floor(Math.random() * suggestions.length)];
+      
+      if (suggestion.type === 'crossover') {
+        const offspring = await this.breedingChamber.guidedCrossover(
+          suggestion.parent1, suggestion.parent2, suggestion.guidance
+        );
+        newPopulation.push(offspring);
+      } else if (suggestion.type === 'mutation') {
+        const mutant = await this.mutationEngine.guidedMutation(
+          suggestion.target, suggestion.guidance
+        );
+        newPopulation.push(mutant);
       }
     }
     
-    return newPopulation;
+    return newPopulation.slice(0, this.populationSize);
   }
-  
-  async experimentalEvolution(population, fitnessScores, config, generation) {
-    // Highly experimental evolution with radical mutations
+
+  /**
+   * Experimental drift - high mutation, exploration focus
+   */
+  async experimentalDrift(population, fitnessScores, config, generation) {
     const newPopulation = [];
     
-    // Keep some good patterns
+    // Keep only minimal elite
+    const eliteCount = Math.floor(this.populationSize * 0.1);
     const sortedIndices = this.getSortedIndices(fitnessScores);
-    for (let i = 0; i < Math.floor(this.populationSize * 0.1); i++) {
-      newPopulation.push(population[sortedIndices[i]]);
+    for (let i = 0; i < eliteCount; i++) {
+      newPopulation.push(population[sortedIndices[i]].clone());
     }
     
-    // Generate experimental variations
+    // High-intensity experimental mutations
     while (newPopulation.length < this.populationSize) {
-      const basePattern = population[Math.floor(Math.random() * population.length)];
-      const experimentalVariation = this.createVariation(basePattern, {
-        mutationIntensity: 0.8,
-        preserveStructure: false,
-        allowGenreShift: true
+      const baseSpecimen = population[Math.floor(Math.random() * population.length)];
+      const experimental = await this.mutationEngine.experimentalMutation(baseSpecimen, {
+        intensity: 0.7 + Math.random() * 0.3,
+        allowRadicalChanges: true,
+        preserveStructure: Math.random() > 0.7
       });
-      newPopulation.push(experimentalVariation);
+      newPopulation.push(experimental);
     }
     
     return newPopulation;
   }
-  
-  async userDirectedEvolution(population, fitnessScores, config, generation) {
-    // Evolution directed by user feedback and preferences
-    return this.guidedEvolution(population, fitnessScores, config, generation);
+
+  /**
+   * Hybrid breeding - combines multiple species/genres
+   */
+  async hybridBreeding(population, fitnessScores, config, generation) {
+    const newPopulation = [];
+    
+    // Categorize population by musical traits
+    const speciesGroups = this.categorizeBySpecies(population);
+    
+    // Cross-species breeding
+    for (const [species, specimens] of speciesGroups) {
+      if (specimens.length > 1) {
+        // Intra-species breeding
+        const parent1 = specimens[Math.floor(Math.random() * specimens.length)];
+        const parent2 = specimens[Math.floor(Math.random() * specimens.length)];
+        const intraSpecies = await this.breedingChamber.crossover(parent1, parent2, config);
+        newPopulation.push(intraSpecies);
+      }
+    }
+    
+    // Inter-species hybridization
+    const speciesArray = Array.from(speciesGroups.keys());
+    while (newPopulation.length < this.populationSize) {
+      if (speciesArray.length > 1 && Math.random() < 0.6) {
+        // Cross-species hybrid
+        const species1 = speciesArray[Math.floor(Math.random() * speciesArray.length)];
+        const species2 = speciesArray[Math.floor(Math.random() * speciesArray.length)];
+        
+        if (species1 !== species2) {
+          const parent1 = speciesGroups.get(species1)[0];
+          const parent2 = speciesGroups.get(species2)[0];
+          const hybrid = await this.breedingChamber.hybridCrossover(parent1, parent2, config);
+          newPopulation.push(hybrid);
+        }
+      } else {
+        // Standard reproduction
+        const parent = this.selectParent(population, fitnessScores, 'tournament');
+        const offspring = await this.mutationEngine.mutate(parent, config);
+        newPopulation.push(offspring);
+      }
+    }
+    
+    return newPopulation.slice(0, this.populationSize);
   }
-  
-  // Selection methods
-  selectParent(population, fitnessScores) {
-    // Tournament selection
-    const tournamentSize = 3;
+
+  /**
+   * Pressure evolution - environmental selection pressures
+   */
+  async pressureEvolution(population, fitnessScores, config, generation) {
+    // Apply environmental pressures based on generation
+    const pressure = this.calculateEnvironmentalPressure(generation, config);
+    
+    // Adjust fitness based on pressure
+    const adjustedFitness = fitnessScores.map((fitness, index) => {
+      return this.applySelectionPressure(population[index], fitness, pressure);
+    });
+    
+    return this.naturalSelection(population, adjustedFitness, config, generation);
+  }
+
+  /**
+   * Creative explosion - periodic bursts of high creativity
+   */
+  async creativeExplosion(population, fitnessScores, config, generation) {
+    const isExplosionGeneration = generation % 5 === 0;
+    
+    if (isExplosionGeneration) {
+      console.log('💥 Creative explosion triggered!');
+      return this.experimentalDrift(population, fitnessScores, config, generation);
+    } else {
+      return this.naturalSelection(population, fitnessScores, config, generation);
+    }
+  }
+
+  /**
+   * Evaluate fitness for entire population
+   */
+  async evaluatePopulationFitness(population, config) {
+    const fitnessPromises = population.map(specimen => 
+      this.fitnessEvaluator.evaluateSpecimen(specimen, config)
+    );
+    
+    return Promise.all(fitnessPromises);
+  }
+
+  /**
+   * Parent selection strategies
+   */
+  selectParent(population, fitnessScores, strategy = 'tournament') {
+    switch (strategy) {
+      case 'tournament':
+        return this.tournamentSelection(population, fitnessScores);
+      case 'roulette':
+        return this.rouletteSelection(population, fitnessScores);
+      case 'rank':
+        return this.rankSelection(population, fitnessScores);
+      default:
+        return this.tournamentSelection(population, fitnessScores);
+    }
+  }
+
+  tournamentSelection(population, fitnessScores, tournamentSize = 3) {
     let bestIndex = Math.floor(Math.random() * population.length);
+    let bestFitness = fitnessScores[bestIndex];
     
     for (let i = 1; i < tournamentSize; i++) {
       const candidateIndex = Math.floor(Math.random() * population.length);
-      if (fitnessScores[candidateIndex] > fitnessScores[bestIndex]) {
+      if (fitnessScores[candidateIndex] > bestFitness) {
         bestIndex = candidateIndex;
+        bestFitness = fitnessScores[candidateIndex];
       }
     }
     
     return population[bestIndex];
   }
-  
-  // Crossover operation
-  crossover(parent1, parent2) {
-    // Pattern crossover - combine elements from both parents
-    const offspring = {
-      code: this.crossoverCode(parent1.code, parent2.code),
-      description: `Hybrid of ${parent1.metadata?.genre || 'unknown'} and ${parent2.metadata?.genre || 'unknown'}`,
-      metadata: {
-        generation: Math.max(parent1.metadata?.generation || 0, parent2.metadata?.generation || 0) + 1,
-        parentIds: [parent1.metadata?.id, parent2.metadata?.id],
-        crossover: true,
-        id: 'crossover_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9)
-      }
-    };
+
+  rouletteSelection(population, fitnessScores) {
+    const totalFitness = fitnessScores.reduce((sum, fitness) => sum + fitness, 0);
+    const spin = Math.random() * totalFitness;
     
-    return offspring;
-  }
-  
-  crossoverCode(code1, code2) {
-    // Simple crossover - combine layers from both patterns
-    const layers1 = this.extractLayers(code1);
-    const layers2 = this.extractLayers(code2);
-    
-    const combinedLayers = [];
-    const maxLayers = Math.max(layers1.length, layers2.length);
-    
-    for (let i = 0; i < maxLayers; i++) {
-      if (Math.random() < 0.5 && layers1[i]) {
-        combinedLayers.push(layers1[i]);
-      } else if (layers2[i]) {
-        combinedLayers.push(layers2[i]);
+    let accumulator = 0;
+    for (let i = 0; i < population.length; i++) {
+      accumulator += fitnessScores[i];
+      if (accumulator >= spin) {
+        return population[i];
       }
     }
     
-    // Reconstruct code
-    if (combinedLayers.length > 1) {
-      return `stack(\n  ${combinedLayers.join(',\n  ')}\n)`;
-    } else {
-      return combinedLayers[0] || code1;
-    }
+    return population[population.length - 1];
   }
-  
-  extractLayers(code) {
-    // Extract individual layers from stack/seq structure
-    if (code.includes('stack(') || code.includes('seq(')) {
-      const match = code.match(/(?:stack|seq)\(([\s\S]*)\)/);
-      if (match) {
-        return match[1].split(',').map(layer => layer.trim()).filter(layer => layer.length > 0);
+
+  rankSelection(population, fitnessScores) {
+    const sortedIndices = this.getSortedIndices(fitnessScores);
+    const rankSum = (population.length * (population.length + 1)) / 2;
+    const spin = Math.random() * rankSum;
+    
+    let accumulator = 0;
+    for (let i = 0; i < population.length; i++) {
+      accumulator += population.length - i;
+      if (accumulator >= spin) {
+        return population[sortedIndices[i]];
       }
     }
     
-    return [code];
+    return population[sortedIndices[0]];
   }
-  
-  // Utility methods
-  getSortedIndices(fitnessScores) {
-    return fitnessScores
-      .map((score, index) => ({ score, index }))
-      .sort((a, b) => b.score - a.score)
-      .map(item => item.index);
-  }
-  
-  analyzePopulation(population, fitnessScores) {
-    // Analyze population characteristics
-    const analysis = {
-      averageFitness: fitnessScores.reduce((sum, score) => sum + score, 0) / fitnessScores.length,
-      maxFitness: Math.max(...fitnessScores),
-      minFitness: Math.min(...fitnessScores),
-      diversity: this.calculateDiversity(population),
-      commonGenres: this.extractCommonGenres(population)
-    };
-    
-    return analysis;
-  }
-  
+
+  /**
+   * Genetic diversity management
+   */
   calculateDiversity(population) {
-    // Simple diversity measure based on code similarity
-    let totalSimilarity = 0;
+    let totalDistance = 0;
     let comparisons = 0;
     
     for (let i = 0; i < population.length; i++) {
       for (let j = i + 1; j < population.length; j++) {
-        totalSimilarity += this.calculateSimilarity(population[i].code, population[j].code);
+        const distance = this.patternGenome.calculateGeneticDistance(
+          population[i], population[j]
+        );
+        totalDistance += distance;
         comparisons++;
       }
     }
     
-    return 1 - (totalSimilarity / comparisons); // Diversity is inverse of similarity
+    return totalDistance / comparisons;
   }
-  
-  calculateSimilarity(code1, code2) {
-    // Simple similarity based on common substrings
-    const words1 = code1.split(/\W+/);
-    const words2 = code2.split(/\W+/);
-    const commonWords = words1.filter(word => words2.includes(word));
+
+  ensureGeneticDiversity(population, config) {
+    const diversity = this.calculateDiversity(population);
     
-    return commonWords.length / Math.max(words1.length, words2.length);
-  }
-  
-  extractCommonGenres(population) {
-    const genres = population.map(p => p.metadata?.genre).filter(Boolean);
-    const genreCounts = {};
-    
-    genres.forEach(genre => {
-      genreCounts[genre] = (genreCounts[genre] || 0) + 1;
-    });
-    
-    return Object.entries(genreCounts)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 3)
-      .map(([genre, count]) => ({ genre, count }));
-  }
-  
-  createGuidedVariation(basePattern, populationAnalysis, config) {
-    // Create variation guided by population analysis and user preferences
-    const guidedConfig = {
-      mutationIntensity: 0.3,
-      preserveStructure: populationAnalysis.diversity < 0.3, // Preserve if low diversity
-      allowGenreShift: populationAnalysis.averageFitness < 0.5, // Allow if fitness is low
-      ...config.userPreferences
-    };
-    
-    return this.createVariation(basePattern, guidedConfig);
-  }
-  
-  generateVariationDescription(originalPattern, config) {
-    const intensity = config.mutationIntensity;
-    let description = originalPattern.description || 'Musical pattern';
-    
-    if (intensity > 0.7) {
-      description = 'Radical evolution of ' + description.toLowerCase();
-    } else if (intensity > 0.4) {
-      description = 'Creative variation of ' + description.toLowerCase();
-    } else {
-      description = 'Subtle evolution of ' + description.toLowerCase();
+    if (diversity < this.diversityThreshold) {
+      console.log('🧬 Low diversity detected, injecting new genetic material');
+      
+      // Replace bottom 25% with new random variations
+      const fitnessScores = population.map(p => Math.random()); // Simplified for diversity
+      const sortedIndices = this.getSortedIndices(fitnessScores);
+      const replaceCount = Math.floor(population.length * 0.25);
+      
+      for (let i = 0; i < replaceCount; i++) {
+        const replaceIndex = sortedIndices[population.length - 1 - i];
+        population[replaceIndex] = this.generateRandomSpecimen(config);
+      }
     }
     
-    return description;
+    return population;
   }
-  
-  trackGeneration(generation, population, fitnessScores, config) {
-    const analysis = this.analyzePopulation(population, fitnessScores);
+
+  isGeneticallyDiverse(newSpecimen, population) {
+    for (const existing of population) {
+      const distance = this.patternGenome.calculateGeneticDistance(newSpecimen, existing);
+      if (distance < 0.2) { // Too similar
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Family tree and evolution tracking
+   */
+  initializeEvolutionSession(originalPattern, config) {
+    const sessionId = `evolution_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     
-    this.generationHistory.push({
+    this.evolutionHistory.push({
+      sessionId,
+      startTime: new Date().toISOString(),
+      originalPattern,
+      config,
+      generations: []
+    });
+    
+    return sessionId;
+  }
+
+  trackGeneration(generation, population, fitnessScores, config, sessionId) {
+    const diversity = this.calculateDiversity(population);
+    const avgFitness = fitnessScores.reduce((sum, f) => sum + f, 0) / fitnessScores.length;
+    const maxFitness = Math.max(...fitnessScores);
+    const minFitness = Math.min(...fitnessScores);
+    
+    const generationData = {
       generation,
       timestamp: new Date().toISOString(),
       populationSize: population.length,
-      analysis,
-      config: {
-        strategy: config.strategy,
-        targetFitness: config.targetFitness
-      }
-    });
+      diversity,
+      fitness: {
+        average: avgFitness,
+        maximum: maxFitness,
+        minimum: minFitness,
+        standardDeviation: this.calculateStandardDeviation(fitnessScores)
+      },
+      traits: this.analyzePopulationTraits(population),
+      species: this.countSpecies(population)
+    };
     
-    // Keep only last 50 generations
-    if (this.generationHistory.length > 50) {
-      this.generationHistory = this.generationHistory.slice(-40);
+    // Add to session history
+    const session = this.evolutionHistory.find(s => s.sessionId === sessionId);
+    if (session) {
+      session.generations.push(generationData);
     }
     
-    console.log(`📊 Generation ${generation + 1}: Avg fitness ${analysis.averageFitness.toFixed(3)}, Diversity ${analysis.diversity.toFixed(3)}`);
+    this.generationCounter++;
+    return generationData;
   }
-  
-  formatEvolutionResult(bestPattern, originalPattern, config) {
+
+  buildFamilyTree(specimen) {
+    const tree = {
+      id: specimen.metadata.id,
+      generation: specimen.metadata.generation,
+      fitness: specimen.metadata.fitness,
+      traits: specimen.getTraitSummary ? specimen.getTraitSummary() : {},
+      parents: [],
+      children: []
+    };
+    
+    // Build parent lineage
+    if (specimen.metadata.parentIds) {
+      for (const parentId of specimen.metadata.parentIds) {
+        const parent = this.specimenRegistry.get(parentId);
+        if (parent) {
+          tree.parents.push(this.buildFamilyTree(parent));
+        }
+      }
+    }
+    
+    return tree;
+  }
+
+  /**
+   * AI-powered breeding suggestions
+   */
+  async suggestBreedingPairs(population, userPreferences = {}) {
+    return this.breedingSuggestions.suggestPairs(population, userPreferences);
+  }
+
+  /**
+   * Community integration features
+   */
+  async shareEvolutionLineage(specimen) {
+    const lineage = this.buildFamilyTree(specimen);
     return {
       success: true,
-      code: bestPattern.code,
-      description: bestPattern.description + ` (Evolved through ${config.generations} generations)`,
+      lineage,
+      shareUrl: `https://not-a-label.com/evolution/${specimen.metadata.id}`,
+      genealogy: this.formatGenealogyForSharing(lineage)
+    };
+  }
+
+  /**
+   * Evolution challenges and competitions
+   */
+  createEvolutionChallenge(challengeConfig) {
+    const challenge = {
+      id: `challenge_${Date.now()}`,
+      name: challengeConfig.name,
+      description: challengeConfig.description,
+      targetTraits: challengeConfig.targetTraits,
+      constraints: challengeConfig.constraints,
+      duration: challengeConfig.duration,
+      participants: [],
+      startTime: new Date().toISOString()
+    };
+    
+    return challenge;
+  }
+
+  /**
+   * Pattern evolution preview system
+   */
+  async previewEvolution(pattern, steps = 3) {
+    const genome = await this.patternGenome.analyzePattern(pattern);
+    const previews = [];
+    
+    let currentGenome = genome.clone();
+    for (let i = 0; i < steps; i++) {
+      currentGenome = await this.mutationEngine.createVariation(currentGenome, {
+        intensity: 0.3,
+        strategy: 'balanced'
+      });
+      
+      const previewPattern = await this.patternGenome.genomeToPattern(currentGenome);
+      previews.push({
+        step: i + 1,
+        pattern: previewPattern,
+        traits: currentGenome.getTraitSummary ? currentGenome.getTraitSummary() : {},
+        changes: currentGenome.getChangesFromOriginal ? currentGenome.getChangesFromOriginal() : []
+      });
+    }
+    
+    return previews;
+  }
+
+  /**
+   * Utility methods
+   */
+  getSortedIndices(values) {
+    return values
+      .map((value, index) => ({ value, index }))
+      .sort((a, b) => b.value - a.value)
+      .map(item => item.index);
+  }
+
+  calculateStandardDeviation(values) {
+    const mean = values.reduce((sum, val) => sum + val, 0) / values.length;
+    const variance = values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / values.length;
+    return Math.sqrt(variance);
+  }
+
+  analyzePopulationTrends(population, fitnessScores) {
+    return {
+      averageFitness: fitnessScores.reduce((sum, f) => sum + f, 0) / fitnessScores.length,
+      diversityIndex: this.calculateDiversity(population),
+      dominantTraits: this.findDominantTraits(population),
+      emergentPatterns: this.detectEmergentPatterns(population),
+      convergenceRate: this.calculateConvergenceRate(fitnessScores)
+    };
+  }
+
+  categorizeBySpecies(population) {
+    const species = new Map();
+    
+    for (const specimen of population) {
+      const speciesKey = specimen.getSpeciesIdentifier ? specimen.getSpeciesIdentifier() : 'unknown';
+      if (!species.has(speciesKey)) {
+        species.set(speciesKey, []);
+      }
+      species.get(speciesKey).push(specimen);
+    }
+    
+    return species;
+  }
+
+  calculateEnvironmentalPressure(generation, config) {
+    // Simulate environmental pressures that change over time
+    return {
+      complexity: Math.sin(generation * 0.1) * 0.5 + 0.5,
+      creativity: Math.cos(generation * 0.15) * 0.3 + 0.7,
+      stability: 1 - (generation / config.generations) * 0.5
+    };
+  }
+
+  applySelectionPressure(specimen, fitness, pressure) {
+    let adjustedFitness = fitness;
+    
+    // Apply complexity pressure
+    const complexityScore = specimen.getComplexityScore ? specimen.getComplexityScore() : 0.5;
+    adjustedFitness *= 1 + (pressure.complexity - 0.5) * complexityScore * 0.2;
+    
+    // Apply creativity pressure
+    const creativityScore = specimen.getCreativityScore ? specimen.getCreativityScore() : 0.5;
+    adjustedFitness *= 1 + (pressure.creativity - 0.5) * creativityScore * 0.3;
+    
+    return Math.max(0, adjustedFitness);
+  }
+
+  generateRandomSpecimen(config) {
+    // Generate a completely new random specimen for genetic diversity
+    return this.patternGenome.generateRandomGenome(config);
+  }
+
+  analyzePopulationTraits(population) {
+    const traits = {};
+    for (const specimen of population) {
+      if (specimen.getTraitSummary) {
+        const specimenTraits = specimen.getTraitSummary();
+        for (const [trait, value] of Object.entries(specimenTraits)) {
+          if (!traits[trait]) traits[trait] = [];
+          traits[trait].push(value);
+        }
+      }
+    }
+    return traits;
+  }
+
+  countSpecies(population) {
+    const species = this.categorizeBySpecies(population);
+    const result = {};
+    for (const [speciesKey, specimens] of species) {
+      result[speciesKey] = specimens.length;
+    }
+    return result;
+  }
+
+  findDominantTraits(population) {
+    const traits = this.analyzePopulationTraits(population);
+    const dominant = {};
+    
+    for (const [trait, values] of Object.entries(traits)) {
+      const counts = {};
+      for (const value of values) {
+        counts[value] = (counts[value] || 0) + 1;
+      }
+      
+      const sortedCounts = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+      dominant[trait] = sortedCounts[0] ? sortedCounts[0][0] : null;
+    }
+    
+    return dominant;
+  }
+
+  detectEmergentPatterns(population) {
+    // Simple emergent pattern detection
+    return [];
+  }
+
+  calculateConvergenceRate(fitnessScores) {
+    if (fitnessScores.length < 2) return 0;
+    
+    const max = Math.max(...fitnessScores);
+    const min = Math.min(...fitnessScores);
+    return 1 - (max - min); // Higher convergence = lower diversity
+  }
+
+  formatEvolutionResult(bestSpecimen, originalPattern, evolutionResults, config, sessionId) {
+    const result = {
+      success: true,
+      evolvedPattern: this.patternGenome.genomeToPattern ? 
+        this.patternGenome.genomeToPattern(bestSpecimen) : bestSpecimen,
+      originalPattern,
       metadata: {
-        ...bestPattern.metadata,
-        evolutionEngine: 'pattern_evolution_v3.1',
-        originalPatternId: originalPattern.metadata?.id,
-        evolutionConfig: config,
-        generationHistory: this.generationHistory.slice(-config.generations),
+        sessionId,
+        evolutionEngine: `pattern_evolution_v${this.version}`,
+        strategy: config.strategy,
+        generations: evolutionResults.length,
+        finalFitness: bestSpecimen.metadata ? bestSpecimen.metadata.fitness : 0,
+        geneticDistance: this.patternGenome.calculateGeneticDistance ? 
+          this.patternGenome.calculateGeneticDistance(bestSpecimen, originalPattern) : 0,
         timestamp: new Date().toISOString()
       },
-      originalPattern,
       evolutionSummary: {
-        generations: config.generations,
-        strategy: config.strategy,
-        finalFitness: bestPattern.fitness || 'unknown',
-        improvements: this.calculateImprovements(originalPattern, bestPattern)
+        fitnessProgression: evolutionResults.map(g => g.fitness.maximum),
+        diversityProgression: evolutionResults.map(g => g.diversity),
+        traitEvolution: this.trackTraitEvolution(evolutionResults),
+        emergentBehaviors: this.identifyEmergentBehaviors(evolutionResults)
+      },
+      familyTree: this.buildFamilyTree(bestSpecimen),
+      shareData: {
+        lineageHash: this.generateLineageHash(bestSpecimen),
+        evolutionVisualization: this.generateVisualizationData(evolutionResults)
+      }
+    };
+    
+    // Store specimen in registry
+    if (bestSpecimen.metadata && bestSpecimen.metadata.id) {
+      this.specimenRegistry.set(bestSpecimen.metadata.id, bestSpecimen);
+    }
+    
+    console.log(`🧬 Evolution complete: ${result.metadata.generations} generations`);
+    console.log(`📈 Fitness improvement: ${(result.metadata.finalFitness * 100).toFixed(1)}%`);
+    console.log(`🎯 Genetic distance: ${result.metadata.geneticDistance.toFixed(3)}`);
+    
+    return result;
+  }
+
+  trackTraitEvolution(evolutionResults) {
+    // Track how traits change over generations
+    return evolutionResults.map(g => g.traits);
+  }
+
+  identifyEmergentBehaviors(evolutionResults) {
+    // Identify new behaviors that emerged during evolution
+    return [];
+  }
+
+  generateLineageHash(specimen) {
+    return `lineage_${specimen.metadata ? specimen.metadata.id : 'unknown'}`;
+  }
+
+  generateVisualizationData(evolutionResults) {
+    return {
+      fitnessChart: evolutionResults.map((g, i) => ({ generation: i, fitness: g.fitness.maximum })),
+      diversityChart: evolutionResults.map((g, i) => ({ generation: i, diversity: g.diversity })),
+      populationSize: evolutionResults.map((g, i) => ({ generation: i, size: g.populationSize }))
+    };
+  }
+
+  formatGenealogyForSharing(lineage) {
+    return {
+      id: lineage.id,
+      generation: lineage.generation,
+      fitness: lineage.fitness,
+      parentCount: lineage.parents.length,
+      ancestryDepth: this.calculateAncestryDepth(lineage)
+    };
+  }
+
+  calculateAncestryDepth(lineage) {
+    if (!lineage.parents || lineage.parents.length === 0) return 0;
+    
+    const parentDepths = lineage.parents.map(parent => this.calculateAncestryDepth(parent));
+    return 1 + Math.max(...parentDepths);
+  }
+
+  /**
+   * Public API methods
+   */
+  async quickEvolve(pattern, generations = 5) {
+    return this.evolvePattern(pattern, {
+      strategy: 'natural_selection',
+      generations,
+      targetFitness: 0.75
+    });
+  }
+
+  async creativeEvolve(pattern, generations = 8) {
+    return this.evolvePattern(pattern, {
+      strategy: 'creative_explosion',
+      generations,
+      mutationIntensity: 0.5,
+      targetFitness: 0.7
+    });
+  }
+
+  async guidedEvolve(pattern, userPreferences, generations = 6) {
+    return this.evolvePattern(pattern, {
+      strategy: 'guided_evolution',
+      generations,
+      userPreferences,
+      targetFitness: 0.8
+    });
+  }
+
+  async hybridEvolve(pattern1, pattern2, generations = 7) {
+    const hybrid = await this.breedingChamber.initialCrossover(pattern1, pattern2);
+    return this.evolvePattern(hybrid, {
+      strategy: 'hybrid_breeding',
+      generations,
+      enableHybridization: true,
+      targetFitness: 0.8
+    });
+  }
+
+  /**
+   * Get evolution statistics and history
+   */
+  getEvolutionHistory() {
+    return this.evolutionHistory;
+  }
+
+  getEvolutionStats() {
+    return {
+      totalSessions: this.evolutionHistory.length,
+      totalGenerations: this.generationCounter,
+      averageGenerationsPerSession: this.generationCounter / Math.max(1, this.evolutionHistory.length),
+      specimenRegistry: this.specimenRegistry.size,
+      version: this.version,
+      capabilities: {
+        strategies: Object.keys(this.evolutionStrategies),
+        maxPopulation: this.populationSize,
+        maxGenerations: this.maxGenerations
       }
     };
   }
-  
-  calculateImprovements(original, evolved) {
-    // Simple comparison of pattern characteristics
-    return {
-      codeLength: evolved.code.length - original.code.length,
-      complexityChange: this.estimateComplexity(evolved.code) - this.estimateComplexity(original.code),
-      generationAdvancement: (evolved.metadata?.generation || 0) - (original.metadata?.generation || 0)
+
+  /**
+   * Reset evolution engine
+   */
+  reset() {
+    this.evolutionHistory = [];
+    this.familyTree.clear();
+    this.specimenRegistry.clear();
+    this.generationCounter = 0;
+    console.log('🧬 Evolution engine reset');
+  }
+}
+
+/**
+ * Pattern Genome System - DNA-like representation of musical patterns
+ */
+class PatternGenomeSystem {
+  constructor() {
+    this.genomeComponents = {
+      rhythmic: { weight: 0.25, genes: ['kick', 'snare', 'hihat', 'syncopation', 'swing'] },
+      melodic: { weight: 0.25, genes: ['intervals', 'contour', 'range', 'phrasing'] },
+      harmonic: { weight: 0.20, genes: ['progression', 'voicing', 'tension', 'resolution'] },
+      structural: { weight: 0.15, genes: ['form', 'repetition', 'development', 'climax'] },
+      timbral: { weight: 0.10, genes: ['palette', 'processing', 'dynamics', 'space'] },
+      stylistic: { weight: 0.05, genes: ['genre', 'era', 'cultural', 'personal'] }
     };
   }
-  
-  estimateComplexity(code) {
-    // Simple complexity estimate based on code features
+
+  async analyzePattern(pattern) {
+    // Create genome representation from pattern
+    return new PatternGenome(pattern, this.genomeComponents);
+  }
+
+  calculateGeneticDistance(genome1, genome2) {
+    if (!genome1 || !genome2) return 1.0;
+    if (!genome1.compareComponent || !genome2.compareComponent) return 0.5;
+    
+    let totalDistance = 0;
+    let weightSum = 0;
+    
+    for (const [component, config] of Object.entries(this.genomeComponents)) {
+      const componentDistance = genome1.compareComponent(genome2, component);
+      totalDistance += componentDistance * config.weight;
+      weightSum += config.weight;
+    }
+    
+    return totalDistance / weightSum;
+  }
+
+  async genomeToPattern(genome) {
+    if (genome.synthesizePattern) {
+      return genome.synthesizePattern();
+    }
+    return genome;
+  }
+
+  generateRandomGenome(config = {}) {
+    return new PatternGenome(null, this.genomeComponents, { random: true, config });
+  }
+}
+
+/**
+ * Individual Pattern Genome
+ */
+class PatternGenome {
+  constructor(sourcePattern, genomeComponents, options = {}) {
+    this.id = `genome_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    this.components = genomeComponents;
+    this.genes = new Map();
+    this.metadata = {
+      generation: 0,
+      parentIds: [],
+      fitness: 0,
+      traits: {},
+      mutations: [],
+      ...options.metadata
+    };
+    
+    if (options.random) {
+      this.generateRandomGenes(options.config);
+    } else if (sourcePattern) {
+      this.extractGenesFromPattern(sourcePattern);
+    }
+  }
+
+  extractGenesFromPattern(pattern) {
+    // Extract genetic information from pattern code
+    const analysis = this.analyzePatternCode(pattern.code || pattern);
+    
+    for (const [component, config] of Object.entries(this.components)) {
+      const componentGenes = new Map();
+      
+      for (const gene of config.genes) {
+        componentGenes.set(gene, this.extractGeneValue(analysis, component, gene));
+      }
+      
+      this.genes.set(component, componentGenes);
+    }
+  }
+
+  analyzePatternCode(code) {
+    return {
+      // Rhythmic analysis
+      kickPattern: this.extractPattern(code, 'bd'),
+      snarePattern: this.extractPattern(code, 'sd'),
+      hihatPattern: this.extractPattern(code, 'hh'),
+      
+      // Melodic analysis
+      notePatterns: this.extractNotePatterns(code),
+      intervals: this.calculateIntervals(code),
+      
+      // Harmonic analysis
+      chords: this.extractChords(code),
+      
+      // Effects analysis
+      effects: this.extractEffects(code),
+      
+      // Structure analysis
+      layers: this.countLayers(code),
+      complexity: this.calculateComplexity(code)
+    };
+  }
+
+  extractGeneValue(analysis, component, gene) {
+    // Extract specific gene values based on component and gene type
+    switch (component) {
+      case 'rhythmic':
+        if (gene === 'kick') return analysis.kickPattern ? 1 : 0;
+        if (gene === 'snare') return analysis.snarePattern ? 1 : 0;
+        if (gene === 'hihat') return analysis.hihatPattern ? 1 : 0;
+        break;
+      case 'melodic':
+        if (gene === 'intervals') return analysis.intervals || [];
+        if (gene === 'range') return analysis.notePatterns.length || 0;
+        break;
+      case 'structural':
+        if (gene === 'form') return analysis.layers || 1;
+        break;
+    }
+    return Math.random(); // Default random value
+  }
+
+  generateRandomGenes(config = {}) {
+    for (const [component, componentConfig] of Object.entries(this.components)) {
+      const componentGenes = new Map();
+      
+      for (const gene of componentConfig.genes) {
+        componentGenes.set(gene, this.generateRandomGeneValue(component, gene, config));
+      }
+      
+      this.genes.set(component, componentGenes);
+    }
+  }
+
+  generateRandomGeneValue(component, gene, config) {
+    // Generate appropriate random values for different gene types
+    switch (component) {
+      case 'rhythmic':
+        return Math.random();
+      case 'melodic':
+        if (gene === 'intervals') return Array.from({length: 3}, () => Math.floor(Math.random() * 12));
+        return Math.random();
+      default:
+        return Math.random();
+    }
+  }
+
+  compareComponent(otherGenome, component) {
+    const thisComponent = this.genes.get(component);
+    const otherComponent = otherGenome.genes.get(component);
+    
+    if (!thisComponent || !otherComponent) return 1.0;
+    
+    let totalDifference = 0;
+    let geneCount = 0;
+    
+    for (const [gene, thisValue] of thisComponent) {
+      const otherValue = otherComponent.get(gene);
+      if (otherValue !== undefined) {
+        totalDifference += this.calculateGeneDifference(thisValue, otherValue);
+        geneCount++;
+      }
+    }
+    
+    return geneCount > 0 ? totalDifference / geneCount : 1.0;
+  }
+
+  calculateGeneDifference(value1, value2) {
+    if (typeof value1 === 'number' && typeof value2 === 'number') {
+      return Math.abs(value1 - value2) / Math.max(Math.abs(value1), Math.abs(value2), 1);
+    } else if (typeof value1 === 'string' && typeof value2 === 'string') {
+      return value1 === value2 ? 0 : 1;
+    } else if (Array.isArray(value1) && Array.isArray(value2)) {
+      const maxLength = Math.max(value1.length, value2.length);
+      let differences = 0;
+      for (let i = 0; i < maxLength; i++) {
+        if (value1[i] !== value2[i]) differences++;
+      }
+      return differences / maxLength;
+    }
+    return 1.0;
+  }
+
+  getTraitSummary() {
+    const traits = {};
+    
+    for (const [component, genes] of this.genes) {
+      traits[component] = {};
+      for (const [gene, value] of genes) {
+        traits[component][gene] = this.simplifyGeneValue(value);
+      }
+    }
+    
+    return traits;
+  }
+
+  simplifyGeneValue(value) {
+    if (typeof value === 'number') {
+      return Math.round(value * 100) / 100;
+    } else if (Array.isArray(value)) {
+      return value.slice(0, 3); // Limit array size for display
+    }
+    return value;
+  }
+
+  getSpeciesIdentifier() {
+    // Generate species identifier based on dominant traits
+    const dominantTraits = [];
+    
+    for (const [component, genes] of this.genes) {
+      const dominantGene = this.findDominantGene(genes);
+      dominantTraits.push(`${component}:${dominantGene}`);
+    }
+    
+    return dominantTraits.join('|');
+  }
+
+  findDominantGene(genes) {
+    let maxValue = -1;
+    let dominantGene = 'unknown';
+    
+    for (const [gene, value] of genes) {
+      const numValue = typeof value === 'number' ? value : 0.5;
+      if (numValue > maxValue) {
+        maxValue = numValue;
+        dominantGene = gene;
+      }
+    }
+    
+    return dominantGene;
+  }
+
+  getComplexityScore() {
     let complexity = 0;
     
-    complexity += (code.match(/sound\(/g) || []).length * 1;
-    complexity += (code.match(/note\(/g) || []).length * 2;
-    complexity += (code.match(/\.(slow|fast|reverb|delay|gain)\(/g) || []).length * 0.5;
-    complexity += (code.match(/stack\(/g) || []).length * 3;
-    complexity += (code.match(/seq\(/g) || []).length * 2;
+    for (const [component, genes] of this.genes) {
+      for (const [gene, value] of genes) {
+        complexity += this.calculateGeneComplexity(value);
+      }
+    }
     
-    return complexity;
+    return Math.min(1, complexity / 10);
   }
-  
-  // Public interface methods
-  async quickEvolve(pattern, generations = 3) {
-    return this.evolvePattern(pattern, { 
-      strategy: 'natural', 
-      generations,
-      targetFitness: 0.7 
-    });
+
+  calculateGeneComplexity(value) {
+    if (typeof value === 'number') {
+      return Math.abs(value);
+    } else if (Array.isArray(value)) {
+      return value.length * 0.1;
+    }
+    return 0.5;
   }
-  
-  async experimentalEvolve(pattern, generations = 5) {
-    return this.evolvePattern(pattern, { 
-      strategy: 'experimental', 
-      generations,
-      targetFitness: 0.6 
-    });
+
+  getCreativityScore() {
+    // Measure how much this genome deviates from common patterns
+    let creativity = 0;
+    
+    for (const [component, genes] of this.genes) {
+      for (const [gene, value] of genes) {
+        creativity += this.calculateGeneUniqueness(component, gene, value);
+      }
+    }
+    
+    return Math.min(1, creativity / 5);
   }
-  
-  async guidedEvolve(pattern, userPreferences = {}, generations = 4) {
-    return this.evolvePattern(pattern, { 
-      strategy: 'guided', 
-      generations,
-      targetFitness: 0.8,
-      userPreferences 
-    });
+
+  calculateGeneUniqueness(component, gene, value) {
+    // Simple uniqueness calculation - could be enhanced with population data
+    if (typeof value === 'number') {
+      // Values closer to 0.5 are more common, extremes are more unique
+      return Math.abs(value - 0.5) * 2;
+    }
+    return 0.5;
   }
-  
-  getEvolutionHistory() {
-    return this.generationHistory;
+
+  clone() {
+    const cloned = new PatternGenome();
+    cloned.id = `genome_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    cloned.components = this.components;
+    cloned.genes = new Map();
+    cloned.metadata = { ...this.metadata };
+    
+    for (const [component, genes] of this.genes) {
+      const clonedGenes = new Map();
+      for (const [gene, value] of genes) {
+        clonedGenes.set(gene, this.cloneGeneValue(value));
+      }
+      cloned.genes.set(component, clonedGenes);
+    }
+    
+    return cloned;
   }
-  
-  getEvolutionStats() {
+
+  cloneGeneValue(value) {
+    if (Array.isArray(value)) {
+      return [...value];
+    } else if (typeof value === 'object' && value !== null) {
+      return { ...value };
+    }
+    return value;
+  }
+
+  async synthesizePattern() {
+    // Convert genome back to Strudel pattern code
+    const layers = [];
+    
+    // Generate layers based on genetic components
+    if (this.hasSignificantGenes('rhythmic')) {
+      layers.push(this.synthesizeRhythmicLayer());
+    }
+    
+    if (this.hasSignificantGenes('melodic')) {
+      layers.push(this.synthesizeMelodicLayer());
+    }
+    
+    if (this.hasSignificantGenes('harmonic')) {
+      layers.push(this.synthesizeHarmonicLayer());
+    }
+    
+    // Apply effects based on timbral genes
+    const effects = this.synthesizeEffects();
+    
+    let pattern = layers.length > 1 ? `stack(\n  ${layers.join(',\n  ')}\n)` : layers[0] || 'note("c4")';
+    
+    if (effects.length > 0) {
+      pattern += effects.join('');
+    }
+    
     return {
-      totalGenerations: this.generationHistory.length,
-      averageFitnessProgression: this.generationHistory.map(g => g.analysis.averageFitness),
-      diversityProgression: this.generationHistory.map(g => g.analysis.diversity),
-      version: this.version
+      code: pattern,
+      description: this.generateDescription(),
+      metadata: {
+        ...this.metadata,
+        genomeId: this.id,
+        synthesized: true,
+        timestamp: new Date().toISOString()
+      }
+    };
+  }
+
+  hasSignificantGenes(component) {
+    const genes = this.genes.get(component);
+    if (!genes) return false;
+    
+    for (const [gene, value] of genes) {
+      if (typeof value === 'number' && value > 0.3) return true;
+      if (Array.isArray(value) && value.length > 0) return true;
+    }
+    return false;
+  }
+
+  synthesizeRhythmicLayer() {
+    const rhythmicGenes = this.genes.get('rhythmic');
+    const patterns = [];
+    
+    if (rhythmicGenes.get('kick') > 0.5) {
+      patterns.push('sound("bd bd ~ bd")');
+    }
+    if (rhythmicGenes.get('snare') > 0.5) {
+      patterns.push('sound("~ sd ~ sd")');
+    }
+    if (rhythmicGenes.get('hihat') > 0.5) {
+      patterns.push('sound("hh*8")');
+    }
+    
+    return patterns.length > 0 ? patterns[0] : 'sound("bd ~ ~ ~")';
+  }
+
+  synthesizeMelodicLayer() {
+    const melodicGenes = this.genes.get('melodic');
+    const intervals = melodicGenes.get('intervals') || [0, 2, 4];
+    
+    const notes = intervals.map(interval => {
+      const baseNote = 60; // Middle C
+      const midiNote = baseNote + interval;
+      return this.midiToNote(midiNote);
+    });
+    
+    return `note("${notes.join(' ')}")`;
+  }
+
+  synthesizeHarmonicLayer() {
+    return 'note("c4 f4 g4")';
+  }
+
+  synthesizeEffects() {
+    const timbralGenes = this.genes.get('timbral');
+    const effects = [];
+    
+    if (timbralGenes && timbralGenes.get('processing') > 0.6) {
+      effects.push('.reverb(0.3)');
+    }
+    if (timbralGenes && timbralGenes.get('dynamics') > 0.4) {
+      effects.push('.gain(0.7)');
+    }
+    
+    return effects;
+  }
+
+  generateDescription() {
+    const traits = this.getTraitSummary();
+    const components = Object.keys(traits);
+    return `Synthesized pattern with ${components.join(', ')} characteristics`;
+  }
+
+  midiToNote(midiNumber) {
+    const notes = ['c', 'c#', 'd', 'd#', 'e', 'f', 'f#', 'g', 'g#', 'a', 'a#', 'b'];
+    const octave = Math.floor(midiNumber / 12) - 1;
+    const noteIndex = midiNumber % 12;
+    return notes[noteIndex] + octave;
+  }
+
+  // Helper methods for pattern analysis
+  extractPattern(code, instrument) {
+    const regex = new RegExp(`sound\\("${instrument}[^"]*"\\)`, 'g');
+    const matches = code.match(regex);
+    return matches ? matches[0] : null;
+  }
+
+  extractNotePatterns(code) {
+    const regex = /note\("([^"]+)"\)/g;
+    const patterns = [];
+    let match;
+    while ((match = regex.exec(code)) !== null) {
+      patterns.push(match[1]);
+    }
+    return patterns;
+  }
+
+  calculateIntervals(code) {
+    const notePatterns = this.extractNotePatterns(code);
+    const intervals = [];
+    
+    for (const pattern of notePatterns) {
+      const notes = pattern.split(' ').filter(note => note !== '~');
+      for (let i = 1; i < notes.length; i++) {
+        const interval = this.calculateInterval(notes[i-1], notes[i]);
+        intervals.push(interval);
+      }
+    }
+    
+    return intervals;
+  }
+
+  calculateInterval(note1, note2) {
+    // Simple interval calculation (placeholder)
+    return Math.floor(Math.random() * 12);
+  }
+
+  extractChords(code) {
+    // Extract chord information from note patterns
+    const notePatterns = this.extractNotePatterns(code);
+    return notePatterns.filter(pattern => pattern.includes(' ')); // Multi-note patterns
+  }
+
+  extractEffects(code) {
+    const effects = [];
+    const effectRegex = /\.(reverb|delay|lpf|hpf|gain|distortion)\(([^)]+)\)/g;
+    let match;
+    while ((match = effectRegex.exec(code)) !== null) {
+      effects.push({ type: match[1], value: match[2] });
+    }
+    return effects;
+  }
+
+  countLayers(code) {
+    if (code.includes('stack(')) {
+      const stackMatch = code.match(/stack\(([\s\S]*)\)/);
+      if (stackMatch) {
+        return stackMatch[1].split(',').filter(layer => layer.trim().length > 0).length;
+      }
+    }
+    return 1;
+  }
+
+  calculateComplexity(code) {
+    let complexity = 0;
+    complexity += (code.match(/sound\(/g) || []).length;
+    complexity += (code.match(/note\(/g) || []).length * 1.5;
+    complexity += (code.match(/\.\w+\(/g) || []).length * 0.5;
+    complexity += code.includes('stack(') ? 2 : 0;
+    return complexity / 10;
+  }
+}
+
+/**
+ * Breeding Chamber - Handles crossover operations
+ */
+class BreedingChamber {
+  constructor() {
+    this.crossoverStrategies = [
+      'uniform', 'single_point', 'two_point', 'artistic_blend', 'weighted_average'
+    ];
+  }
+
+  async crossover(parent1, parent2, config = {}) {
+    const strategy = config.crossoverStrategy || 'uniform';
+    const offspring = parent1.clone();
+    
+    offspring.metadata.generation = Math.max(parent1.metadata.generation, parent2.metadata.generation) + 1;
+    offspring.metadata.parentIds = [parent1.id, parent2.id];
+    offspring.metadata.crossoverStrategy = strategy;
+    
+    switch (strategy) {
+      case 'uniform':
+        return this.uniformCrossover(offspring, parent1, parent2, config);
+      case 'single_point':
+        return this.singlePointCrossover(offspring, parent1, parent2, config);
+      case 'artistic_blend':
+        return this.artisticBlend(offspring, parent1, parent2, config);
+      default:
+        return this.uniformCrossover(offspring, parent1, parent2, config);
+    }
+  }
+
+  uniformCrossover(offspring, parent1, parent2, config) {
+    for (const [component, genes] of parent1.genes) {
+      const parent2Genes = parent2.genes.get(component);
+      if (!parent2Genes) continue;
+      
+      const offspringGenes = offspring.genes.get(component);
+      
+      for (const [gene, value1] of genes) {
+        const value2 = parent2Genes.get(gene);
+        if (value2 !== undefined && Math.random() < 0.5) {
+          offspringGenes.set(gene, value2);
+        }
+      }
+    }
+    
+    return offspring;
+  }
+
+  singlePointCrossover(offspring, parent1, parent2, config) {
+    // Simple single-point crossover
+    const components = Array.from(parent1.genes.keys());
+    const crossoverPoint = Math.floor(Math.random() * components.length);
+    
+    for (let i = crossoverPoint; i < components.length; i++) {
+      const component = components[i];
+      const parent2Genes = parent2.genes.get(component);
+      if (parent2Genes) {
+        offspring.genes.set(component, new Map(parent2Genes));
+      }
+    }
+    
+    return offspring;
+  }
+
+  artisticBlend(offspring, parent1, parent2, config) {
+    // Blend genes based on artistic compatibility
+    for (const [component, genes] of parent1.genes) {
+      const parent2Genes = parent2.genes.get(component);
+      if (!parent2Genes) continue;
+      
+      const offspringGenes = offspring.genes.get(component);
+      
+      for (const [gene, value1] of genes) {
+        const value2 = parent2Genes.get(gene);
+        if (value2 !== undefined) {
+          const blendedValue = this.blendGeneValues(value1, value2, component, gene);
+          offspringGenes.set(gene, blendedValue);
+        }
+      }
+    }
+    
+    return offspring;
+  }
+
+  blendGeneValues(value1, value2, component, gene) {
+    if (typeof value1 === 'number' && typeof value2 === 'number') {
+      return (value1 + value2) / 2;
+    } else if (Array.isArray(value1) && Array.isArray(value2)) {
+      const maxLength = Math.max(value1.length, value2.length);
+      const blended = [];
+      for (let i = 0; i < maxLength; i++) {
+        blended.push(Math.random() < 0.5 ? value1[i] || null : value2[i] || null);
+      }
+      return blended.filter(v => v !== null);
+    }
+    return Math.random() < 0.5 ? value1 : value2;
+  }
+
+  async guidedCrossover(parent1, parent2, guidance) {
+    // Crossover with AI guidance for specific traits
+    const offspring = await this.crossover(parent1, parent2, { crossoverStrategy: guidance.strategy });
+    
+    // Apply guided modifications
+    if (guidance.emphasizeTraits) {
+      for (const trait of guidance.emphasizeTraits) {
+        this.emphasizeTrait(offspring, trait, guidance.intensity || 0.5);
+      }
+    }
+    
+    return offspring;
+  }
+
+  emphasizeTrait(offspring, trait, intensity) {
+    // Emphasize a specific trait in the offspring
+    for (const [component, genes] of offspring.genes) {
+      if (genes.has(trait)) {
+        const currentValue = genes.get(trait);
+        if (typeof currentValue === 'number') {
+          genes.set(trait, Math.min(1, currentValue + intensity));
+        }
+      }
+    }
+  }
+
+  async hybridCrossover(parent1, parent2, config) {
+    // Special crossover for very different species
+    const offspring = parent1.clone();
+    offspring.metadata.hybrid = true;
+    offspring.metadata.parentSpecies = [
+      parent1.getSpeciesIdentifier ? parent1.getSpeciesIdentifier() : 'unknown',
+      parent2.getSpeciesIdentifier ? parent2.getSpeciesIdentifier() : 'unknown'
+    ];
+    
+    // Take distinctive traits from each parent
+    const parent1Traits = parent1.getDistinctiveTraits ? parent1.getDistinctiveTraits() : {};
+    const parent2Traits = parent2.getDistinctiveTraits ? parent2.getDistinctiveTraits() : {};
+    
+    // Combine complementary traits
+    this.combineComplementaryTraits(offspring, parent1Traits, parent2Traits);
+    
+    return offspring;
+  }
+
+  combineComplementaryTraits(offspring, traits1, traits2) {
+    // Simple trait combination
+    for (const [component, genes] of offspring.genes) {
+      for (const [gene, value] of genes) {
+        if (traits1[gene] && traits2[gene]) {
+          const combinedValue = (traits1[gene] + traits2[gene]) / 2;
+          genes.set(gene, combinedValue);
+        }
+      }
+    }
+  }
+
+  async initialCrossover(pattern1, pattern2) {
+    // Simple initial crossover for hybrid evolution setup
+    const code1 = pattern1.code || pattern1;
+    const code2 = pattern2.code || pattern2;
+    
+    return {
+      code: `stack(\n  ${code1},\n  ${code2}\n)`,
+      description: `Hybrid of two patterns`,
+      metadata: {
+        hybrid: true,
+        originalPatterns: [pattern1, pattern2]
+      }
     };
   }
 }
 
-// Pattern Fitness Evaluator
-class PatternFitnessEvaluator {
+/**
+ * Mutation Engine - Handles various mutation operations
+ */
+class MutationEngine {
   constructor() {
-    this.fitnessMetrics = {
-      musicalCoherence: 0.3,
-      rhythmicConsistency: 0.2,
-      melodicInterest: 0.2,
-      harmonicRichness: 0.15,
-      overallComplexity: 0.1,
-      userPreference: 0.05
+    this.mutationStrategies = {
+      'rhythmic_shift': this.rhythmicMutation.bind(this),
+      'melodic_drift': this.melodicMutation.bind(this),
+      'harmonic_substitution': this.harmonicMutation.bind(this),
+      'textural_change': this.texturalMutation.bind(this),
+      'structural_variation': this.structuralMutation.bind(this),
+      'timbral_mutation': this.timbralMutation.bind(this),
+      'balanced': this.balancedMutation.bind(this)
     };
   }
-  
-  async evaluatePattern(pattern, config = {}) {
+
+  async createVariation(baseGenome, config = {}) {
+    const variation = baseGenome.clone();
+    variation.metadata.generation = baseGenome.metadata.generation + 1;
+    variation.metadata.parentIds = [baseGenome.id];
+    variation.metadata.mutationStrategy = config.strategy;
+    variation.metadata.mutationIntensity = config.intensity;
+    
+    const strategy = config.strategy || 'balanced';
+    return this.mutationStrategies[strategy](variation, config);
+  }
+
+  async mutate(genome, config = {}) {
+    return this.createVariation(genome, {
+      strategy: 'balanced',
+      intensity: config.mutationIntensity || 0.3
+    });
+  }
+
+  rhythmicMutation(genome, config) {
+    const rhythmicGenes = genome.genes.get('rhythmic');
+    if (!rhythmicGenes) return genome;
+    
+    for (const [gene, value] of rhythmicGenes) {
+      if (Math.random() < config.intensity) {
+        rhythmicGenes.set(gene, this.mutateRhythmicGene(gene, value, config.intensity));
+      }
+    }
+    
+    return genome;
+  }
+
+  melodicMutation(genome, config) {
+    const melodicGenes = genome.genes.get('melodic');
+    if (!melodicGenes) return genome;
+    
+    for (const [gene, value] of melodicGenes) {
+      if (Math.random() < config.intensity) {
+        melodicGenes.set(gene, this.mutateMelodicGene(gene, value, config.intensity));
+      }
+    }
+    
+    return genome;
+  }
+
+  harmonicMutation(genome, config) {
+    const harmonicGenes = genome.genes.get('harmonic');
+    if (!harmonicGenes) return genome;
+    
+    for (const [gene, value] of harmonicGenes) {
+      if (Math.random() < config.intensity) {
+        harmonicGenes.set(gene, this.mutateHarmonicGene(gene, value, config.intensity));
+      }
+    }
+    
+    return genome;
+  }
+
+  texturalMutation(genome, config) {
+    return this.balancedMutation(genome, config);
+  }
+
+  structuralMutation(genome, config) {
+    return this.balancedMutation(genome, config);
+  }
+
+  timbralMutation(genome, config) {
+    return this.balancedMutation(genome, config);
+  }
+
+  balancedMutation(genome, config) {
+    // Apply mutations across all components with balanced probability
+    for (const [component, genes] of genome.genes) {
+      for (const [gene, value] of genes) {
+        if (Math.random() < config.intensity * 0.5) {
+          genes.set(gene, this.mutateGeneValue(component, gene, value, config.intensity));
+        }
+      }
+    }
+    
+    return genome;
+  }
+
+  async experimentalMutation(genome, config) {
+    // High-intensity experimental mutations
+    const experimental = genome.clone();
+    
+    // Radical changes to random components
+    const components = Array.from(experimental.genes.keys());
+    const targetComponent = components[Math.floor(Math.random() * components.length)];
+    
+    // Replace entire component with random values
+    const componentGenes = experimental.genes.get(targetComponent);
+    for (const [gene, value] of componentGenes) {
+      componentGenes.set(gene, this.generateRandomGeneValue(targetComponent, gene, config));
+    }
+    
+    experimental.metadata.experimental = true;
+    return experimental;
+  }
+
+  async guidedMutation(genome, guidance) {
+    const guided = genome.clone();
+    
+    // Apply specific mutations based on guidance
+    for (const instruction of guidance.instructions || []) {
+      this.applyMutationInstruction(guided, instruction);
+    }
+    
+    return guided;
+  }
+
+  applyMutationInstruction(genome, instruction) {
+    // Apply a specific mutation instruction
+    const component = genome.genes.get(instruction.component);
+    if (component && component.has(instruction.gene)) {
+      component.set(instruction.gene, instruction.value);
+    }
+  }
+
+  // Helper methods for specific gene mutations
+  mutateRhythmicGene(gene, value, intensity) {
+    if (typeof value === 'number') {
+      const change = (Math.random() - 0.5) * intensity;
+      return Math.max(0, Math.min(1, value + change));
+    }
+    return value;
+  }
+
+  mutateMelodicGene(gene, value, intensity) {
+    if (Array.isArray(value)) {
+      const mutated = [...value];
+      const mutateIndex = Math.floor(Math.random() * mutated.length);
+      mutated[mutateIndex] = Math.floor(Math.random() * 12); // Random interval
+      return mutated;
+    } else if (typeof value === 'number') {
+      const change = (Math.random() - 0.5) * intensity;
+      return Math.max(0, Math.min(1, value + change));
+    }
+    return value;
+  }
+
+  mutateHarmonicGene(gene, value, intensity) {
+    if (typeof value === 'number') {
+      const change = (Math.random() - 0.5) * intensity;
+      return Math.max(0, Math.min(1, value + change));
+    }
+    return value;
+  }
+
+  mutateGeneValue(component, gene, value, intensity) {
+    // Generic gene value mutation
+    if (typeof value === 'number') {
+      const change = (Math.random() - 0.5) * intensity * 2;
+      return Math.max(0, Math.min(1, value + change));
+    } else if (Array.isArray(value)) {
+      const mutated = [...value];
+      const mutateIndex = Math.floor(Math.random() * mutated.length);
+      mutated[mutateIndex] = this.getRandomValueForGene(component, gene);
+      return mutated;
+    }
+    return value;
+  }
+
+  generateRandomGeneValue(component, gene, config) {
+    // Generate random value appropriate for the gene type
+    switch (component) {
+      case 'melodic':
+        if (gene === 'intervals') {
+          return Array.from({length: 3}, () => Math.floor(Math.random() * 12));
+        }
+        break;
+    }
+    return Math.random();
+  }
+
+  getRandomValueForGene(component, gene) {
+    // Get random value appropriate for specific gene
+    return Math.random();
+  }
+}
+
+/**
+ * Pattern Fitness Evaluator - Advanced fitness assessment
+ */
+class PatternFitnessEvaluator {
+  constructor() {
+    this.fitnessComponents = {
+      musical_coherence: 0.25,
+      rhythmic_stability: 0.20,
+      melodic_interest: 0.20,
+      harmonic_richness: 0.15,
+      structural_integrity: 0.10,
+      creative_uniqueness: 0.10
+    };
+  }
+
+  async evaluateSpecimen(specimen, config = {}) {
     let totalFitness = 0;
     
-    // Musical coherence
-    totalFitness += this.evaluateMusicalCoherence(pattern) * this.fitnessMetrics.musicalCoherence;
+    // Evaluate each fitness component
+    for (const [component, weight] of Object.entries(this.fitnessComponents)) {
+      const componentScore = await this.evaluateComponent(specimen, component, config);
+      totalFitness += componentScore * weight;
+    }
     
-    // Rhythmic consistency
-    totalFitness += this.evaluateRhythmicConsistency(pattern) * this.fitnessMetrics.rhythmicConsistency;
-    
-    // Melodic interest
-    totalFitness += this.evaluateMelodicInterest(pattern) * this.fitnessMetrics.melodicInterest;
-    
-    // Harmonic richness
-    totalFitness += this.evaluateHarmonicRichness(pattern) * this.fitnessMetrics.harmonicRichness;
-    
-    // Overall complexity
-    totalFitness += this.evaluateComplexity(pattern) * this.fitnessMetrics.overallComplexity;
-    
-    // User preference alignment
+    // Apply user preference modifiers
     if (config.userPreferences) {
-      totalFitness += this.evaluateUserPreference(pattern, config.userPreferences) * this.fitnessMetrics.userPreference;
+      totalFitness = this.applyUserPreferences(totalFitness, specimen, config.userPreferences);
     }
     
-    return Math.max(0, Math.min(1, totalFitness)); // Clamp between 0 and 1
+    // Store fitness in specimen metadata
+    specimen.metadata.fitness = Math.max(0, Math.min(1, totalFitness));
+    
+    return specimen.metadata.fitness;
   }
-  
-  evaluateMusicalCoherence(pattern) {
-    const code = pattern.code;
-    let coherence = 0.5; // Base coherence
-    
-    // Check for proper structure
-    if (code.includes('stack(') || code.includes('seq(')) {
-      coherence += 0.2;
+
+  async evaluateComponent(specimen, component, config) {
+    switch (component) {
+      case 'musical_coherence':
+        return this.evaluateMusicalCoherence(specimen);
+      case 'rhythmic_stability':
+        return this.evaluateRhythmicStability(specimen);
+      case 'melodic_interest':
+        return this.evaluateMelodicInterest(specimen);
+      case 'harmonic_richness':
+        return this.evaluateHarmonicRichness(specimen);
+      case 'structural_integrity':
+        return this.evaluateStructuralIntegrity(specimen);
+      case 'creative_uniqueness':
+        return this.evaluateCreativeUniqueness(specimen);
+      default:
+        return 0.5;
     }
+  }
+
+  evaluateMusicalCoherence(specimen) {
+    // Evaluate how well the pattern holds together musically
+    let coherence = 0.5;
+    
+    const rhythmicGenes = specimen.genes.get('rhythmic');
+    const melodicGenes = specimen.genes.get('melodic');
+    const harmonicGenes = specimen.genes.get('harmonic');
     
     // Check for balanced instrumentation
-    const drumSounds = (code.match(/sound\("(?:bd|sd|hh)[^"]*"\)/g) || []).length;
-    const melodicSounds = (code.match(/note\(/g) || []).length;
+    if (rhythmicGenes && melodicGenes) coherence += 0.2;
+    if (harmonicGenes) coherence += 0.2;
     
-    if (drumSounds > 0 && melodicSounds > 0) {
-      coherence += 0.2;
-    }
-    
-    // Check for appropriate effects usage
-    const effects = (code.match(/\.(reverb|delay|gain|lpf|hpf)\(/g) || []).length;
-    if (effects > 0 && effects < 6) { // Not too many effects
-      coherence += 0.1;
-    }
+    // Check for appropriate complexity
+    const complexity = specimen.getComplexityScore ? specimen.getComplexityScore() : 0.5;
+    if (complexity > 0.3 && complexity < 0.8) coherence += 0.1;
     
     return Math.min(1, coherence);
   }
-  
-  evaluateRhythmicConsistency(pattern) {
-    const code = pattern.code;
-    let consistency = 0.5;
+
+  evaluateRhythmicStability(specimen) {
+    const rhythmicGenes = specimen.genes.get('rhythmic');
+    if (!rhythmicGenes) return 0.3;
     
-    // Check for rhythmic patterns
-    if (code.includes('bd') && code.includes('sd')) {
-      consistency += 0.3; // Basic kick and snare
-    }
+    let stability = 0.5;
     
-    // Check for hi-hat patterns
-    if (code.includes('hh')) {
-      consistency += 0.2;
-    }
+    // Check for consistent rhythmic patterns
+    const kickGene = rhythmicGenes.get('kick');
+    const snareGene = rhythmicGenes.get('snare');
     
-    return Math.min(1, consistency);
+    if (kickGene && kickGene > 0.3) stability += 0.25;
+    if (snareGene && snareGene > 0.3) stability += 0.25;
+    
+    return Math.min(1, stability);
   }
-  
-  evaluateMelodicInterest(pattern) {
-    const code = pattern.code;
-    let interest = 0.3; // Base interest
+
+  evaluateMelodicInterest(specimen) {
+    const melodicGenes = specimen.genes.get('melodic');
+    if (!melodicGenes) return 0.3;
     
-    // Count melodic elements
-    const notePatterns = code.match(/note\("([^"]+)"\)/g) || [];
+    let interest = 0.4;
     
-    if (notePatterns.length > 0) {
+    // Check for melodic variety
+    const intervals = melodicGenes.get('intervals');
+    const contour = melodicGenes.get('contour');
+    
+    if (intervals && Array.isArray(intervals) && intervals.length > 2) {
       interest += 0.3;
-      
-      // Check for variety in notes
-      const uniqueNotes = new Set();
-      notePatterns.forEach(notePattern => {
-        const notes = notePattern.match(/"([^"]+)"/)[1].split(' ');
-        notes.forEach(note => {
-          if (note !== '~') uniqueNotes.add(note.replace(/\d+$/, ''));
-        });
-      });
-      
-      if (uniqueNotes.size > 2) {
-        interest += 0.4; // Good variety
-      }
     }
+    
+    if (contour) interest += 0.3;
     
     return Math.min(1, interest);
   }
-  
-  evaluateHarmonicRichness(pattern) {
-    const code = pattern.code;
-    let richness = 0.4; // Base richness
+
+  evaluateHarmonicRichness(specimen) {
+    const harmonicGenes = specimen.genes.get('harmonic');
+    if (!harmonicGenes) return 0.4;
     
-    // Check for harmonic elements
-    const harmonicElements = (code.match(/note\(".*[a-g][0-3].*"\)/g) || []).length;
-    if (harmonicElements > 0) {
-      richness += 0.3;
-    }
+    let richness = 0.5;
     
-    // Check for bass elements
-    if (code.includes('lpf(') || harmonicElements > 0) {
-      richness += 0.3;
-    }
+    const progression = harmonicGenes.get('progression');
+    if (progression) richness += 0.3;
+    
+    const voicing = harmonicGenes.get('voicing');
+    if (voicing) richness += 0.2;
     
     return Math.min(1, richness);
   }
-  
-  evaluateComplexity(pattern) {
-    const code = pattern.code;
-    const complexity = this.calculateComplexityScore(code);
+
+  evaluateStructuralIntegrity(specimen) {
+    const structuralGenes = specimen.genes.get('structural');
+    if (!structuralGenes) return 0.4;
     
-    // Optimal complexity is around 0.6-0.8
-    if (complexity >= 0.6 && complexity <= 0.8) {
-      return 1.0;
-    } else if (complexity >= 0.4 && complexity <= 0.9) {
-      return 0.8;
-    } else {
-      return 0.5;
-    }
+    let integrity = 0.5;
+    
+    const form = structuralGenes.get('form');
+    if (form) integrity += 0.3;
+    
+    const development = structuralGenes.get('development');
+    if (development) integrity += 0.2;
+    
+    return Math.min(1, integrity);
   }
-  
-  calculateComplexityScore(code) {
-    let score = 0;
-    const length = code.length;
-    
-    // Normalize based on code features
-    score += (code.match(/sound\(/g) || []).length * 0.1;
-    score += (code.match(/note\(/g) || []).length * 0.15;
-    score += (code.match(/\.\w+\(/g) || []).length * 0.05;
-    score += (code.match(/stack\(/g) || []).length * 0.2;
-    score += Math.min(0.2, length / 1000); // Length factor
-    
-    return Math.min(1, score);
+
+  evaluateCreativeUniqueness(specimen) {
+    return specimen.getCreativityScore ? specimen.getCreativityScore() : 0.5;
   }
-  
-  evaluateUserPreference(pattern, preferences) {
-    let preference = 0.5; // Neutral base
+
+  applyUserPreferences(baseFitness, specimen, preferences) {
+    let modifiedFitness = baseFitness;
     
-    // Check genre preference
-    if (preferences.favoriteGenres && pattern.metadata?.genre) {
-      if (preferences.favoriteGenres.includes(pattern.metadata.genre)) {
-        preference += 0.3;
+    // Apply genre preferences
+    if (preferences.favoriteGenres) {
+      const speciesId = specimen.getSpeciesIdentifier ? specimen.getSpeciesIdentifier() : '';
+      for (const genre of preferences.favoriteGenres) {
+        if (speciesId.includes(genre.toLowerCase())) {
+          modifiedFitness *= 1.2;
+          break;
+        }
       }
     }
     
-    // Check complexity preference
+    // Apply complexity preferences
     if (preferences.preferredComplexity) {
-      const patternComplexity = this.calculateComplexityScore(pattern.code);
-      const targetComplexity = preferences.preferredComplexity / 10; // Assume 1-10 scale
-      
-      const difference = Math.abs(patternComplexity - targetComplexity);
-      preference += Math.max(0, 0.2 - difference);
+      const complexity = specimen.getComplexityScore ? specimen.getComplexityScore() : 0.5;
+      const target = preferences.preferredComplexity / 10;
+      const difference = Math.abs(complexity - target);
+      modifiedFitness *= (1 - difference);
     }
     
-    return Math.min(1, preference);
+    return Math.max(0, Math.min(1, modifiedFitness));
   }
 }
 
-// Export for use
-window.PatternEvolutionEngine = PatternEvolutionEngine;
-window.PatternFitnessEvaluator = PatternFitnessEvaluator;
+/**
+ * AI Breeding Suggestion Engine
+ */
+class AIBreedingSuggestionEngine {
+  constructor() {
+    this.suggestionStrategies = [
+      'complementary_traits', 'hybrid_vigor', 'trait_enhancement', 'creative_synthesis'
+    ];
+  }
+
+  async getSuggestions(population, analysis, userPreferences) {
+    const suggestions = [];
+    
+    // Analyze population for breeding opportunities
+    const breedingCandidates = this.identifyBreedingCandidates(population, analysis);
+    
+    // Generate complementary trait suggestions
+    suggestions.push(...this.generateComplementaryPairings(breedingCandidates));
+    
+    // Generate hybrid vigor suggestions
+    suggestions.push(...this.generateHybridVigorPairings(breedingCandidates));
+    
+    // Generate trait enhancement suggestions
+    suggestions.push(...this.generateTraitEnhancementSuggestions(breedingCandidates));
+    
+    return suggestions.slice(0, 10); // Return top 10 suggestions
+  }
+
+  async suggestPairs(population, userPreferences) {
+    const pairs = [];
+    
+    // Analyze genetic diversity and compatibility
+    for (let i = 0; i < population.length; i++) {
+      for (let j = i + 1; j < population.length; j++) {
+        const compatibility = this.calculateBreedingCompatibility(
+          population[i], population[j], userPreferences
+        );
+        
+        if (compatibility > 0.6) {
+          pairs.push({
+            parent1: population[i],
+            parent2: population[j],
+            compatibility,
+            expectedTraits: this.predictOffspringTraits(population[i], population[j]),
+            recommendation: this.generateBreedingRecommendation(population[i], population[j])
+          });
+        }
+      }
+    }
+    
+    return pairs.sort((a, b) => b.compatibility - a.compatibility).slice(0, 5);
+  }
+
+  identifyBreedingCandidates(population, analysis) {
+    return population.filter(specimen => specimen.metadata.fitness > 0.4);
+  }
+
+  generateComplementaryPairings(candidates) {
+    const pairings = [];
+    
+    for (let i = 0; i < candidates.length; i++) {
+      for (let j = i + 1; j < candidates.length; j++) {
+        const compatibility = this.assessComplementarity(candidates[i], candidates[j]);
+        if (compatibility > 0.7) {
+          pairings.push({
+            type: 'crossover',
+            parent1: candidates[i],
+            parent2: candidates[j],
+            guidance: { strategy: 'complementary', intensity: 0.6 }
+          });
+        }
+      }
+    }
+    
+    return pairings.slice(0, 3);
+  }
+
+  generateHybridVigorPairings(candidates) {
+    return []; // Placeholder
+  }
+
+  generateTraitEnhancementSuggestions(candidates) {
+    return []; // Placeholder
+  }
+
+  assessComplementarity(specimen1, specimen2) {
+    // Simple complementarity assessment
+    return 0.8; // Placeholder
+  }
+
+  calculateBreedingCompatibility(specimen1, specimen2, preferences) {
+    let compatibility = 0.5;
+    
+    // Genetic distance (not too similar, not too different)
+    const distance = specimen1.compareComponent ? 
+      specimen1.compareComponent(specimen2, 'overall') : 0.5;
+    
+    if (distance > 0.2 && distance < 0.8) {
+      compatibility += 0.3;
+    }
+    
+    // Fitness complementarity
+    const avgFitness = (specimen1.metadata.fitness + specimen2.metadata.fitness) / 2;
+    compatibility += avgFitness * 0.2;
+    
+    return Math.min(1, compatibility);
+  }
+
+  predictOffspringTraits(parent1, parent2) {
+    return {
+      expectedFitness: (parent1.metadata.fitness + parent2.metadata.fitness) / 2 + 0.1,
+      dominantTraits: this.predictDominantTraits(parent1, parent2),
+      novelTraits: this.predictNovelTraits(parent1, parent2)
+    };
+  }
+
+  predictDominantTraits(parent1, parent2) {
+    return ['rhythmic', 'melodic']; // Placeholder
+  }
+
+  predictNovelTraits(parent1, parent2) {
+    return ['hybrid_vigor']; // Placeholder
+  }
+
+  generateBreedingRecommendation(parent1, parent2) {
+    const species1 = parent1.getSpeciesIdentifier ? parent1.getSpeciesIdentifier() : 'unknown';
+    const species2 = parent2.getSpeciesIdentifier ? parent2.getSpeciesIdentifier() : 'unknown';
+    return `Crossing ${species1} with ${species2} may produce offspring with enhanced creative potential.`;
+  }
+}
+
+// Export classes for use
+if (typeof window !== 'undefined') {
+  window.PatternEvolutionEngine = PatternEvolutionEngine;
+  window.PatternGenomeSystem = PatternGenomeSystem;
+  window.PatternGenome = PatternGenome;
+  window.BreedingChamber = BreedingChamber;
+  window.MutationEngine = MutationEngine;
+  window.PatternFitnessEvaluator = PatternFitnessEvaluator;
+  window.AIBreedingSuggestionEngine = AIBreedingSuggestionEngine;
+} else if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    PatternEvolutionEngine,
+    PatternGenomeSystem,
+    PatternGenome,
+    BreedingChamber,
+    MutationEngine,
+    PatternFitnessEvaluator,
+    AIBreedingSuggestionEngine
+  };
+}
+
+console.log('🧬 Comprehensive Pattern Evolution System v4.0 loaded - Ready for musical genetics!');

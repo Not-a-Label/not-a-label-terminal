@@ -1458,6 +1458,11 @@
       // Display user input
       addLine(`nal@music:~$ ${command}`, 'input-line');
       
+      // Dispatch event for onboarding system
+      document.dispatchEvent(new CustomEvent('commandExecuted', {
+        detail: { command: command }
+      }));
+      
       // Use enhanced conversational AI with integrations
       if (window.conversationalIntegrations) {
         try {
@@ -2384,6 +2389,13 @@
   <script src="js/real-collaboration-backend.js"></script>
   <script src="js/user-auth-system.js"></script>
   <script src="js/community-pattern-browser.js"></script>
+  
+  <!-- Phase 3C: Advanced Features -->
+  <script src="js/ai-creative-assistant.js"></script>
+  <script src="js/professional-audio-export.js"></script>
+  <script src="js/pattern-evolution-engine.js"></script>
+  <script src="js/performance-analytics.js"></script>
+  <script src="js/mobile-pwa-enhancements.js"></script>
   
   <!-- System optimization and cleanup -->
   <script src="performance-optimizer.js"></script>

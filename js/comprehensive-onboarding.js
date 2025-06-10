@@ -492,6 +492,10 @@ class ComprehensiveOnboarding {
     
     this.overlay = document.createElement('div');
     this.overlay.className = 'onboarding-overlay';
+    
+    // For steps that wait for user input, allow clicks through to terminal
+    const allowTerminalInteraction = step.action && step.action.includes('wait_for');
+    
     this.overlay.style.cssText = `
       position: fixed;
       top: 0;
@@ -504,6 +508,7 @@ class ComprehensiveOnboarding {
       align-items: center;
       justify-content: center;
       backdrop-filter: blur(3px);
+      ${allowTerminalInteraction ? 'pointer-events: none;' : ''}
     `;
     
     const modal = document.createElement('div');
@@ -520,6 +525,7 @@ class ComprehensiveOnboarding {
       font-family: 'Courier New', monospace;
       box-shadow: 0 0 30px rgba(0, 255, 0, 0.3);
       position: relative;
+      pointer-events: auto;
     `;
     
     modal.innerHTML = `
