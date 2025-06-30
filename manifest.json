@@ -1,7 +1,7 @@
 {
-  "name": "Not a Label - AI Music Creator",
-  "short_name": "Not a Label",
-  "description": "Create AI-powered music with Strudel live coding. Mobile-first music production platform.",
+  "name": "Not a Label - Advanced AI Music Intelligence",
+  "short_name": "Not a Label AI",
+  "description": "Revolutionary AI music intelligence with 26 neural networks. Professional composition, mixing, mastering, and collaboration.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#000000",
@@ -13,39 +13,39 @@
   "categories": ["music", "entertainment", "productivity"],
   "shortcuts": [
     {
-      "name": "Create Trap Beat",
-      "short_name": "Trap",
-      "description": "Quickly create a trap beat",
-      "url": "/?quick=trap",
+      "name": "AI Compose",
+      "short_name": "AI Create",
+      "description": "Create music with AI intelligence",
+      "url": "/?ai=compose",
       "icons": [
         {
-          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' fill='%23000'/><text x='96' y='120' text-anchor='middle' font-size='80' fill='%2300ff00'>🔥</text></svg>",
+          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' fill='%23000'/><text x='96' y='120' text-anchor='middle' font-size='80' fill='%2300ff00'>🧠</text></svg>",
           "sizes": "192x192",
           "type": "image/svg+xml"
         }
       ]
     },
     {
-      "name": "Create Lo-fi Beat",
-      "short_name": "Lo-fi",
-      "description": "Quickly create a lo-fi beat",
-      "url": "/?quick=lofi",
+      "name": "Auto Mix/Master",
+      "short_name": "AI Audio",
+      "description": "Professional AI mixing and mastering",
+      "url": "/?ai=mix",
       "icons": [
         {
-          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' fill='%23000'/><text x='96' y='120' text-anchor='middle' font-size='80' fill='%2300ff00'>☕</text></svg>",
+          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' fill='%23000'/><text x='96' y='120' text-anchor='middle' font-size='80' fill='%2300ff00'>🎛️</text></svg>",
           "sizes": "192x192",
           "type": "image/svg+xml"
         }
       ]
     },
     {
-      "name": "Voice Input",
-      "short_name": "Voice",
-      "description": "Use voice to create music",
-      "url": "/?voice=true",
+      "name": "Style Fusion",
+      "short_name": "AI Fusion",
+      "description": "Blend musical genres with AI",
+      "url": "/?ai=fusion",
       "icons": [
         {
-          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' fill='%23000'/><text x='96' y='120' text-anchor='middle' font-size='80' fill='%2300ff00'>🎤</text></svg>",
+          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' fill='%23000'/><text x='96' y='120' text-anchor='middle' font-size='80' fill='%2300ff00'>🌈</text></svg>",
           "sizes": "192x192",
           "type": "image/svg+xml"
         }
@@ -111,11 +111,40 @@
   ],
   "related_applications": [],
   "prefer_related_applications": false,
+  "share_target": {
+    "action": "/share-target",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "files": [
+        {
+          "name": "files",
+          "accept": ["audio/*", ".mid", ".midi", ".json"]
+        }
+      ]
+    }
+  },
   "edge_side_panel": {
     "preferred_width": 400
   },
   "launch_handler": {
     "client_mode": ["navigate-existing", "auto"]
   },
-  "handle_links": "preferred"
+  "handle_links": "preferred",
+  "file_handlers": [
+    {
+      "action": "/",
+      "accept": {
+        "audio/*": [".mp3", ".wav", ".ogg", ".m4a", ".flac"],
+        "application/json": [".json"],
+        "audio/midi": [".mid", ".midi"]
+      }
+    }
+  ],
+  "protocol_handlers": [
+    {
+      "protocol": "web+music",
+      "url": "/?track=%s"
+    }
+  ]
 }
