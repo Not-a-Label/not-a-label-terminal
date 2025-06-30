@@ -48,23 +48,8 @@ class ProfessionalAudioExport {
   }
   
   createExportInterface() {
-    // Create export modal
-    const modal = document.createElement('div');
-    modal.id = 'export-modal';
-    modal.className = 'export-modal hidden';
-    modal.style.cssText = `
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(0, 0, 0, 0.9);
-      z-index: 10000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      backdrop-filter: blur(5px);
-    `;
+    // Export modal disabled - popup removed
+    return;
     
     modal.innerHTML = `
       <div class="export-container" style="
@@ -639,24 +624,16 @@ class ProfessionalAudioExport {
     return `${sanitizedName}_${timestamp}_${quality}.${settings.format}`;
   }
   
-  // UI helper methods
+  // UI helper methods - Modal disabled
   showExportModal(pattern = null) {
-    const modal = document.getElementById('export-modal');
-    if (modal) {
-      modal.classList.remove('hidden');
-      
-      // Update pattern info
-      if (pattern || this.getCurrentPattern()) {
-        this.updatePatternInfo(pattern || this.getCurrentPattern());
-      }
-    }
+    // Export modal disabled - popup removed
+    console.log('Export modal disabled - popup removed');
+    return;
   }
   
   hideExportModal() {
-    const modal = document.getElementById('export-modal');
-    if (modal) {
-      modal.classList.add('hidden');
-    }
+    // Export modal disabled - popup removed
+    return;
   }
   
   updatePatternInfo(pattern) {
@@ -820,11 +797,11 @@ class ProfessionalAudioExport {
 // Global instance
 window.professionalExport = new ProfessionalAudioExport();
 
-// Add keyboard shortcut
+// Keyboard shortcut disabled - Export modal removed
 document.addEventListener('keydown', (e) => {
   if (e.ctrlKey && e.shiftKey && e.key === 'E') {
     e.preventDefault();
-    window.professionalExport.showExportModal();
+    console.log('Export modal disabled - popup removed');
   }
 });
 
